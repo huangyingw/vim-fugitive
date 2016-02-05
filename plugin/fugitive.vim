@@ -728,9 +728,9 @@ endfunction
 call s:command("-bar -bang -nargs=? -complete=customlist,s:DirComplete Gcd  :cd<bang>  `=s:repo().bare() ? s:repo().dir(<q-args>) : s:repo().tree(<q-args>)`")
 call s:command("-bar -bang -nargs=? -complete=customlist,s:DirComplete Glcd :lcd<bang> `=s:repo().bare() ? s:repo().dir(<q-args>) : s:repo().tree(<q-args>)`")
 
-" Section: Gstatus
+" Section: Gs
 
-call s:command("-bar Gstatus :execute s:Status()")
+call s:command("-bar Gs :execute s:Status()")
 augroup fugitive_status
   autocmd!
   if !has('win32')
@@ -2553,8 +2553,8 @@ function! s:BufReadIndex() abort
     nnoremap <buffer> <silent> r :<C-U>edit<CR>
     nnoremap <buffer> <silent> R :<C-U>edit<CR>
     nnoremap <buffer> <silent> U :<C-U>execute <SID>StageUndo()<CR>
-    nnoremap <buffer> <silent> g?   :help fugitive-:Gstatus<CR>
-    nnoremap <buffer> <silent> <F1> :help fugitive-:Gstatus<CR>
+    nnoremap <buffer> <silent> g?   :help fugitive-:Gs<CR>
+    nnoremap <buffer> <silent> <F1> :help fugitive-:Gs<CR>
   catch /^fugitive:/
     return 'echoerr v:errmsg'
   endtry
