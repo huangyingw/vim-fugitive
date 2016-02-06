@@ -3164,32 +3164,32 @@ function! s:Gme() abort
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gme.sh'
 endfunction
-function! GmfixGme() abort
+function! s:Gmfix() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gmfix.sh'
 endfunction
-function! Gfvd() abort
+function! s:Gfvd() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gfvd.sh'
 endfunction
-function! Gmup() abort
+function! s:Gmup() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gmup.sh'
 endfunction
-function! Gstp() abort
+function! s:Gstp() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gstp.sh'
 endfunction
-function! Gstv() abort
+function! s:Gstv() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gstv.sh'
 endfunction
-function! Gcof() abort
+function! s:Gcof() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gcof.sh'
