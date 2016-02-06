@@ -3124,6 +3124,7 @@ function s:Cd_to_parent()
 endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga()")
 function! s:Gci() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
@@ -3133,4 +3134,9 @@ function! s:Gvd() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gvd.sh'
+endfunction
+function! s:Ga() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/ga.sh'
 endfunction
