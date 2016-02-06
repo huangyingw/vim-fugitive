@@ -3120,6 +3120,12 @@ function s:Find_in_parent(fln,flsrt,flstp)
   return "/"
 endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd('',<bang>0,<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci('',<bang>0,<f-args>)")
+function! s:Gci(vert,keepfocus,...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gci.sh'
+endfunction
 function! s:Gvd(vert,keepfocus,...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
