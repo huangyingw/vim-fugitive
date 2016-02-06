@@ -346,19 +346,19 @@ function! s:repo_translate(spec) dict abort
 endfunction
 
 function! s:repo_head(...) dict abort
-    let head = s:repo().head_ref()
+  let head = s:repo().head_ref()
 
-    if head =~# '^ref: '
-      let branch = s:sub(head,'^ref: %(refs/%(heads/|remotes/|tags/)=)=','')
-    elseif head =~# '^\x\{40\}$'
-      " truncate hash to a:1 characters if we're in detached head mode
-      let len = a:0 ? a:1 : 0
-      let branch = len ? head[0:len-1] : ''
-    else
-      return ''
-    endif
+  if head =~# '^ref: '
+    let branch = s:sub(head,'^ref: %(refs/%(heads/|remotes/|tags/)=)=','')
+  elseif head =~# '^\x\{40\}$'
+    " truncate hash to a:1 characters if we're in detached head mode
+    let len = a:0 ? a:1 : 0
+    let branch = len ? head[0:len-1] : ''
+  else
+    return ''
+  endif
 
-    return branch
+  return branch
 endfunction
 
 call s:add_methods('repo',['dir','tree','bare','translate','head'])
@@ -3081,7 +3081,47 @@ augroup fugitive_foldtext
         \    set foldtext=fugitive#foldtext() |
         \ endif
 augroup END
+
+"==
+" windowdir
+"  Gets the directory for the file in the current window
+"  Or the current working dir if there isn't one for the window.
+"  Use tr to allow that other OS paths, too
+function s:windowdir()
+  if winbufnr(0) == -1
+    let unislash = getcwd()
+  else
+    let unislash = fnamemodify(bufname(winbufnr(0)), ':p:h')
+  endif
+  return tr(unislash, '\', '/')
+endfunc
+"
+"==
+" Find_in_parent
+" find the file argument and returns the path to it.
+" Starting with the current working dir, it walks up the parent folders
+" until it finds the file, or it hits the stop dir.
+" If it doesn't find it, it returns "Nothing"
+function s:Find_in_parent(fln,flsrt,flstp)
+  let here = a:flsrt
+  while ( strlen( here) > 0 )
+    if filereadable( here . "/" . a:fln )
+      return here
+    endif
+    let fr = match(here, "/[^/]*$")
+    if fr == -1
+      break
+    endif
+    let here = strpart(here, 0, fr)
+    if here == a:flstp
+      break
+    endif
+  endwhile
+  return "/"
+endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd('',<bang>0,<f-args>)")
 function! s:Gvd(vert,keepfocus,...) abort
-  echom "haha"
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gvd.sh'
 endfunction
