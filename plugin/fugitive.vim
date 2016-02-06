@@ -3081,3 +3081,7 @@ augroup fugitive_foldtext
         \    set foldtext=fugitive#foldtext() |
         \ endif
 augroup END
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd('',<bang>0,<f-args>)")
+function! s:Gvd(vert,keepfocus,...) abort
+  echom "haha"
+endfunction
