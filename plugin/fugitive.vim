@@ -3122,14 +3122,14 @@ function s:Cd_to_parent()
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
 endfunc
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd('',<bang>0,<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci('',<bang>0,<f-args>)")
-function! s:Gci(vert,keepfocus,...) abort
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci()")
+function! s:Gci() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gci.sh'
 endfunction
-function! s:Gvd(vert,keepfocus,...) abort
+function! s:Gvd() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gvd.sh'
