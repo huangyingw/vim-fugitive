@@ -3122,6 +3122,7 @@ function s:Cd_to_parent()
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
 endfunc
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fgs :execute s:Fgs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco()")
@@ -3199,4 +3200,9 @@ function! s:Gpl() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gpl.sh'
+endfunction
+function! s:Fgs() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/fgs.sh'
 endfunction
