@@ -3126,6 +3126,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gst :execute s:Gst()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco()")
 function! s:Gci() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
@@ -3145,4 +3146,9 @@ function! s:Gst() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gst.sh'
+endfunction
+function! s:Gco() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gco.sh'
 endfunction
