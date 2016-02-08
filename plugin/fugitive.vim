@@ -3013,55 +3013,55 @@ function s:Cd_to_parent()
   exec "cd " . b:csdbpath
 endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fgs :execute s:Fgs()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :execute s:Gbr()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme :execute s:Gme()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme :execute s:Gme(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :execute s:Gmfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :execute s:Gs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gst :execute s:Gst()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
-function! s:Gci() abort
+function! s:Gci(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gci.sh'
+  exec '!~/loadrc/gitrc/gci.sh ' . a:args   
 endfunction
 function! s:Gvd() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gvd.sh'
 endfunction
-function! s:Ga() abort
+function! s:Ga(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/ga.sh'
+  exec '!~/loadrc/gitrc/ga.sh ' . a:args   
 endfunction
 function! s:Gst() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gst.sh'
 endfunction
-function! s:Gco() abort
+function! s:Gco(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gco.sh'
+  exec '!~/loadrc/gitrc/gco.sh ' . a:args   
 endfunction
-function! s:Gme() abort
+function! s:Gme(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gme.sh'
+  exec '!~/loadrc/gitrc/gme.sh ' . a:args    
 endfunction
 function! s:Gmfix() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
@@ -3078,20 +3078,20 @@ function! s:Gmup() abort
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gmup.sh'
 endfunction
-function! s:Gstp() abort
+function! s:Gstp(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gstp.sh'
+  exec '!~/loadrc/gitrc/gstp.sh ' . a:args   
 endfunction
-function! s:Gstv() abort
+function! s:Gstv(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gstv.sh'
+  exec '!~/loadrc/gitrc/gstv.sh ' . a:args  
 endfunction
-function! s:Gcof() abort
+function! s:Gcof(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcof.sh'
+  exec '!~/loadrc/gitrc/gcof.sh ' . a:args   
 endfunction
 function! s:Gpl() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
