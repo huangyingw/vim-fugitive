@@ -3130,6 +3130,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme :execute s:Gme()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :execute s:Gmfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
@@ -3228,4 +3229,9 @@ function! s:Grsh() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/grsh.sh'
+endfunction
+function! s:Gmet() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec 'git mergetool'
 endfunction
