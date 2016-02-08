@@ -1013,110 +1013,6 @@ function! s:StagePatch(lnum1,lnum2) abort
   return 'checktime'
 endfunction
 
-" Section: Gcommit
-
-call s:command("-nargs=? -complete=customlist,s:CommitComplete Gcommit :execute s:Commit(<q-args>)")
-
-function! s:Commit(args, ...) abort
-  let repo = a:0 ? a:1 : s:repo()
-  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
-  let dir = getcwd()
-  let msgfile = repo.dir('COMMIT_EDITMSG')
-  let outfile = tempname()
-  let errorfile = tempname()
-  try
-    try
-      execute cd.s:fnameescape(repo.tree())
-      if s:winshell()
-        let command = ''
-        let old_editor = $GIT_EDITOR
-        let $GIT_EDITOR = 'false'
-      else
-        let command = 'env GIT_EDITOR=false '
-      endif
-      let command .= repo.git_command('commit').' '.a:args
-      if &shell =~# 'csh'
-        noautocmd silent execute '!('.command.' > '.outfile.') >& '.errorfile
-      elseif a:args =~# '\%(^\| \)-\%(-interactive\|p\|-patch\)\>'
-        noautocmd execute '!'.command.' 2> '.errorfile
-      else
-        noautocmd silent execute '!'.command.' > '.outfile.' 2> '.errorfile
-      endif
-    finally
-      execute cd.'`=dir`'
-    endtry
-    if !has('gui_running')
-      redraw!
-    endif
-    if !v:shell_error
-      if filereadable(outfile)
-        for line in readfile(outfile)
-          echo line
-        endfor
-      endif
-      return ''
-    else
-      let errors = readfile(errorfile)
-      let error = get(errors,-2,get(errors,-1,'!'))
-      if error =~# 'false''\=\.$'
-        let args = a:args
-        let args = s:gsub(args,'%(%(^| )-- )@<!%(^| )@<=%(-[esp]|--edit|--interactive|--patch|--signoff)%($| )','')
-        let args = s:gsub(args,'%(%(^| )-- )@<!%(^| )@<=%(-c|--reedit-message|--reuse-message|-F|--file|-m|--message)%(\s+|\=)%(''[^'']*''|"%(\\.|[^"])*"|\\.|\S)*','')
-        let args = s:gsub(args,'%(^| )@<=[%#]%(:\w)*','\=expand(submatch(0))')
-        let args = s:sub(args, '\ze -- |$', ' --no-edit --no-interactive --no-signoff')
-        let args = '-F '.s:shellesc(msgfile).' '.args
-        if args !~# '\%(^\| \)--cleanup\>'
-          let args = '--cleanup=strip '.args
-        endif
-        if bufname('%') == '' && line('$') == 1 && getline(1) == '' && !&mod
-          execute 'keepalt edit '.s:fnameescape(msgfile)
-        elseif a:args =~# '\%(^\| \)-\%(-verbose\|\w*v\)\>'
-          execute 'keepalt '.(tabpagenr()-1).'tabedit '.s:fnameescape(msgfile)
-        elseif s:buffer().type() ==# 'index'
-          execute 'keepalt edit '.s:fnameescape(msgfile)
-          execute (search('^#','n')+1).'wincmd+'
-          setlocal nopreviewwindow
-        else
-          execute 'keepalt split '.s:fnameescape(msgfile)
-        endif
-        let b:fugitive_commit_arguments = args
-        setlocal bufhidden=wipe filetype=gitcommit
-        return '1'
-      elseif error ==# '!'
-        return s:Status()
-      else
-        call s:throw(error)
-      endif
-    endif
-  catch /^fugitive:/
-    return 'echoerr v:errmsg'
-  finally
-    if exists('old_editor')
-      let $GIT_EDITOR = old_editor
-    endif
-    call delete(outfile)
-    call delete(errorfile)
-    call fugitive#reload_status()
-  endtry
-endfunction
-
-function! s:CommitComplete(A,L,P) abort
-  if a:A =~ '^-' || type(a:A) == type(0) " a:A is 0 on :Gcommit -<Tab>
-    let args = ['-C', '-F', '-a', '-c', '-e', '-i', '-m', '-n', '-o', '-q', '-s', '-t', '-u', '-v', '--all', '--allow-empty', '--amend', '--author=', '--cleanup=', '--dry-run', '--edit', '--file=', '--include', '--interactive', '--message=', '--no-verify', '--only', '--quiet', '--reedit-message=', '--reuse-message=', '--signoff', '--template=', '--untracked-files', '--verbose']
-    return filter(args,'v:val[0 : strlen(a:A)-1] ==# a:A')
-  else
-    return s:repo().superglob(a:A)
-  endif
-endfunction
-
-function! s:FinishCommit() abort
-  let args = getbufvar(+expand('<abuf>'),'fugitive_commit_arguments')
-  if !empty(args)
-    call setbufvar(+expand('<abuf>'),'fugitive_commit_arguments','')
-    return s:Commit(args, s:repo(getbufvar(+expand('<abuf>'),'git_dir')))
-  endif
-  return ''
-endfunction
 
 " Section: Gmerge, Gpull
 
@@ -1594,11 +1490,6 @@ function! s:Wq(force,...) abort
     return result.'|quit'.bang
   endif
 endfunction
-
-augroup fugitive_commit
-  autocmd!
-  autocmd VimLeavePre,BufDelete COMMIT_EDITMSG execute s:sub(s:FinishCommit(), '^echoerr (.*)', 'echohl ErrorMsg|echo \1|echohl NONE')
-augroup END
 
 " Section: Gpush, Gfetch
 
@@ -3127,7 +3018,9 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme :execute s:Gme()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
@@ -3234,4 +3127,14 @@ function! s:Gmet() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec 'git mergetool'
+endfunction
+function! s:Gcob() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gcob.sh'
+endfunction
+function! s:Gcom(args, ...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gcom.sh ' . a:args 
 endfunction
