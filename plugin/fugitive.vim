@@ -2063,162 +2063,6 @@ function! s:RehighlightBlame() abort
   endfor
 endfunction
 
-" Section: Gbrowse
-
-call s:command("-bar -bang -range=0 -nargs=* -complete=customlist,s:EditComplete Gbrowse :execute s:Browse(<bang>0,<line1>,<count>,<f-args>)")
-
-function! s:Browse(bang,line1,count,...) abort
-  try
-    let validremote = '\.\|\.\=/.*\|[[:alnum:]_-]\+\%(://.\{-\}\)\='
-    if a:0
-      let remote = matchstr(join(a:000, ' '),'@\zs\%('.validremote.'\)$')
-      let rev = substitute(join(a:000, ' '),'@\%('.validremote.'\)$','','')
-    else
-      let remote = ''
-      let rev = ''
-    endif
-    if rev ==# ''
-      let expanded = s:buffer().rev()
-    elseif rev ==# ':'
-      let expanded = s:buffer().path('/')
-    else
-      let expanded = s:buffer().expand(rev)
-    endif
-    let full = s:repo().translate(expanded)
-    let commit = ''
-    if full =~# '^fugitive://'
-      let commit = matchstr(full,'://.*//\zs\w\w\+')
-      let path = matchstr(full,'://.*//\w\+\zs/.*')
-      if commit =~ '..'
-        let type = s:repo().git_chomp('cat-file','-t',commit.s:sub(path,'^/',':'))
-        let branch = matchstr(expanded, '^[^:]*')
-      else
-        let type = 'blob'
-      endif
-      let path = path[1:-1]
-    elseif s:repo().bare()
-      let path = '.git/' . full[strlen(s:repo().dir())+1:-1]
-      let type = ''
-    else
-      let path = full[strlen(s:repo().tree())+1:-1]
-      if path =~# '^\.git/'
-        let type = ''
-      elseif isdirectory(full)
-        let type = 'tree'
-      else
-        let type = 'blob'
-      endif
-    endif
-    if type ==# 'tree' && !empty(path)
-      let path = s:sub(path, '/\=$', '/')
-    endif
-    if path =~# '^\.git/.*HEAD' && filereadable(s:repo().dir(path[5:-1]))
-      let body = readfile(s:repo().dir(path[5:-1]))[0]
-      if body =~# '^\x\{40\}$'
-        let commit = body
-        let type = 'commit'
-        let path = ''
-      elseif body =~# '^ref: refs/'
-        let path = '.git/' . matchstr(body,'ref: \zs.*')
-      endif
-    endif
-
-    let merge = ''
-    if path =~# '^\.git/refs/remotes/.'
-      if empty(remote)
-        let remote = matchstr(path, '^\.git/refs/remotes/\zs[^/]\+')
-      endif
-      let merge = matchstr(path, '^\.git/refs/remotes/[^/]\+/\zs.\+')
-      let branch = ''
-      let path = '.git/refs/heads/'.merge
-    elseif path =~# '^\.git/refs/heads/.'
-      let branch = path[16:-1]
-    elseif !exists('branch')
-      let branch = s:repo().head()
-    endif
-    if !empty(branch)
-      let r = s:repo().git_chomp('config','branch.'.branch.'.remote')
-      let m = s:repo().git_chomp('config','branch.'.branch.'.merge')[11:-1]
-      if r ==# '.' && !empty(m)
-        let r2 = s:repo().git_chomp('config','branch.'.m.'.remote')
-        if r2 !~# '^\.\=$'
-          let r = r2
-          let m = s:repo().git_chomp('config','branch.'.m.'.merge')[11:-1]
-        endif
-      endif
-      if empty(remote)
-        let remote = r
-      endif
-      if r ==# '.' || r ==# remote
-        let merge = m
-        if path =~# '^\.git/refs/heads/.'
-          let path = '.git/refs/heads/'.merge
-        endif
-      endif
-    endif
-
-    if empty(commit) && path !~# '^\.git/'
-      if a:line1 && !a:count && !empty(merge)
-        let commit = merge
-      else
-        let commit = s:repo().rev_parse('HEAD')
-      endif
-    endif
-
-    if empty(remote)
-      let remote = '.'
-      let raw = s:repo().git_chomp('config','remote.origin.url')
-    else
-      let raw = s:repo().git_chomp('config','remote.'.remote.'.url')
-    endif
-    if raw ==# ''
-      let raw = remote
-    endif
-
-    for Handler in g:fugitive_browse_handlers
-      let url = call(Handler, [{
-            \ 'repo': s:repo(),
-            \ 'remote': raw,
-            \ 'revision': 'No longer provided',
-            \ 'commit': commit,
-            \ 'path': path,
-            \ 'type': type,
-            \ 'line1': a:count > 0 ? a:line1 : 0,
-            \ 'line2': a:count > 0 ? a:count : 0}])
-      if !empty(url)
-        break
-      endif
-    endfor
-
-    if empty(url) && raw ==# '.'
-      call s:throw("Instaweb failed to start")
-    elseif empty(url)
-      call s:throw('"'.remote."' is not a supported remote")
-    endif
-
-    let url = s:gsub(url, '[ <>]', '\="%".printf("%02X",char2nr(submatch(0)))')
-    if a:bang
-      if has('clipboard')
-        let @* = url
-      endif
-      return 'echomsg '.string(url)
-    elseif exists(':Browse') == 2
-      return 'echomsg '.string(url).'|Browse '.url
-    else
-      if !exists('g:loaded_netrw')
-        runtime! autoload/netrw.vim
-      endif
-      if exists('*netrw#BrowseX')
-        return 'echomsg '.string(url).'|call netrw#BrowseX('.string(url).', 0)'
-      else
-        return 'echomsg '.string(url).'|call netrw#NetrwBrowseX('.string(url).', 0)'
-      endif
-    endif
-  catch /^fugitive:/
-    return 'echoerr v:errmsg'
-  endtry
-endfunction
-
 function! s:github_url(opts, ...) abort
   if a:0 || type(a:opts) != type({})
     return ''
@@ -3031,6 +2875,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :execute s:Gs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gst :execute s:Gst()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
@@ -3128,6 +2973,11 @@ function! s:Gfix() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gfix.sh'
+endfunction
+function! s:Grtu() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!git remote update'
 endfunction
 function! s:Gmet() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
