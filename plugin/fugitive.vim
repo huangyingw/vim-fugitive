@@ -3019,6 +3019,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfix :execute s:Gfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
@@ -3123,15 +3124,20 @@ function! s:Grsh() abort
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/grsh.sh'
 endfunction
+function! s:Gfix() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gfix.sh'
+endfunction
 function! s:Gmet() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec 'git mergetool'
 endfunction
-function! s:Gcob() abort
+function! s:Gcob(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcob.sh'
+  exec '!~/loadrc/gitrc/gcob.sh ' . a:args  
 endfunction
 function! s:Gcom(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
