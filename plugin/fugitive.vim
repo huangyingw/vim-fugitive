@@ -2876,6 +2876,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :execute s:Gs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gst :execute s:Gst()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstl :execute s:Gstl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
@@ -2968,6 +2969,11 @@ function! s:Grsh() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/grsh.sh'
+endfunction
+function! s:Gstl() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gstl.sh'
 endfunction
 function! s:Gfix() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
