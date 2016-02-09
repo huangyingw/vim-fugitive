@@ -2982,7 +2982,7 @@ endfunction
 function! s:Gmet() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec 'git mergetool'
+  exec '!git mergetool'
 endfunction
 function! s:Gcob(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
