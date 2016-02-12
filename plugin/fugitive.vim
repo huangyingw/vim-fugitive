@@ -2991,10 +2991,10 @@ function! s:Gs() abort
   exec 'vs ' . b:csdbpath . '/' . '.git/index'
   vert resize
 endfunction
-function! s:Grsh() abort
+function! s:Grsh(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/grsh.sh'
+  exec '!~/loadrc/gitrc/grsh.sh ' . a:args    
   vert resize
 endfunction
 function! s:Gstl() abort
