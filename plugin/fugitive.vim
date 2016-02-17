@@ -2877,8 +2877,10 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtv :execute s:Grtv()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :execute s:Gs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gst :execute s:Gst()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsti :execute s:Gsti()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstl :execute s:Gstl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
@@ -2997,6 +2999,12 @@ function! s:Grsh(args, ...) abort
   exec '!~/loadrc/gitrc/grsh.sh ' . a:args    
   vert resize
 endfunction
+function! s:Gsti() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gsti.sh'
+  vert resize
+endfunction
 function! s:Gstl() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
@@ -3013,6 +3021,12 @@ function! s:Gfix() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gfix.sh'
+  vert resize
+endfunction
+function! s:Grtv() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!git remote -v'
   vert resize
 endfunction
 function! s:Grtu() abort
