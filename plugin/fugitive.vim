@@ -2889,7 +2889,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :exe
 function! s:Gci(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gci.sh ' . a:args   
+  exec '!~/loadrc/gitrc/gci.sh ' . '"' .  a:args . '"'
   vert resize
 endfunction
 function! s:Gvd() abort
@@ -2901,7 +2901,7 @@ endfunction
 function! s:Ga(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/ga.sh ' . a:args   
+  exec '!~/loadrc/gitrc/ga.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gst() abort
@@ -2913,13 +2913,13 @@ endfunction
 function! s:Gco(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gco.sh ' . a:args   
+  exec '!~/loadrc/gitrc/gco.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gme(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gme.sh ' . a:args    
+  exec '!~/loadrc/gitrc/gme.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gmfix() abort
@@ -2943,19 +2943,19 @@ endfunction
 function! s:Gstp(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gstp.sh ' . a:args   
+  exec '!~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gstv(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gstv.sh ' . a:args  
+  exec '!~/loadrc/gitrc/gstv.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gcof(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcof.sh ' . a:args   
+  exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gpl() abort
@@ -2997,7 +2997,7 @@ endfunction
 function! s:Grsh(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/grsh.sh ' . a:args    
+  exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gsti() abort
@@ -3058,12 +3058,12 @@ endfunction
 function! s:Gcob(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcob.sh ' . a:args  
+  exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gcom(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcom.sh ' . a:args 
+  exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
