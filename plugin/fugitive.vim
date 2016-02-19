@@ -2877,6 +2877,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :e
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :execute s:Grta(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtv :execute s:Grtv()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :execute s:Gs()")
@@ -2992,6 +2993,12 @@ function! s:Gs() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec 'vs ' . b:csdbpath . '/' . '.git/index'
+  vert resize
+endfunction
+function! s:Grta(args, ...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!git remote add ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Grsh(args, ...) abort
