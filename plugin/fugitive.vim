@@ -2871,11 +2871,13 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfix :execute s:Gfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glg :execute s:Glg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme :execute s:Gme(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :execute s:Gmfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gps :execute s:Gps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :execute s:Grta(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
@@ -2921,6 +2923,18 @@ function! s:Gme(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gme.sh ' . '"' .  a:args . '"' 
+  vert resize
+endfunction
+function! s:Glg() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/glg.sh'
+  vert resize
+endfunction
+function! s:Gps() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gps.sh'
   vert resize
 endfunction
 function! s:Gmfix() abort
