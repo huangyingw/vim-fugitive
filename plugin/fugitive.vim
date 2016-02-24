@@ -2860,6 +2860,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Cscope :
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fgs :execute s:Fgs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete G :execute s:G()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fr :execute s:Fr(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :execute s:Gbr()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
@@ -2900,6 +2901,12 @@ function! s:Gvd() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gvd.sh'
+  vert resize
+endfunction
+function! s:Fr(...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:1 . '"'  . ' "' .  a:2 . '"'  
   vert resize
 endfunction
 function! s:Ga(args, ...) abort
