@@ -2858,7 +2858,7 @@ function s:Cd_to_parent()
 endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Cscope :execute s:Cscope(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fgs :execute s:Fgs()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete G :execute s:G()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete G :execute s:G(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fr :execute s:Fr(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :execute s:Gbr()")
@@ -3045,10 +3045,10 @@ function! s:Gstl() abort
   exec '!~/loadrc/gitrc/gstl.sh'
   vert resize
 endfunction
-function! s:G() abort
+function! s:G(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/g.sh'
+  exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
 function! s:Gdi() abort
