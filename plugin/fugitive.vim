@@ -2866,7 +2866,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcim :execute s:Gcim()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<q-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
@@ -3088,10 +3088,10 @@ function! s:Gitk(args, ...) abort
   exec '!gitk ' . a:args   
   vert resize
 endfunction
-function! s:Gcob(args, ...) abort
+function! s:Gcob(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  a:args . '"' 
+  exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  a:1 . '"'  . ' "' .  a:2 . '"'   
   vert resize
 endfunction
 function! s:Gcom(args, ...) abort
