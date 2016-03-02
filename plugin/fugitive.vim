@@ -2865,6 +2865,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcim :execute s:Gcim()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :execute s:Gclean()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<q-args>)")
@@ -2881,7 +2882,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gps :execute s:Gps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :execute s:Grta(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :execute s:Grta(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtv :execute s:Grtv()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :execute s:Gs()")
@@ -2890,17 +2891,19 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsti :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstl :execute s:Gstl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 function! s:Gci(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gci.sh ' . '"' .  a:args . '"'
   vert resize
 endfunction
-function! s:Gvd() abort
+function! s:Gvd(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gvd.sh'
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  let arg2 = (a:0 >= 2) ? a:2 : ''
+  exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'   
   vert resize
 endfunction
 function! s:Fr(...) abort
@@ -3003,6 +3006,12 @@ function! s:Gbr() abort
   exec '!~/loadrc/gitrc/gbr.sh'
   vert resize
 endfunction
+function! s:Gclean() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!git clean -fd'
+  vert resize
+endfunction
 function! s:Gcim() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
@@ -3021,10 +3030,12 @@ function! s:Gs() abort
   exec 'vs ' . b:csdbpath . '/' . '.git/index'
   vert resize
 endfunction
-function! s:Grta(args, ...) abort
+function! s:Grta(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!git remote add ' . '"' .  a:args . '"' 
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  let arg2 = (a:0 >= 2) ? a:2 : ''
+  exec '!git remote add ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'    
   vert resize
 endfunction
 function! s:Grsh(args, ...) abort
