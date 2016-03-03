@@ -3027,8 +3027,7 @@ endfunction
 function! s:Gs() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gs.sh'
-  exec 'vs ' . b:csdbpath . '/' . 'gs.findresult'
+  exec 'vs ' . b:csdbpath . '/' . '.git/index'
   vert resize
 endfunction
 function! s:Grta(...) abort
