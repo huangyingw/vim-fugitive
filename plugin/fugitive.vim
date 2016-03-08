@@ -1522,7 +1522,6 @@ endfunction
 
 " Section: Gdiff
 
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdiff :execute s:Diff('',<bang>0,<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvdiff :execute s:Diff('keepalt vert ',<bang>0,<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsdiff :execute s:Diff('keepalt ',<bang>0,<f-args>)")
 
@@ -2872,6 +2871,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdif :execute s:Gdif(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfix :execute s:Gfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<q-args>)")
@@ -3038,7 +3038,7 @@ endfunction
 function! s:Gs() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec 'vs ' . b:csdbpath . '/' . '.git/index'
+  exec 'vs ' . '.git/index'
   vert resize
 endfunction
 function! s:Grta(...) abort
@@ -3077,7 +3077,7 @@ function! s:Gdi() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gdi.sh'
-  exec 'vs ' . b:csdbpath . '/' . 'gdi.findresult'
+  exec 'vs ' . 'gdi.findresult'
   vert resize
 endfunction
 function! s:Gfix() abort
@@ -3115,6 +3115,14 @@ function! s:Gbrd(...) abort
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
   exec '!~/loadrc/gitrc/gbrd.sh ' . '"' .  arg1 . '"'
+  vert resize
+endfunction
+function! s:Gdif(...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  arg1 . '"'
+  exec 'vs ' . 'gdif.findresult'
   vert resize
 endfunction
 function! s:Gcob(...) abort
