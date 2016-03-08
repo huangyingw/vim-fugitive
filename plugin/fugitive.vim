@@ -2863,6 +2863,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :exec
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fr :execute s:Fr(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :execute s:Gbr()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrd :execute s:Gbrd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcim :execute s:Gcim()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :execute s:Gclean()")
@@ -2910,7 +2911,9 @@ endfunction
 function! s:Fr(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:1 . '"'  . ' "' .  a:2 . '"'  
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  let arg2 = (a:0 >= 2) ? a:2 : ''
+  exec '!~/loadrc/bashrc/fr.sh ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'  
   vert resize
 endfunction
 function! s:Ga(args, ...) abort
@@ -3107,10 +3110,19 @@ function! s:Gitk(args, ...) abort
   exec '!gitk ' . a:args   
   vert resize
 endfunction
+function! s:Gbrd(...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  exec '!~/loadrc/gitrc/gbrd.sh ' . '"' .  arg1 . '"'
+  vert resize
+endfunction
 function! s:Gcob(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  a:1 . '"'  . ' "' .  a:2 . '"'   
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  let arg2 = (a:0 >= 2) ? a:2 : ''
+  exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'   
   vert resize
 endfunction
 function! s:Gcom(args, ...) abort
