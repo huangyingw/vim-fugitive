@@ -2956,6 +2956,7 @@ function! s:Glg() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/glg.sh'
+  exec 'vs ' . 'glg.findresult'
   vert resize
 endfunction
 function! s:Gps() abort
