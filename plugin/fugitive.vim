@@ -2860,6 +2860,11 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fgs :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete G :execute s:G(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fr :execute s:Fr(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbib :execute s:Gbib()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbig :execute s:Gbig()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbil :execute s:Gbil()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbir :execute s:Gbir()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbis :execute s:Gbis()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :execute s:Gbr()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrd :execute s:Gbrd(<f-args>)")
@@ -3011,6 +3016,38 @@ function! s:Fgs() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/fgs.sh'
+  vert resize
+endfunction
+function! s:Gbis() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gbis.sh'
+  exec 'vs ' . 'gbil.findresult'
+  vert resize
+endfunction
+function! s:Gbib() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gbib.sh'
+  vert resize
+endfunction
+function! s:Gbig() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gbig.sh'
+  vert resize
+endfunction
+function! s:Gbil() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gbil.sh'
+  exec 'vs ' . 'gbil.findresult'
+  vert resize
+endfunction
+function! s:Gbir() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gbir.sh'
   vert resize
 endfunction
 function! s:Gbr() abort
