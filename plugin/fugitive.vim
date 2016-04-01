@@ -2873,7 +2873,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcim :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :execute s:Gclean()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdif :execute s:Gdif(<f-args>)")
@@ -3001,10 +3001,15 @@ function! s:Gstv(args, ...) abort
   exec '!~/loadrc/gitrc/gstv.sh ' . '"' .  a:args . '"' 
   vert resize
 endfunction
-function! s:Gcof(args, ...) abort
+function! s:Gcof(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  a:args . '"' 
+  echom b:csdbpath
+  echom expand('%:p')
+  let b:relativePath = substitute(expand('%:p'), b:csdbpath.'/', "", "g")
+  echom b:relativePath
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '"'  . ' "' .  arg1 . '"'     
   vert resize
 endfunction
 function! s:Gpl() abort
