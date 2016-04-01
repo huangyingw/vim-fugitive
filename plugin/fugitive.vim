@@ -3043,7 +3043,6 @@ endfunction
 function! s:Gbil() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gbil.sh'
   exec 'vs ' . 'gbil.findresult'
   vert resize
 endfunction
