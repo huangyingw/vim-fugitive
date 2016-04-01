@@ -3004,12 +3004,10 @@ endfunction
 function! s:Gcof(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  echom b:csdbpath
-  echom expand('%:p')
-  let b:relativePath = substitute(expand('%:p'), b:csdbpath.'/', "", "g")
-  echom b:relativePath
+  let b:relativePath = substitute(expand('%:p'), b:csdbpath . '/', "", "g")
   let arg1 = (a:0 >= 1) ? a:1 : ''
   exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '"'  . ' "' .  arg1 . '"'     
+  exec 'vs ' . expand('%:p') . '.bak'
   vert resize
 endfunction
 function! s:Gpl() abort
