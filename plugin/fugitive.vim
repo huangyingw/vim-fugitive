@@ -2898,6 +2898,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsti :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstl :execute s:Gstl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :execute s:Gsync(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 function! s:Gci(args, ...) abort
@@ -3078,6 +3079,13 @@ function! s:Gs() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec 'vs ' . '.git/index'
+  vert resize
+endfunction
+function! s:Gsync(...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  exec '!~/loadrc/gitrc/gsync.sh ' . '"' .  arg1 . '"' 
   vert resize
 endfunction
 function! s:Grta(...) abort
