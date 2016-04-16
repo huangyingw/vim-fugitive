@@ -2863,7 +2863,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fr :exec
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbib :execute s:Gbib()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbig :execute s:Gbig()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbil :execute s:Gbil()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbir :execute s:Gbir()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbis :execute s:Gbis()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :execute s:Gbr()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
@@ -3026,6 +3025,7 @@ function! s:Gbis() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gbis.sh'
+  exec 'vs ' . 'gbil.findresult'
   vert resize
 endfunction
 function! s:Gbib() abort
@@ -3044,12 +3044,6 @@ function! s:Gbil() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec 'vs ' . 'gbil.findresult'
-  vert resize
-endfunction
-function! s:Gbir() abort
-  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
-  exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gbir.sh'
   vert resize
 endfunction
 function! s:Gbr() abort
@@ -3161,7 +3155,7 @@ endfunction
 function! s:Gitk(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!gitk ' . a:args   
+  exec '!gitk --all ' . a:args   
   vert resize
 endfunction
 function! s:Gbrd(...) abort
