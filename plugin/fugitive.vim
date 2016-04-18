@@ -3156,7 +3156,7 @@ endfunction
 function! s:Gitk(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!gitk --all ' . a:args   
+  exec '!gitk ' . a:args   
   vert resize
 endfunction
 function! s:Gbrd(...) abort
