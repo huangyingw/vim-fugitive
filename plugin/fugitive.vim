@@ -2856,6 +2856,7 @@ function s:Cd_to_parent()
   exec "cd " . b:csdbpath
 endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Cscope :execute s:Cscope(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fcscope :execute s:Fcscope()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fgs :execute s:Fgs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete G :execute s:G(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga(<q-args>)")
@@ -2942,6 +2943,12 @@ function! s:Gco(args, ...) abort
 endfunction
 function! s:Cscope(args, ...) abort
   exec '!~/loadrc/bashrc/cscope.sh ' . '"' .  a:args . '"' 
+  vert resize
+endfunction
+function! s:Fcscope() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/bashrc/fcscope.sh'
   vert resize
 endfunction
 function! s:Gme(args, ...) abort
