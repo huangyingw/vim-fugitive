@@ -2858,6 +2858,7 @@ endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Cscope :execute s:Cscope(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fcscope :execute s:Fcscope()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fgs :execute s:Fgs()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fnotinuse :execute s:Fnotinuse()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete G :execute s:G(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fr :execute s:Fr(<f-args>)")
@@ -2944,6 +2945,13 @@ function! s:Gco(args, ...) abort
 endfunction
 function! s:Cscope(args, ...) abort
   exec '!~/loadrc/bashrc/cscope.sh ' . '"' .  a:args . '"' 
+  vert resize
+endfunction
+function! s:Fnotinuse() abort
+  let b:csdbpath = <SID>Find_in_parent("cscope.out",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/bashrc/fnotinuse.sh'
+  exec 'vs ' . 'fnotinuse.findresult'
   vert resize
 endfunction
 function! s:Fcscope() abort
