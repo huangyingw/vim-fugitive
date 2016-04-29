@@ -2868,6 +2868,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbis :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :execute s:Gbr()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrd :execute s:Gbrd(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrm :execute s:Gbrm(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcim :execute s:Gcim()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :execute s:Gclean()")
@@ -3166,6 +3167,13 @@ function! s:Gitk(...) abort
   let arg1 = (a:0 >= 1) ? a:1 : ''
   let arg2 = (a:0 >= 2) ? a:2 : ''
   exec '!gitk ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'    
+  vert resize
+endfunction
+function! s:Gbrm(...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  let arg1 = (a:0 >= 1) ? a:1 : ''
+  exec '!~/loadrc/gitrc/gbrm.sh ' . '"' .  arg1 . '"'
   vert resize
 endfunction
 function! s:Gbrd(...) abort
