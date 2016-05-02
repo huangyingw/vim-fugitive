@@ -3036,6 +3036,7 @@ function! s:Fgs() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/fgs.sh'
+  exec 'vs ' . '.git/index'
   vert resize
 endfunction
 function! s:Gbis() abort
