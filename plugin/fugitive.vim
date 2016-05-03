@@ -2855,6 +2855,7 @@ function s:Cd_to_parent()
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
 endfunc
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete BinaryGrep :execute s:BinaryGrep(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Cscope :execute s:Cscope(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fcscope :execute s:Fcscope()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fsync :execute s:Fsync()")
@@ -2946,6 +2947,16 @@ function! s:Gco(args, ...) abort
 endfunction
 function! s:Cscope(args, ...) abort
   exec '!~/loadrc/bashrc/cscope.sh ' . '"' .  a:args . '"' 
+  vert resize
+endfunction
+function! s:BinaryGrep(...) abort
+  let b:csdbpath = <SID>Find_in_parent("cscope.out",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  let b:keyword = (a:0 >= 1) ? a:1 : ''
+  exec '!~/loadrc/bashrc/binaryGrep.sh ' . '"' .  b:keyword . '"'
+  let b:keyword = substitute(b:keyword, " ", "_", "g")
+  let b:keyword = substitute(b:keyword, "/", "_", "g")
+  exec 'vs ' . b:keyword . '.binaryGrep.findresult' 
   vert resize
 endfunction
 function! s:Fnotinuse() abort
