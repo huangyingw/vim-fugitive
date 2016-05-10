@@ -2905,6 +2905,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :execute s:Gsync(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
 function! s:Gci(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
@@ -3103,7 +3104,10 @@ endfunction
 function! s:Gs() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec 'vs ' . '.git/index'
+  exec '!~/loadrc/gitrc/gs.sh'
+  exec 'vs ' . 'gs.findresult'
+  vert resize
+  exec 'vs ' . b:csdbpath . '/' . '.git/index'
   vert resize
 endfunction
 function! s:Gsync(...) abort
@@ -3168,6 +3172,10 @@ function! s:Grtu() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!git remote update'
+  vert resize
+endfunction
+function! s:VS() abort
+  exec 'vs ' . expand("%:p") . '.findresult'
   vert resize
 endfunction
 function! s:Gtg() abort
