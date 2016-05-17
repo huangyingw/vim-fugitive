@@ -3138,6 +3138,7 @@ function! s:Gstl() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gstl.sh'
+  exec 'vs ' . 'gstl.findresult'
   vert resize
 endfunction
 function! s:G(args, ...) abort
