@@ -3332,7 +3332,7 @@ endfunction
 function! s:Fsync() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!sh ~/loadrc/gitrc/fsync.sh 2>&1 | tee fsync.findresult'
+  exec '!~/loadrc/gitrc/fsync.sh 2>&1 | tee fsync.findresult'
   exec 'vs ' . 'fsync.findresult'
   exec 'vs ' . '.git/index'
   vert resize
