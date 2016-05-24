@@ -360,19 +360,19 @@ function! s:repo_translate(spec) dict abort
 endfunction
 
 function! s:repo_head(...) dict abort
-    let head = s:repo().head_ref()
+  let head = s:repo().head_ref()
 
-    if head =~# '^ref: '
-      let branch = s:sub(head,'^ref: %(refs/%(heads/|remotes/|tags/)=)=','')
-    elseif head =~# '^\x\{40\}$'
-      " truncate hash to a:1 characters if we're in detached head mode
-      let len = a:0 ? a:1 : 0
-      let branch = len ? head[0:len-1] : ''
-    else
-      return ''
-    endif
+  if head =~# '^ref: '
+    let branch = s:sub(head,'^ref: %(refs/%(heads/|remotes/|tags/)=)=','')
+  elseif head =~# '^\x\{40\}$'
+    " truncate hash to a:1 characters if we're in detached head mode
+    let len = a:0 ? a:1 : 0
+    let branch = len ? head[0:len-1] : ''
+  else
+    return ''
+  endif
 
-    return branch
+  return branch
 endfunction
 
 call s:add_methods('repo',['dir','tree','bare','translate','head'])
@@ -3332,7 +3332,8 @@ endfunction
 function! s:Fsync() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/fsync.sh'
+  exec '!sh ~/loadrc/gitrc/fsync.sh 2>&1 | tee fsync.findresult'
+  exec 'vs ' . 'fsync.findresult'
   exec 'vs ' . '.git/index'
   vert resize
 endfunction
