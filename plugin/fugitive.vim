@@ -3185,6 +3185,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :exec
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gst :execute s:Gst()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsti :execute s:Gsti()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstl :execute s:Gstl()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstlv :execute s:Gstlv()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :execute s:Gsync(<f-args>)")
@@ -3425,6 +3426,12 @@ function! s:Gstl() abort
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gstl.sh'
   exec 'vs ' . 'gstl.findresult'
+  vert resize
+endfunction
+function! s:Gstlv() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gstlv.sh'
   vert resize
 endfunction
 function! s:G(args, ...) abort
