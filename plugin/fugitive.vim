@@ -3156,7 +3156,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbr :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :execute s:Gbra()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrd :execute s:Gbrd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrm :execute s:Gbrm(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gci :execute s:Gci(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcim :execute s:Gcim()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :execute s:Gclean()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<q-args>)")
@@ -3192,12 +3191,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :e
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
-function! s:Gci(args, ...) abort
-  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
-  exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gci.sh ' . '"' .  a:args . '"'
-  vert resize
-endfunction
 function! s:Gvd(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
