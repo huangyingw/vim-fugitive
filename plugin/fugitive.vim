@@ -3187,7 +3187,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstl :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstlv :execute s:Gstlv()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :execute s:Gstp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :execute s:Gsync(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :execute s:Gsync()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
@@ -3387,11 +3387,11 @@ function! s:Gs() abort
   exec 'vs ' . '.git/index'
   vert resize
 endfunction
-function! s:Gsync(...) abort
+function! s:Gsync() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  let arg1 = (a:0 >= 1) ? a:1 : ''
-  exec '!~/loadrc/gitrc/gsync.sh ' . '"' .  arg1 . '"' 
+  exec '!~/loadrc/vishrc/vcommand.sh ' . '"$HOME/loadrc/gitrc/gsync.sh"'
+  exec 'vs ' . 'vcommand.findresult'
   vert resize
 endfunction
 function! s:Grta(...) abort
