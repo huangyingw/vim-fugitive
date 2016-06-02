@@ -3390,8 +3390,8 @@ endfunction
 function! s:Gsync() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/vishrc/vcommand.sh ' . '"$HOME/loadrc/gitrc/gsync.sh"'
-  exec 'vs ' . 'vcommand.findresult'
+  exec '!~/loadrc/gitrc/gsync.sh 2>&1 | tee gsync.findresult'
+  exec 'vs ' . 'gsync.findresult'
   vert resize
 endfunction
 function! s:Grta(...) abort
