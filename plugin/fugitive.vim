@@ -3292,7 +3292,8 @@ endfunction
 function! s:Gmup() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
-  exec '!~/loadrc/gitrc/gmup.sh'
+  exec '!~/loadrc/gitrc/gmup.sh 2>&1 | tee gmup.findresult'
+  exec 'vs ' . 'gmup.findresult'
   vert resize
 endfunction
 function! s:Gstp(args, ...) abort
