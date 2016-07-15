@@ -3189,7 +3189,14 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :execute s:Gsync()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
+function! s:Jformat(...) abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/bashrc/jformat.sh '
+  vert resize
+endfunction
 function! s:Gvd(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
