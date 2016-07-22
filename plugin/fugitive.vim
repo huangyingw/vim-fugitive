@@ -3196,7 +3196,7 @@ function! s:LogFilter(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
-  exec '!~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '"'  . ' "' .  arg2 . '"'   
+  exec '!~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg2 . '"'   
   vert resize
 endfunction
 function! s:Jformat(...) abort
@@ -3210,7 +3210,7 @@ function! s:Gvd(...) abort
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
   let arg2 = (a:0 >= 2) ? a:2 : ''
-  exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'   
+  exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'   
   vert resize
 endfunction
 function! s:Fr(...) abort
@@ -3218,7 +3218,7 @@ function! s:Fr(...) abort
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
   let arg2 = (a:0 >= 2) ? a:2 : ''
-  exec '!~/loadrc/bashrc/fr.sh ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'  
+  exec '!~/loadrc/bashrc/fr.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'  
   vert resize
 endfunction
 function! s:Ga(args, ...) abort
@@ -3328,7 +3328,7 @@ function! s:Gcof(...) abort
   exec "cd " . b:csdbpath
   let b:relativePath = substitute(expand('%:p'), b:csdbpath . '/', "", "g")
   let arg1 = (a:0 >= 1) ? a:1 : ''
-  exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '"'  . ' "' .  arg1 . '"'     
+  exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"'     
   exec 'vs ' . expand('%:p') . '.bak'
   vert resize
 endfunction
@@ -3407,7 +3407,7 @@ function! s:Grta(...) abort
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
   let arg2 = (a:0 >= 2) ? a:2 : ''
-  exec '!git remote add ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'    
+  exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'    
   vert resize
 endfunction
 function! s:Grsh(args, ...) abort
@@ -3493,7 +3493,7 @@ function! s:Gitk(...) abort
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
   let arg2 = (a:0 >= 2) ? a:2 : ''
-  exec '!gitk ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'    
+  exec '!gitk ' . '"' .  arg1 . '" "' .  arg2 . '"'    
   vert resize
 endfunction
 function! s:Gbrm(...) abort
@@ -3523,7 +3523,7 @@ function! s:Gcob(...) abort
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
   let arg2 = (a:0 >= 2) ? a:2 : ''
-  exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  arg1 . '"'  . ' "' .  arg2 . '"'   
+  exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'   
   vert resize
 endfunction
 function! s:Gcom(args, ...) abort
