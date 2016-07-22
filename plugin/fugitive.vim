@@ -3196,7 +3196,7 @@ function! s:LogFilter(...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   let arg1 = (a:0 >= 1) ? a:1 : ''
-  exec '!~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg2 . '"'   
+  exec '!~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg1 . '"'   
   vert resize
 endfunction
 function! s:Jformat(...) abort
