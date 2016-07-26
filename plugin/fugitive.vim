@@ -3161,12 +3161,13 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdev :execute s:Gdev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdif :execute s:Gdif(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfix :execute s:Gfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gicb :execute s:Gicb()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glf :execute s:Glf()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glg :execute s:Glg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme :execute s:Gme(<q-args>)")
@@ -3439,6 +3440,12 @@ function! s:G(args, ...) abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult' 
+  vert resize
+endfunction
+function! s:Gdev() abort
+  let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
+  exec "cd " . b:csdbpath
+  exec '!~/loadrc/gitrc/gdev.sh'
   vert resize
 endfunction
 function! s:Gdi() abort
