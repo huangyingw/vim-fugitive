@@ -3376,6 +3376,7 @@ function! s:Gbr() abort
   let b:csdbpath = <SID>Find_in_parent(".git/config",<SID>windowdir(),$HOME)
   exec "cd " . b:csdbpath
   exec '!~/loadrc/gitrc/gbr.sh'
+  exec 'vs ' . 'gbr.findresult'
   vert resize
 endfunction
 function! s:Gclean() abort
