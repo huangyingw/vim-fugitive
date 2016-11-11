@@ -3161,7 +3161,7 @@ function! s:LogFilter(...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    exec '!~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg1 . '"'   
+    exec '!~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg1 . '"'
     vert resize
 endfunction
 function! s:Jformat(...) abort
@@ -3175,7 +3175,7 @@ function! s:Gvd(...) abort
     exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'   
+    exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:Fr(...) abort
@@ -3183,13 +3183,13 @@ function! s:Fr(...) abort
     exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!~/loadrc/bashrc/fr.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'  
+    exec '!~/loadrc/bashrc/fr.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:Ga(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/ga.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/gitrc/ga.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Gst() abort
@@ -3201,11 +3201,11 @@ endfunction
 function! s:Gco(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gco.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/gitrc/gco.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Cscope(args, ...) abort
-    exec '!~/loadrc/bashrc/cscope.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/bashrc/cscope.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:BinaryGrep(...) abort
@@ -3215,7 +3215,7 @@ function! s:BinaryGrep(...) abort
     exec '!~/loadrc/bashrc/binaryGrep.sh ' . '"' .  b:keyword . '"'
     let b:keyword = substitute(b:keyword, " ", "_", "g")
     let b:keyword = substitute(b:keyword, "/", "_", "g")
-    exec 'vs ' . b:keyword . '.binaryGrep.findresult' 
+    exec 'vs ' . b:keyword . '.binaryGrep.findresult'
     vert resize
 endfunction
 function! s:Fnotinuse() abort
@@ -3234,7 +3234,7 @@ endfunction
 function! s:Gme(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gme.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/gitrc/gme.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Glf() abort
@@ -3279,13 +3279,13 @@ endfunction
 function! s:Gstp(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Gstv(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gstv.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/gitrc/gstv.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Gcof(...) abort
@@ -3293,7 +3293,7 @@ function! s:Gcof(...) abort
     exec "cd " . b:csdbpath
     let b:relativePath = substitute(expand('%:p'), b:csdbpath . '/', "", "g")
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"'     
+    exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"'
     exec 'vs ' . expand('%:p') . '.bak'
     vert resize
 endfunction
@@ -3353,6 +3353,7 @@ function! s:Gbra() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gbra.sh'
+    exec 'vs ' . 'gbra.findresult'
     vert resize
 endfunction
 function! s:Gs() abort
@@ -3373,13 +3374,13 @@ function! s:Grta(...) abort
     exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'    
+    exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:Grsh(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Gsti() abort
@@ -3404,7 +3405,7 @@ endfunction
 function! s:G(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult' 
+    exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult'
     vert resize
 endfunction
 function! s:Gdev() abort
@@ -3465,7 +3466,7 @@ function! s:Gitk(...) abort
     exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!gitk ' . '"' .  arg1 . '" "' .  arg2 . '"'    
+    exec '!gitk ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:Gbrm(...) abort
@@ -3495,7 +3496,7 @@ function! s:Gcob(...) abort
     exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'   
+    exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:Dodev() abort
@@ -3507,6 +3508,6 @@ endfunction
 function! s:Gcom(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"' 
+    exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
