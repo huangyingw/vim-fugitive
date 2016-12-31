@@ -3450,7 +3450,8 @@ endfunction
 function! s:Gtg() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!git tag -l -n1'
+    exec '!git tag -l -n1 2>&1 | tee gtg.findresult' 
+    exec 'vs ' . 'gtg.findresult'
     vert resize
 endfunction
 function! s:Gmet() abort
