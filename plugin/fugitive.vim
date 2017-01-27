@@ -3507,7 +3507,7 @@ endfunction
 function! s:Dodev() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/dockerrc/dockerdev.sh'
+    exec 'vs ' . 'docker-compose.yml'
     vert resize
 endfunction
 function! s:Gcom(args, ...) abort
