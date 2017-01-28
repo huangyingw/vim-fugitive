@@ -3517,7 +3517,7 @@ function! s:Gcom(args, ...) abort
     exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
-function! s:Tail(args, ...) abort
+function! s:Tail() abort
     exec '!tail -f ' . expand("%:p")
     vert resize
 endfunction
