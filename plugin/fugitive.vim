@@ -3161,6 +3161,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Tail :execute s:Tail()")
 function! s:LogFilter(...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
@@ -3514,5 +3515,9 @@ function! s:Gcom(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"'
+    vert resize
+endfunction
+function! s:Tail(args, ...) abort
+    exec '!tail -f ' . expand("%:p")
     vert resize
 endfunction
