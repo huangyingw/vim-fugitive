@@ -3108,6 +3108,7 @@ function s:Cd_to_parent()
     exec "cd " . b:csdbpath
 endfunc
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete BinaryGrep :execute s:BinaryGrep(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Copy :execute s:Copy(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Cscope :execute s:Cscope(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Dodev :execute s:Dodev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fcscope :execute s:Fcscope()")
@@ -3515,6 +3516,12 @@ function! s:Gcom(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"'
+    vert resize
+endfunction
+function! s:Copy(...) abort
+    let arg1 = (a:0 >= 1) ? a:1 : ''
+    exec 'w ' . arg1
+    exec 'vs ' . arg1
     vert resize
 endfunction
 function! s:Tail() abort
