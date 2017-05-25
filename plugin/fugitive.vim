@@ -195,7 +195,7 @@ function! fugitive#detect(path) abort
             nnoremap <buffer> <silent> y<C-G> :call setreg(v:register, <SID>recall())<CR>
         endif
         let buffer = fugitive#buffer()
-    if expand('%:p') =~# '://'
+        if expand('%:p') =~# '://'
             call buffer.setvar('&path', s:sub(buffer.getvar('&path'), '^\.%(,|$)', ''))
         endif
         if stridx(buffer.getvar('&tags'), escape(b:git_dir, ', ')) == -1
@@ -208,7 +208,7 @@ function! fugitive#detect(path) abort
         endif
         try
             let [save_mls, &modelines] = [&mls, 0]
-      call s:define_commands()
+            call s:define_commands()
             doautocmd User Fugitive
         finally
             let &mls = save_mls
@@ -468,8 +468,8 @@ endfun
 function! s:repo_aliases() dict abort
     if !has_key(self,'_aliases')
         let self._aliases = {}
-    for line in split(self.git_chomp('config','-z','--get-regexp','^alias[.]'),"\1")
-      let self._aliases[matchstr(line, '\.\zs.\{-}\ze\n')] = matchstr(line, '\n\zs.*')
+        for line in split(self.git_chomp('config','-z','--get-regexp','^alias[.]'),"\1")
+            let self._aliases[matchstr(line, '\.\zs.\{-}\ze\n')] = matchstr(line, '\n\zs.*')
         endfor
     endif
     return self._aliases
@@ -700,11 +700,11 @@ function! s:Git(bang, args) abort
     let args = matchstr(a:args,'\v\C.{-}%($|\\@<!%(\\\\)*\|)@=')
     if exists(':terminal')
         let dir = s:repo().tree()
-    if expand('%') != ''
-      -tabedit %
-    else
-      -tabnew
-    endif
+        if expand('%') != ''
+            -tabedit %
+        else
+            -tabnew
+        endif
         execute 'lcd' fnameescape(dir)
         execute 'terminal' git args
     else
@@ -1780,17 +1780,17 @@ function! s:Diff(vert,keepfocus,...) abort
         let nr = bufnr('')
         execute 'leftabove '.vert.'split `=fugitive#buffer().repo().translate(s:buffer().expand('':2''))`'
         execute 'nnoremap <buffer> <silent> dp :diffput '.nr.'<Bar>diffupdate<CR>'
-    let nr2 = bufnr('')
+        let nr2 = bufnr('')
         call s:diffthis()
         wincmd p
         execute 'rightbelow '.vert.'split `=fugitive#buffer().repo().translate(s:buffer().expand('':3''))`'
         execute 'nnoremap <buffer> <silent> dp :diffput '.nr.'<Bar>diffupdate<CR>'
-    let nr3 = bufnr('')
+        let nr3 = bufnr('')
         call s:diffthis()
         wincmd p
         call s:diffthis()
-    execute 'nnoremap <buffer> <silent> d2o :diffget '.nr2.'<Bar>diffupdate<CR>'
-    execute 'nnoremap <buffer> <silent> d3o :diffget '.nr3.'<Bar>diffupdate<CR>'
+        execute 'nnoremap <buffer> <silent> d2o :diffget '.nr2.'<Bar>diffupdate<CR>'
+        execute 'nnoremap <buffer> <silent> d3o :diffget '.nr3.'<Bar>diffupdate<CR>'
         return post
     elseif len(args)
         let arg = join(args, ' ')
@@ -2299,9 +2299,9 @@ function! s:Browse(bang,line1,count,...) abort
 
         if empty(remote)
             let remote = '.'
-      let raw = s:repo().git_chomp('remote','get-url','origin')
+            let raw = s:repo().git_chomp('remote','get-url','origin')
         else
-      let raw = s:repo().git_chomp('remote','get-url',remote)
+            let raw = s:repo().git_chomp('remote','get-url',remote)
         endif
         if raw ==# ''
             let raw = remote
@@ -2325,7 +2325,7 @@ function! s:Browse(bang,line1,count,...) abort
         if empty(url) && raw ==# '.'
             call s:throw("Instaweb failed to start")
         elseif empty(url)
-      call s:throw("'".remote."' is not a supported remote")
+            call s:throw("'".remote."' is not a supported remote")
         endif
 
         let url = s:gsub(url, '[ <>]', '\="%".printf("%02X",char2nr(submatch(0)))')
@@ -3145,6 +3145,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :e
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gps :execute s:Gps()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gres :execute s:Gres()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :execute s:Grta(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
@@ -3452,7 +3453,7 @@ endfunction
 function! s:Gtg() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!git tag -l -n1 2>&1 | tee gtg.findresult' 
+    exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
     exec 'vs ' . 'gtg.findresult'
     vert resize
 endfunction
@@ -3526,5 +3527,11 @@ function! s:Copy(...) abort
 endfunction
 function! s:Tail() abort
     exec '!tail -f ' . expand("%:p")
+    vert resize
+endfunction
+function! s:Gres() abort
+    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
+    exec '!~/loadrc/gitrc/gres.sh'
     vert resize
 endfunction
