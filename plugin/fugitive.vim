@@ -3184,6 +3184,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnReset :execute s:SvnReset()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Tail :execute s:Tail()")
 function! s:LogFilter(...) abort
@@ -3562,5 +3563,12 @@ function! s:Dps() abort
     exec "cd " . b:csdbpath
     exec '!~/loadrc/dockerrc/dps.sh'
     exec 'vs ' . 'dps.findresult'
+    vert resize
+endfunction
+function! s:SvnReset() abort
+    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
+    exec '!~/loadrc/svnrc/svnreset.sh'
+    exec 'vs ' . 'svnst.findresult'
     vert resize
 endfunction
