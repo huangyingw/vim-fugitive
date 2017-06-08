@@ -3186,9 +3186,9 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnDiff :execute s:SvnDiff()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnVdiff :execute s:SvnVdiff()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnReset :execute s:SvnReset()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnSt :execute s:SvnSt()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnVdiff :execute s:SvnVdiff()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Tail :execute s:Tail()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
 function! s:LogFilter(...) abort
