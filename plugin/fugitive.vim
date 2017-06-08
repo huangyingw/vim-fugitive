@@ -3185,10 +3185,12 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnDiff :execute s:SvnDiff()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnVdiff :execute s:SvnVdiff()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnReset :execute s:SvnReset()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnSt :execute s:SvnSt()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Tail :execute s:Tail()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS()")
 function! s:LogFilter(...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
@@ -3579,5 +3581,18 @@ function! s:SvnSt() abort
     exec "cd " . b:csdbpath
     exec '!~/loadrc/svnrc/svnst.sh'
     exec 'vs ' . 'svnst.findresult'
+    vert resize
+endfunction
+function! s:SvnDiff() abort
+    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
+    exec '!~/loadrc/svnrc/svndiff.sh'
+    exec 'vs ' . 'svndiff.findresult'
+    vert resize
+endfunction
+function! s:SvnVdiff() abort
+    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
+    exec '!~/loadrc/svnrc/svnvdiff.sh'
     vert resize
 endfunction
