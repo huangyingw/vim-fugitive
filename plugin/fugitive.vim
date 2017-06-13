@@ -3153,6 +3153,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcp :execute s:Gcp(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdev :execute s:Gdev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdif :execute s:Gdif(<f-args>)")
@@ -3236,6 +3237,12 @@ function! s:Gco(args, ...) abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gco.sh ' . '"' .  a:args . '"'
+    vert resize
+endfunction
+function! s:Gcp(args, ...) abort
+    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
+    exec '!git cherry-pick ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Cscope(args, ...) abort
