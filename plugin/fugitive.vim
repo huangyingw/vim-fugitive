@@ -3163,7 +3163,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gicb :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glf :execute s:Glf()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glg :execute s:Glg()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme :execute s:Gme(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :execute s:Gmfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
@@ -3270,12 +3269,6 @@ function! s:Fcscope() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/bashrc/fcscope.sh'
-    vert resize
-endfunction
-function! s:Gme(args, ...) abort
-    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gme.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Glf() abort
