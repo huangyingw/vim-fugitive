@@ -1166,10 +1166,7 @@ function! s:FinishCommit() abort
     return ''
 endfunction
 
-" Section: Gmerge, Gpull
-
-call s:command("-nargs=? -bang -complete=custom,s:RevisionComplete Gmerge " .
-            \ "execute s:Merge('merge', <bang>0, <q-args>)")
+" Section: Gpull
 call s:command("-nargs=? -bang -complete=custom,s:RemoteComplete Gpull " .
             \ "execute s:Merge('pull --progress', <bang>0, <q-args>)")
 
