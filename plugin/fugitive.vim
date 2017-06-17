@@ -758,14 +758,12 @@ function! s:GitComplete(A, L, P) abort
     endif
 endfunction
 
-" Section: Gcd, Glcd
-
+" Section: Glcd
 function! s:DirComplete(A,L,P) abort
     let matches = s:repo().dirglob(a:A)
     return matches
 endfunction
 
-call s:command("-bar -bang -nargs=? -complete=customlist,s:DirComplete Gcd  :exe 'cd<bang>'  s:fnameescape(s:repo().bare() ? s:repo().dir(<q-args>) : s:repo().tree(<q-args>))")
 call s:command("-bar -bang -nargs=? -complete=customlist,s:DirComplete Glcd :exe 'lcd<bang>' s:fnameescape(s:repo().bare() ? s:repo().dir(<q-args>) : s:repo().tree(<q-args>))")
 
 " Section: Gstatus
@@ -1059,10 +1057,6 @@ function! s:StagePatch(lnum1,lnum2) abort
     endtry
     return 'checktime'
 endfunction
-
-" Section: Gcommit
-
-call s:command("-nargs=? -complete=customlist,s:CommitComplete Gcommit :execute s:Commit(<q-args>)")
 
 function! s:Commit(args, ...) abort
     let repo = a:0 ? a:1 : s:repo()
@@ -3146,10 +3140,8 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrd :execute s:Gbrd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrm :execute s:Gbrm(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :execute s:Gclean()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcpc :execute s:Gcpc()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdev :execute s:Gdev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
@@ -3227,12 +3219,6 @@ function! s:Gst() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gst.sh'
-    vert resize
-endfunction
-function! s:Gco(args, ...) abort
-    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gco.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Gcpc() abort
@@ -3535,12 +3521,6 @@ function! s:Dodev() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec 'vs ' . 'docker-compose.yml'
-    vert resize
-endfunction
-function! s:Gcom(args, ...) abort
-    let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Copy(...) abort
