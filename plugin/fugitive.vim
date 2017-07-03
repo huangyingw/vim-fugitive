@@ -3158,7 +3158,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gps :execute s:Gps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gres :execute s:Gres()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :execute s:Grta(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtv :execute s:Grtv()")
@@ -3394,10 +3394,11 @@ function! s:Grta(...) abort
     exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
-function! s:Grsh(args, ...) abort
+function! s:Grsh() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
-    exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
+    exec '!~/loadrc/gitrc/grsh.sh'
+    exec 'vs ' . 'grsh.findresult'
     vert resize
 endfunction
 function! s:Gsti() abort
