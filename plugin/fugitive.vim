@@ -3558,7 +3558,7 @@ function! s:SvnReset() abort
     let b:csdbpath = Find_in_parent(".git/config",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/svnrc/svnreset.sh'
-    exec 'vs ' . 'svnst.findresult'
+    exec 'vs ' . 'svnreset.findresult'
     vert resize
 endfunction
 function! s:SvnSt() abort
