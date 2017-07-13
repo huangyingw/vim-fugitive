@@ -8,3 +8,5 @@
     remote = BareReps
     remote = origin
     remote = github
+[gsync]
+    branch = tpope master
