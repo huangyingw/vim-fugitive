@@ -3234,7 +3234,7 @@ function! s:Cscope(args, ...) abort
     vert resize
 endfunction
 function! s:BinaryGrep(...) abort
-    let b:csdbpath = Find_in_parent("cscope.out",Windowdir(),$HOME)
+    let b:csdbpath = Find_in_parent("files.proj",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     let b:keyword = (a:0 >= 1) ? a:1 : ''
     exec '!~/loadrc/bashrc/binaryGrep.sh ' . '"' .  b:keyword . '"'
@@ -3244,7 +3244,7 @@ function! s:BinaryGrep(...) abort
     vert resize
 endfunction
 function! s:Fnotinuse() abort
-    let b:csdbpath = Find_in_parent("cscope.out",Windowdir(),$HOME)
+    let b:csdbpath = Find_in_parent("files.proj",Windowdir(),$HOME)
     exec "cd " . b:csdbpath
     exec '!~/loadrc/bashrc/fnotinuse.sh'
     exec 'vs ' . 'fnotinuse.findresult'
