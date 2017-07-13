@@ -9,4 +9,5 @@
     remote = origin
     remote = github
 [gsync]
-    branch = tpope master
+    remote = tpope
+    branch = master
