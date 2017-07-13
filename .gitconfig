@@ -1,3 +1,10 @@
-[remote "default"]
-    url = https://github.com/tpope/vim-fugitive.git
-    fetch = +refs/heads/*:refs/remotes/default/*
+[remote "bitbucket"]
+    url = git@bitbucket.org:huangyingw/vim-fugitive.git
+    fetch = +refs/heads/*:refs/remotes/bitbucket/*
+[remote "github"]
+    url = git@github.com:huangyingw/vim-fugitive.git
+    fetch = +refs/heads/*:refs/remotes/github/*
+[push]
+    remote = bitbucket
+    remote = BareReps
+    remote = github
