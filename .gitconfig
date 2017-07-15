@@ -1,12 +1,12 @@
-[remote "huangyingw"]
+[remote "github"]
     url = git@github.com:huangyingw/vim-fugitive.git
-    fetch = +refs/heads/*:refs/remotes/huangyingw/*
+    fetch = +refs/heads/*:refs/remotes/github/*
 [remote "tpope"]
     url = git@github.com:tpope/vim-fugitive.git
     fetch = +refs/heads/*:refs/remotes/tpope/*
 [push]
     remote = origin
-    remote = huangyingw
+    remote = github
 [gsync]
     remote = tpope
     branch = master
