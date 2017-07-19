@@ -3360,8 +3360,6 @@ function! s:Gbr() abort
     vert resize
 endfunction
 function! s:Gclean() abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gclean.sh'
     vert resize
 endfunction
