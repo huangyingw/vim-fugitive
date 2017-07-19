@@ -3399,8 +3399,6 @@ function! s:Grta(...) abort
     vert resize
 endfunction
 function! s:Grsh(args, ...) abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
