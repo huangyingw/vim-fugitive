@@ -3196,8 +3196,6 @@ function! s:Jformat(...) abort
     vert resize
 endfunction
 function! s:Gvd(...) abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
@@ -3426,8 +3424,6 @@ function! s:Gstlv() abort
     vert resize
 endfunction
 function! s:G(args, ...) abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult'
     vert resize
 endfunction
