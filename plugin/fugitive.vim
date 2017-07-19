@@ -3269,8 +3269,6 @@ function! s:Glg() abort
     vert resize
 endfunction
 function! s:Gps() abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gps.sh'
     vert resize
 endfunction
@@ -3294,8 +3292,6 @@ function! s:Gmup() abort
     vert resize
 endfunction
 function! s:Gstp(args, ...) abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
@@ -3315,8 +3311,6 @@ function! s:Gcof(...) abort
     vert resize
 endfunction
 function! s:Gpl() abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gpl.sh'
     vert resize
 endfunction
