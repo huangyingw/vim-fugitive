@@ -3306,7 +3306,7 @@ endfunction
 function! s:Gcof(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    let b:relativePath = substitute(expand('%:p'), b:csdbpath . '/', "", "g")
+    let b:relativePath = substitute(expand('%:p'), worktree . '/', "", "g")
     let arg1 = (a:0 >= 1) ? a:1 : ''
     exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"'
     exec 'vs ' . expand('%:p') . '.bak'
