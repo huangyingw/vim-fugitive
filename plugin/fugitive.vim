@@ -3196,6 +3196,8 @@ function! s:Jformat(...) abort
     vert resize
 endfunction
 function! s:Gvd(...) abort
+    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
@@ -3269,6 +3271,8 @@ function! s:Glg() abort
     vert resize
 endfunction
 function! s:Gps() abort
+    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gps.sh'
     vert resize
 endfunction
@@ -3292,6 +3296,8 @@ function! s:Gmup() abort
     vert resize
 endfunction
 function! s:Gstp(args, ...) abort
+    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
@@ -3311,6 +3317,8 @@ function! s:Gcof(...) abort
     vert resize
 endfunction
 function! s:Gpl() abort
+    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gpl.sh'
     vert resize
 endfunction
@@ -3354,6 +3362,8 @@ function! s:Gbr() abort
     vert resize
 endfunction
 function! s:Gclean() abort
+    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/gclean.sh'
     vert resize
 endfunction
@@ -3391,6 +3401,8 @@ function! s:Grta(...) abort
     vert resize
 endfunction
 function! s:Grsh(args, ...) abort
+    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
@@ -3414,6 +3426,8 @@ function! s:Gstlv() abort
     vert resize
 endfunction
 function! s:G(args, ...) abort
+    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
+    exec "cd " . b:csdbpath
     exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult'
     vert resize
 endfunction
