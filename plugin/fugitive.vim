@@ -3375,14 +3375,8 @@ function! s:Gbra() abort
     vert resize
 endfunction
 function! s:Gs() abort
-    let b:csdbpath = Find_in_parent(".git",Windowdir(),$HOME)
-    exec "cd " . b:csdbpath
-    if filereadable(".git")
-        let gitdir = substitute(system("cat .git|awk \'{print $2}\'" ), '\n', '', '')
-        exec 'vs ' . gitdir . '/index'
-    else
-        exec 'vs ' . '.git/index'
-    endif
+    let indexFile = substitute(system("~/loadrc/gitrc/get_index.sh " . expand('%:p')), '\n', '', '')
+    exec 'vs ' . indexFile
     vert resize
 endfunction
 function! s:Gsync() abort
