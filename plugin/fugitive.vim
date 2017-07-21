@@ -3563,6 +3563,8 @@ function! s:SvnReset() abort
     vert resize
 endfunction
 function! s:SvnSt() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
     exec '!~/loadrc/svnrc/svnst.sh'
     exec 'vs ' . 'svnst.findresult'
     vert resize
