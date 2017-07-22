@@ -3371,8 +3371,8 @@ function! s:Gbra() abort
     vert resize
 endfunction
 function! s:Gs() abort
-    let indexFile = substitute(system("~/loadrc/gitrc/get_index.sh " . expand('%:p')), '\n', '', '')
-    exec 'vs ' . indexFile
+    let indexFolder = substitute(system("~/loadrc/gitrc/get_index.sh " . expand('%:p')), '\n', '', '')
+    exec 'vs ' . indexFolder . '/index'
     vert resize
 endfunction
 function! s:Gsync() abort
