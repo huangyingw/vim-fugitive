@@ -3118,7 +3118,6 @@ augroup END
 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete BinaryGrep :execute s:BinaryGrep(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Copy :execute s:Copy(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Cscope :execute s:Cscope(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Dodev :execute s:Dodev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Dps :execute s:Dps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fcscope :execute s:Fcscope()")
@@ -3223,10 +3222,6 @@ function! s:Gcpc() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!git cherry-pick --continue'
-    vert resize
-endfunction
-function! s:Cscope(args, ...) abort
-    exec '!~/loadrc/bashrc/cscope.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:BinaryGrep(...) abort
