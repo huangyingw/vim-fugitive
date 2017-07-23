@@ -3420,7 +3420,6 @@ function! s:G(args, ...) abort
     exec "cd " . worktree
     exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult'
     exec 'vs ' . 'g.findresult'
-    vert resize
 endfunction
 function! s:Gdev() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
