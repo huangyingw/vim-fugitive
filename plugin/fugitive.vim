@@ -3568,16 +3568,17 @@ function! s:SvnSt() abort
     exec 'vs ' . 'svnst.findresult'
     vert resize
 endfunction
+function! s:SvnVdiff() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    exec '!~/loadrc/svnrc/svnvdiff.sh'
+    exec 'vs ' . 'svnvdiff.findresult'
+    vert resize
+endfunction
 function! s:SvnDiff() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!~/loadrc/svnrc/svndiff.sh'
     exec 'vs ' . 'svndiff.findresult'
-    vert resize
-endfunction
-function! s:SvnVdiff() abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    exec '!~/loadrc/svnrc/svnvdiff.sh'
     vert resize
 endfunction
