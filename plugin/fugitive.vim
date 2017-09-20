@@ -3148,6 +3148,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gicb :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glf :execute s:Glf()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glg :execute s:Glg()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme2 :execute s:Gme2()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :execute s:Gmfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
@@ -3460,6 +3461,12 @@ function! s:Gtg() abort
     exec "cd " . worktree
     exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
     exec 'vs ' . 'gtg.findresult'
+    vert resize
+endfunction
+function! s:Gme2(args, ...) abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    exec '!~/loadrc/gitrc/gme2.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Gmet() abort
