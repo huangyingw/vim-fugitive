@@ -3138,7 +3138,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcp :execute s:Gcp(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdev :execute s:Gdev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdif :execute s:Gdif(<f-args>)")
@@ -3221,14 +3220,6 @@ function! s:Gst() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!~/loadrc/gitrc/gst.sh'
-    vert resize
-endfunction
-function! s:Gcp(...) abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    let arg1 = (a:0 >= 1) ? a:1 : ''
-    let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!~/loadrc/gitrc/gcp.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:BinaryGrep(...) abort
