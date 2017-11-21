@@ -1986,7 +1986,7 @@ function! s:Blame(bang,line1,line2,count,args) abort
             let cmd += ['--contents', '-']
         endif
         let cmd += ['--', s:buffer().path()]
-	let basecmd = escape(call(s:repo().git_command,cmd,s:repo()),'!%#')
+        let basecmd = escape(call(s:repo().git_command,cmd,s:repo()),'!%#')
         try
             let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
             if !s:repo().bare()
@@ -3535,9 +3535,10 @@ function! s:Gcom(args, ...) abort
 endfunction
 function! s:Copy(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    exec '!rm ' . arg1
-    exec 'w ' . arg1
-    exec 'vs ' . arg1
+    let newFile = expand('%:p:h') . '/' . arg1
+    exec '!rm ' . newFile
+    exec 'w ' . newFile
+    exec 'vs ' . newFile
     vert resize
 endfunction
 function! s:Tail() abort
