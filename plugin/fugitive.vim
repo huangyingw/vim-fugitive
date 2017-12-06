@@ -661,9 +661,9 @@ function! s:buffer_expand(rev) dict abort
     else
         let file = a:rev
     endif
-  return s:sub(substitute(file,
-        \ '%$\|\\\([[:punct:]]\)','\=len(submatch(1)) ? submatch(1) : self.path()','g'),
-        \ '\.\@<=/$','')
+    return s:sub(substitute(file,
+                \ '%$\|\\\([[:punct:]]\)','\=len(submatch(1)) ? submatch(1) : self.path()','g'),
+                \ '\.\@<=/$','')
 endfunction
 
 function! s:buffer_containing_commit() dict abort
@@ -3162,6 +3162,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtv :execute s:Grtv()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gs :execute s:Gs()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsave :execute s:Gsave()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gst :execute s:Gst()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsti :execute s:Gsti()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstl :execute s:Gstl()")
@@ -3217,6 +3218,12 @@ function! s:Ga(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!~/loadrc/gitrc/ga.sh ' . '"' .  a:args . '"'
+    vert resize
+endfunction
+function! s:Gsave() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    exec '!~/loadrc/gitrc/gsave.sh'
     vert resize
 endfunction
 function! s:Gst() abort
