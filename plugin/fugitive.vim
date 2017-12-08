@@ -3597,7 +3597,6 @@ endfunction
 function! s:SvnDiff() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!~/loadrc/svnrc/svndiff.sh'
-    exec 'vs ' . 'svndiff.findresult'
+    exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"' 
     vert resize
 endfunction
