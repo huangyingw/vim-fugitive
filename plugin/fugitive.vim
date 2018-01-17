@@ -3139,6 +3139,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbra :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrd :execute s:Gbrd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbrm :execute s:Gbrm(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gclean :execute s:Gclean()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gco :execute s:Gco(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcob :execute s:Gcob(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcof :execute s:Gcof(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcom :execute s:Gcom(<q-args>)")
@@ -3523,6 +3524,13 @@ function! s:Gdif(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
     exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  arg1 . '"'
     exec 'vs ' . 'gdif.findresult'
+    vert resize
+endfunction
+function! s:Gco(...) abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    let arg1 = (a:0 >= 1) ? a:1 : ''
+    exec '!~/loadrc/gitrc/gco.sh ' . '"' .  arg1 . '"'
     vert resize
 endfunction
 function! s:Gcob(...) abort
