@@ -2741,8 +2741,8 @@ function! s:BufReadObject() abort
         endtry
 
         return ''
-  catch /^fugitive: rev-parse/
-    return ''
+    catch /^fugitive: rev-parse/
+        return ''
     catch /^fugitive:/
         return 'echoerr v:errmsg'
     endtry
@@ -3586,7 +3586,7 @@ endfunction
 function! s:SvnRevert() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!~/loadrc/svnrc/svnrevert.sh ' . '"' .  expand('%:p') . '"'  
+    exec '!~/loadrc/svnrc/svnrevert.sh ' . '"' .  expand('%:p') . '"'
 endfunction
 function! s:SvnSt() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3605,5 +3605,5 @@ endfunction
 function! s:SvnDiff() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"' 
+    exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"'
 endfunction
