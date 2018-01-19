@@ -3147,15 +3147,12 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gcp :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdev :execute s:Gdev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdi :execute s:Gdi()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gdif :execute s:Gdif(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfix :execute s:Gfix()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gfvd :execute s:Gfvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gicb :execute s:Gicb()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glf :execute s:Glf()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glg :execute s:Glg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme2 :execute s:Gme2(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmfix :execute s:Gmfix()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gps :execute s:Gps()")
@@ -3285,18 +3282,6 @@ function! s:Gps() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!~/loadrc/gitrc/gps.sh'
-    vert resize
-endfunction
-function! s:Gmfix() abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    exec '!~/loadrc/gitrc/gmfix.sh'
-    vert resize
-endfunction
-function! s:Gfvd() abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    exec '!~/loadrc/gitrc/gfvd.sh'
     vert resize
 endfunction
 function! s:Gmup() abort
@@ -3447,12 +3432,6 @@ function! s:Gdi() abort
     exec "cd " . worktree
     exec '!~/loadrc/gitrc/gdi.sh'
     exec 'vs ' . 'gdi.findresult'
-    vert resize
-endfunction
-function! s:Gfix() abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    exec '!~/loadrc/gitrc/gfix.sh'
     vert resize
 endfunction
 function! s:Grtv() abort
