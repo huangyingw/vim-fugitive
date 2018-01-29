@@ -3157,6 +3157,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gps :execute s:Gps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gres :execute s:Gres()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Greview :execute s:Greview()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grsh :execute s:Grsh(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grta :execute s:Grta(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Grtu :execute s:Grtu()")
@@ -3542,6 +3543,12 @@ function! s:Copy(...) abort
 endfunction
 function! s:Tail() abort
     exec '!tail -f ' . expand("%:p")
+    vert resize
+endfunction
+function! s:Greview() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    exec '!~/loadrc/gitrc/greview.sh'
     vert resize
 endfunction
 function! s:Gres() abort
