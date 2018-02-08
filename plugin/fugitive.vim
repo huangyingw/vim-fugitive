@@ -3172,7 +3172,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstp :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gstv :execute s:Gstv(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :execute s:Gsync()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnDiff :execute s:SvnDiff()")
@@ -3196,16 +3196,10 @@ function! s:Jformat(...) abort
     exec '!~/loadrc/bashrc/jformat.sh '
     vert resize
 endfunction
-function! s:Gvd(...) abort
+function! s:Gvd() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    if a:0 == 0 && expand('%:t') != 'index'
-        exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  expand('%:p') . '"'
-    else
-        let arg1 = (a:0 >= 1) ? a:1 : ''
-        let arg2 = (a:0 >= 2) ? a:2 : ''
-        exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
-    endif
+    exec '!~/loadrc/gitrc/gvd.sh'
     vert resize
 endfunction
 function! s:Fr(...) abort
