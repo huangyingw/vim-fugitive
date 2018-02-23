@@ -3595,8 +3595,9 @@ function! s:SvnApply() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!~/loadrc/svnrc/svnapply.sh'
-    function! s:SvnDiff() abort
-        let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-        exec "cd " . worktree
-        exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"'
-    endfunction
+endfunction
+function! s:SvnDiff() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"'
+endfunction
