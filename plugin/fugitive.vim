@@ -3175,6 +3175,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnApply :execute s:SvnApply()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnDiff :execute s:SvnDiff()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnReset :execute s:SvnReset()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnRevert :execute s:SvnRevert()")
@@ -3590,8 +3591,12 @@ function! s:SvnVdiff() abort
     exec 'vs ' . 'svnvdiff.findresult'
     vert resize
 endfunction
-function! s:SvnDiff() abort
+function! s:SvnApply() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"'
-endfunction
+    exec '!~/loadrc/svnrc/svnapply.sh'
+    function! s:SvnDiff() abort
+        let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+        exec "cd " . worktree
+        exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"'
+    endfunction
