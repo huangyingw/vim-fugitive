@@ -3131,6 +3131,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Fsync :e
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete G :execute s:G(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Ga :execute s:Ga(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbib :execute s:Gbib()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbidebug :execute s:Gbidebug()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbig :execute s:Gbig()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbil :execute s:Gbil()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gbis :execute s:Gbis()")
@@ -3325,6 +3326,12 @@ function! s:Gbis() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!~/loadrc/gitrc/gbis.sh'
+    vert resize
+endfunction
+function! s:Gbidebug() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    exec '!~/loadrc/gitrc/gbidebug.sh'
     vert resize
 endfunction
 function! s:Gbib() abort
