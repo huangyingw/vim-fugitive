@@ -3152,9 +3152,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gicb :ex
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glf :execute s:Glf()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Glg :execute s:Glg()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gme2 :execute s:Gme2(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmet :execute s:Gmet()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gmup :execute s:Gmup()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gps :execute s:Gps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gres :execute s:Gres()")
@@ -3279,13 +3277,6 @@ function! s:Gps() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     exec '!~/loadrc/gitrc/gps.sh'
-    vert resize
-endfunction
-function! s:Gmup() abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    exec '!~/loadrc/gitrc/gmup.sh 2>&1 | tee gmup.findresult'
-    exec 'vs ' . 'gmup.findresult'
     vert resize
 endfunction
 function! s:Gstp(args, ...) abort
@@ -3458,12 +3449,6 @@ function! s:Gtg() abort
     exec "cd " . worktree
     exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
     exec 'vs ' . 'gtg.findresult'
-    vert resize
-endfunction
-function! s:Gme2(args, ...) abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    exec '!~/loadrc/gitrc/gme2.sh ' . '"' .  a:args . '"'
     vert resize
 endfunction
 function! s:Gmet() abort
