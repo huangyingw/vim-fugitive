@@ -3312,7 +3312,7 @@ endfunction
 function! s:Glf() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!git ls-files | tee glf.findresult'
+    silent exec '!git ls-files | tee glf.findresult'
     exec 'vs ' . 'glf.findresult'
     vert resize
 endfunction
@@ -3431,7 +3431,7 @@ function! s:Grta(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'
+    silent exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:Grsh(args, ...) abort
@@ -3487,7 +3487,7 @@ endfunction
 function! s:Grtu() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!git remote update'
+    silent exec '!git remote update'
     vert resize
 endfunction
 function! s:VS() abort
@@ -3497,14 +3497,14 @@ endfunction
 function! s:Gtg() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
+    silent exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
     exec 'vs ' . 'gtg.findresult'
     vert resize
 endfunction
 function! s:Gmet() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!git mergetool'
+    silent exec '!git mergetool'
     vert resize
 endfunction
 function! s:Gicb() abort
@@ -3518,7 +3518,7 @@ function! s:Gitk(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    exec '!gitk ' . '"' .  arg1 . '" "' .  arg2 . '"'
+    silent exec '!gitk ' . '"' .  arg1 . '" "' .  arg2 . '"'
     vert resize
 endfunction
 function! s:Gbrm(...) abort
