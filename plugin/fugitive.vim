@@ -3353,7 +3353,8 @@ endfunction
 function! s:Gpl() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!~/loadrc/gitrc/gpl.sh'
+    silent exec '!~/loadrc/gitrc/gpl.sh 2>&1 | tee gpl.findresult'
+    exec 'vs ' . 'gpl.findresult'
     vert resize
 endfunction
 function! s:Fsync() abort
