@@ -3461,13 +3461,9 @@ function! s:Gstlv() abort
 endfunction
 function! s:G(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    let silent = substitute(system('git config vrun.silent'), '\n', '', '')
     exec "cd " . worktree
-    if silent ==? "false"
-        exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult'
-    else
-        silent exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult'
-    endif
+    silent exec '!~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult'
+    exec 'vs ' . 'g.findresult'
     vert resize
 endfunction
 function! s:Gdev() abort
