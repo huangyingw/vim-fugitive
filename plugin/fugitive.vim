@@ -3326,7 +3326,8 @@ endfunction
 function! s:Gps() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    exec '!~/loadrc/gitrc/gps.sh'
+    silent exec '!~/loadrc/gitrc/gps.sh 2>&1 | tee gps.findresult'
+    exec 'vs ' . 'gps.findresult'
     vert resize
 endfunction
 function! s:Gstp(args, ...) abort
