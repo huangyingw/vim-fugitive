@@ -3634,7 +3634,6 @@ function! s:SvnVdiff() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnvdiff.sh'
-    exec 'vs ' . 'svnvdiff.findresult'
     vert resize
 endfunction
 function! s:SvnApply() abort
