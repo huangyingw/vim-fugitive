@@ -113,7 +113,7 @@ function! s:map(mode, lhs, rhs, ...) abort
     let head = a:lhs
     let tail = ''
     let keys = get(g:, a:mode.'remap', {})
-    if type(keys) != type({})
+  if type(keys) == type([])
         return
     endif
     while !empty(head)
@@ -158,6 +158,10 @@ function! fugitive#is_git_dir(path) abort
     return getfsize(path.'HEAD') > 10 && (
                 \ isdirectory(path.'objects') && isdirectory(path.'refs') ||
                 \ getftype(path.'commondir') ==# 'file')
+endfunction
+
+function! FugitiveIsGitDir(path) abort
+  return fugitive#is_git_dir(a:path)
 endfunction
 
 function! fugitive#extract_git_dir(path) abort
@@ -213,6 +217,10 @@ function! fugitive#extract_git_dir(path) abort
     return ''
 endfunction
 
+function! FugitiveExtractGitDir(path) abort
+  return fugitive#extract_git_dir(a:path)
+endfunction
+
 function! fugitive#detect(path) abort
     if exists('b:git_dir') && (b:git_dir ==# '' || b:git_dir =~# '/$')
         unlet b:git_dir
@@ -261,6 +269,10 @@ function! fugitive#detect(path) abort
     endif
 endfunction
 
+function! FugitiveDetect(path) abort
+  return fugitive#detect(a:path)
+endfunction
+
 augroup fugitive
     autocmd!
     autocmd BufNewFile,BufReadPost * call fugitive#detect(expand('%:p'))
@@ -294,6 +306,10 @@ endfunction
 
 function! fugitive#repo(...) abort
     return call('s:repo', a:000)
+endfunction
+
+function! fugitive#Repo(...) abort
+  return call('s:repo', a:000)
 endfunction
 
 function! s:repo_dir(...) dict abort
@@ -553,6 +569,10 @@ endfunction
 
 function! fugitive#buffer(...) abort
     return s:buffer(a:0 ? a:1 : '%')
+endfunction
+
+function! fugitive#Buffer(...) abort
+  return s:buffer(a:0 ? a:1 : '%')
 endfunction
 
 function! s:buffer_getvar(var) dict abort
@@ -846,6 +866,10 @@ function! fugitive#reload_status() abort
     finally
         unlet! s:reloading_status
     endtry
+endfunction
+
+function! fugitive#ReloadStatus() abort
+  return fugitive#reload_status()
 endfunction
 
 function! s:stage_info(lnum) abort
@@ -2604,7 +2628,7 @@ function! s:BufReadIndex() abort
         xnoremap <buffer> <silent> - :<C-U>silent execute <SID>StageToggle(line("'<"),line("'>"))<CR>
         nnoremap <buffer> <silent> a :<C-U>let b:fugitive_display_format += 1<Bar>exe <SID>BufReadIndex()<CR>
         nnoremap <buffer> <silent> i :<C-U>let b:fugitive_display_format -= 1<Bar>exe <SID>BufReadIndex()<CR>
-        nnoremap <buffer> <silent> C :<C-U>echoerr 'Use cc instead'<CR>
+    nnoremap <buffer> <silent> C :<C-U>Gcommit<CR>:echohl WarningMsg<Bar>echo ':Gstatus C is deprecated in favor of cc'<Bar>echohl NONE<CR>
         nnoremap <buffer> <silent> cA :<C-U>Gcommit --amend --reuse-message=HEAD<CR>
         nnoremap <buffer> <silent> ca :<C-U>Gcommit --amend<CR>
         nnoremap <buffer> <silent> cc :<C-U>Gcommit<CR>
@@ -3072,6 +3096,10 @@ function! fugitive#cfile() abort
     return pre . s:fnameescape(fugitive#repo().translate(results[0]))
 endfunction
 
+function! fugitive#Cfile() abort
+  return fugitive#cfile()
+endfunction
+
 " Section: Statusline
 
 function! s:repo_head_ref() dict abort
@@ -3099,12 +3127,24 @@ function! fugitive#statusline(...) abort
     endif
 endfunction
 
+function! fugitive#Statusline(...) abort
+  return fugitive#statusline()
+endfunction
+
+function! FugitiveStatusline(...) abort
+  return fugitive#statusline()
+endfunction
+
 function! fugitive#head(...) abort
     if !exists('b:git_dir')
         return ''
     endif
 
     return s:repo().head(a:0 ? a:1 : 0)
+endfunction
+
+function! FugitiveHead(...) abort
+  return fugitive#head(a:0 ? a:1 : 0)
 endfunction
 
 augroup fugitive_statusline
@@ -3157,11 +3197,15 @@ function! fugitive#foldtext() abort
     return foldtext()
 endfunction
 
+function! fugitive#Foldtext() abort
+  return fugitive#foldtext()
+endfunction
+
 augroup fugitive_foldtext
     autocmd!
     autocmd User Fugitive
                 \ if &filetype =~# '^git\%(commit\)\=$' && &foldtext ==# 'foldtext()' |
-                \    set foldtext=fugitive#foldtext() |
+        \    set foldtext=fugitive#Foldtext() |
                 \ endif
 augroup END
 
