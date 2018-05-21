@@ -308,10 +308,6 @@ function! fugitive#repo(...) abort
     return call('s:repo', a:000)
 endfunction
 
-function! fugitive#Repo(...) abort
-  return call('s:repo', a:000)
-endfunction
-
 function! s:repo_dir(...) dict abort
     return join([self.git_dir]+a:000,'/')
 endfunction
@@ -569,10 +565,6 @@ endfunction
 
 function! fugitive#buffer(...) abort
     return s:buffer(a:0 ? a:1 : '%')
-endfunction
-
-function! fugitive#Buffer(...) abort
-  return s:buffer(a:0 ? a:1 : '%')
 endfunction
 
 function! s:buffer_getvar(var) dict abort
@@ -2629,7 +2621,7 @@ function! s:BufReadIndex() abort
         nnoremap <buffer> <silent> a :<C-U>let b:fugitive_display_format += 1<Bar>exe <SID>BufReadIndex()<CR>
         nnoremap <buffer> <silent> i :<C-U>let b:fugitive_display_format -= 1<Bar>exe <SID>BufReadIndex()<CR>
     nnoremap <buffer> <silent> C :<C-U>Gcommit<CR>:echohl WarningMsg<Bar>echo ':Gstatus C is deprecated in favor of cc'<Bar>echohl NONE<CR>
-        nnoremap <buffer> <silent> cA :<C-U>Gcommit --amend --reuse-message=HEAD<CR>
+    nnoremap <buffer> <silent> cA :<C-U>Gcommit --amend --reuse-message=HEAD<CR>:echohl WarningMsg<Bar>echo ':Gstatus cA is deprecated in favor of ce'<CR>
         nnoremap <buffer> <silent> ca :<C-U>Gcommit --amend<CR>
         nnoremap <buffer> <silent> cc :<C-U>Gcommit<CR>
         nnoremap <buffer> <silent> ce :<C-U>Gcommit --amend --no-edit<CR>
