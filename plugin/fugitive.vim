@@ -113,7 +113,7 @@ function! s:map(mode, lhs, rhs, ...) abort
     let head = a:lhs
     let tail = ''
     let keys = get(g:, a:mode.'remap', {})
-  if type(keys) == type([])
+    if type(keys) == type([])
         return
     endif
     while !empty(head)
@@ -161,7 +161,7 @@ function! fugitive#is_git_dir(path) abort
 endfunction
 
 function! FugitiveIsGitDir(path) abort
-  return fugitive#is_git_dir(a:path)
+    return fugitive#is_git_dir(a:path)
 endfunction
 
 function! fugitive#extract_git_dir(path) abort
@@ -218,7 +218,7 @@ function! fugitive#extract_git_dir(path) abort
 endfunction
 
 function! FugitiveExtractGitDir(path) abort
-  return fugitive#extract_git_dir(a:path)
+    return fugitive#extract_git_dir(a:path)
 endfunction
 
 function! fugitive#detect(path) abort
@@ -270,7 +270,7 @@ function! fugitive#detect(path) abort
 endfunction
 
 function! FugitiveDetect(path) abort
-  return fugitive#detect(a:path)
+    return fugitive#detect(a:path)
 endfunction
 
 augroup fugitive
@@ -861,7 +861,7 @@ function! fugitive#reload_status() abort
 endfunction
 
 function! fugitive#ReloadStatus() abort
-  return fugitive#reload_status()
+    return fugitive#reload_status()
 endfunction
 
 function! s:stage_info(lnum) abort
@@ -2553,10 +2553,10 @@ function! s:ReplaceCmd(cmd,...) abort
             let $GIT_INDEX_FILE = old_index
         endif
     endtry
-  silent exe 'doau BufReadPre '.s:fnameescape(fn)
+    silent exe 'doau BufReadPre '.s:fnameescape(fn)
     silent exe 'keepalt file '.tmp
     try
-    silent noautocmd edit!
+        silent noautocmd edit!
     finally
         try
             silent exe 'keepalt file '.s:fnameescape(fn)
@@ -2621,8 +2621,8 @@ function! s:BufReadIndex() abort
         xnoremap <buffer> <silent> - :<C-U>silent execute <SID>StageToggle(line("'<"),line("'>"))<CR>
         nnoremap <buffer> <silent> a :<C-U>let b:fugitive_display_format += 1<Bar>exe <SID>BufReadIndex()<CR>
         nnoremap <buffer> <silent> i :<C-U>let b:fugitive_display_format -= 1<Bar>exe <SID>BufReadIndex()<CR>
-    nnoremap <buffer> <silent> C :<C-U>Gcommit<CR>:echohl WarningMsg<Bar>echo ':Gstatus C is deprecated in favor of cc'<Bar>echohl NONE<CR>
-    nnoremap <buffer> <silent> cA :<C-U>Gcommit --amend --reuse-message=HEAD<CR>:echohl WarningMsg<Bar>echo ':Gstatus cA is deprecated in favor of ce'<CR>
+        nnoremap <buffer> <silent> C :<C-U>Gcommit<CR>:echohl WarningMsg<Bar>echo ':Gstatus C is deprecated in favor of cc'<Bar>echohl NONE<CR>
+        nnoremap <buffer> <silent> cA :<C-U>Gcommit --amend --reuse-message=HEAD<CR>:echohl WarningMsg<Bar>echo ':Gstatus cA is deprecated in favor of ce'<CR>
         nnoremap <buffer> <silent> ca :<C-U>Gcommit --amend<CR>
         nnoremap <buffer> <silent> cc :<C-U>Gcommit<CR>
         nnoremap <buffer> <silent> ce :<C-U>Gcommit --amend --no-edit<CR>
@@ -3090,7 +3090,7 @@ function! fugitive#cfile() abort
 endfunction
 
 function! fugitive#Cfile() abort
-  return fugitive#cfile()
+    return fugitive#cfile()
 endfunction
 
 " Section: Statusline
@@ -3121,11 +3121,11 @@ function! fugitive#statusline(...) abort
 endfunction
 
 function! fugitive#Statusline(...) abort
-  return fugitive#statusline()
+    return fugitive#statusline()
 endfunction
 
 function! FugitiveStatusline(...) abort
-  return fugitive#statusline()
+    return fugitive#statusline()
 endfunction
 
 function! fugitive#head(...) abort
@@ -3137,7 +3137,7 @@ function! fugitive#head(...) abort
 endfunction
 
 function! FugitiveHead(...) abort
-  return fugitive#head(a:0 ? a:1 : 0)
+    return fugitive#head(a:0 ? a:1 : 0)
 endfunction
 
 augroup fugitive_statusline
@@ -3191,14 +3191,14 @@ function! fugitive#foldtext() abort
 endfunction
 
 function! fugitive#Foldtext() abort
-  return fugitive#foldtext()
+    return fugitive#foldtext()
 endfunction
 
 augroup fugitive_foldtext
     autocmd!
     autocmd User Fugitive
                 \ if &filetype =~# '^git\%(commit\)\=$' && &foldtext ==# 'foldtext()' |
-        \    set foldtext=fugitive#Foldtext() |
+                \    set foldtext=fugitive#Foldtext() |
                 \ endif
 augroup END
 
@@ -3255,6 +3255,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :e
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LcTest :execute s:LcTest()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnApply :execute s:SvnApply()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnDiff :execute s:SvnDiff()")
@@ -3659,4 +3660,8 @@ function! s:SvnDiff() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"'
+endfunction
+function! s:LcTest() abort
+    silent exec '!~/loadrc/vishrc/lc_test.sh ' . '"' .  expand('%:p') . '"'
+    call OpenOrSwitch(expand('%:p') . '.sh')
 endfunction
