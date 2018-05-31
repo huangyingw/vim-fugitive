@@ -1413,22 +1413,22 @@ endfunction
 " Section: Gedit, Gpedit, Gsplit, Gvsplit, Gtabedit, Gread
 
 function! s:UsableWin(nr) abort
-  return a:nr && !getwinvar(a:nr, '&previewwindow') &&
-        \ index(['nofile','help','quickfix'], getbufvar(winbufnr(a:nr), '&buftype')) < 0
+    return a:nr && !getwinvar(a:nr, '&previewwindow') &&
+                \ index(['nofile','help','quickfix'], getbufvar(winbufnr(a:nr), '&buftype')) < 0
 endfunction
 
 function! s:Edit(cmd,bang,...) abort
     let buffer = s:buffer()
     if a:cmd !~# 'read'
         if &previewwindow && getbufvar('','fugitive_type') ==# 'index'
-      let winnrs = filter([winnr('#')] + range(1, winnr('$')), 's:UsableWin(v:val)')
-      if len(winnrs)
-        exe winnrs[0].'wincmd w'
-      elseif winnr('$') == 1
+            let winnrs = filter([winnr('#')] + range(1, winnr('$')), 's:UsableWin(v:val)')
+            if len(winnrs)
+                exe winnrs[0].'wincmd w'
+            elseif winnr('$') == 1
                 let tabs = (&go =~# 'e' || !has('gui_running')) && &stal && (tabpagenr('$') >= &stal)
                 execute 'rightbelow' (&lines - &previewheight - &cmdheight - tabs - 1 - !!&laststatus).'new'
             else
-        rightbelow new
+                rightbelow new
             endif
             if &diff
                 let mywinnr = winnr()
@@ -3261,6 +3261,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :e
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete KdiffAll :execute s:KdiffAll()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LcTest :execute s:LcTest()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnApply :execute s:SvnApply()")
@@ -3670,4 +3671,7 @@ endfunction
 function! s:LcTest() abort
     silent exec '!~/loadrc/vishrc/lc_test.sh ' . '"' .  expand('%:p') . '"'
     call OpenOrSwitch(expand('%:p') . '.sh')
+endfunction
+function! s:KdiffAll() abort
+    silent exec '!~/loadrc/vishrc/kdiffall.sh ' . '"' .  expand('%:p') . '"'
 endfunction
