@@ -698,7 +698,7 @@ function! s:Status(bang, count, mods) abort
     try
         exe (a:mods ==# '<mods>' ? '' : a:mods) 'Gpedit :'
         wincmd P
-    setlocal foldmethod=syntax foldlevel=1 buftype=nowrite
+        setlocal foldmethod=syntax foldlevel=1 buftype=nowrite
         nnoremap <buffer> <silent> q    :<C-U>bdelete<CR>
     catch /^fugitive:/
         return 'echoerr v:errmsg'
@@ -2004,7 +2004,7 @@ function! s:Blame(bang,line1,line2,count,args) abort
                 if exists('+cursorbind')
                     setlocal cursorbind
                 endif
-        setlocal nomodified nomodifiable nonumber scrollbind nowrap foldcolumn=0 nofoldenable winfixwidth filetype=fugitiveblame buftype=nowrite
+                setlocal nomodified nomodifiable nonumber scrollbind nowrap foldcolumn=0 nofoldenable winfixwidth filetype=fugitiveblame buftype=nowrite
                 if exists('+concealcursor')
                     setlocal concealcursor=nc conceallevel=2
                 endif
@@ -3131,6 +3131,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete KdiffAll :execute s:KdiffAll()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LcTest :execute s:LcTest()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Prune :execute s:Prune()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnApply :execute s:SvnApply()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnDiff :execute s:SvnDiff()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnReset :execute s:SvnReset()")
@@ -3545,4 +3546,7 @@ function! s:LcTest() abort
 endfunction
 function! s:KdiffAll() abort
     silent exec '!~/loadrc/vishrc/kdiffall.sh ' . '"' .  expand('%:p') . '"'
+endfunction
+function! s:Prune() abort
+    silent exec '!~/loadrc/vishrc/prune.sh ' . '"' .  expand('%:p') . '"'
 endfunction
