@@ -3135,7 +3135,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :exe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete KdiffAll :execute s:KdiffAll()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LcTest :execute s:LcTest()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Prune :execute s:Prune()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnApply :execute s:SvnApply()")
@@ -3545,10 +3544,6 @@ function! s:SvnDiff() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"'
-endfunction
-function! s:LcTest() abort
-    silent exec '!~/loadrc/vishrc/lc_test.sh ' . '"' .  expand('%:p') . '"'
-    call OpenOrSwitch(expand('%:p') . '.sh')
 endfunction
 function! s:KdiffAll() abort
     silent exec '!~/loadrc/vishrc/kdiffall.sh ' . '"' .  expand('%:p') . '"'
