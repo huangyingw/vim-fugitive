@@ -439,12 +439,13 @@ endfunction
 function! fugitive#Path(url) abort
   let [dir, commit, file] = s:DirCommitFile(a:url)
     if len(dir)
-    let tree = FugitiveTreeForGitDir(dir)
+        return s:PlatformSlash(FugitiveTreeForGitDir(dir) . file)
     return s:PlatformSlash((len(tree) ? tree : dir) . file)
     elseif a:url =~# '^[\\/]\|^\a:[\\/]'
         return s:PlatformSlash(a:url)
+    else
+        return ''
     endif
-  return ''
 endfunction
 
 let s:buffer_prototype = {}
@@ -552,7 +553,6 @@ function! s:buffer_relative(...) dict abort
         let rev = self.spec()[strlen(self.repo().tree()) : -1]
     endif
     return s:sub(s:sub(rev,'.\zs/$',''),'^/',a:0 ? a:1 : '')
-endfunction
 
 function! s:buffer_path(...) dict abort
   if a:0
@@ -1769,7 +1769,7 @@ function! s:Diff(vert,keepfocus,...) abort
     let vert = empty(a:vert) ? s:diff_modifier(2) : a:vert
     if exists(':DiffGitCached')
         return 'DiffGitCached'
-  elseif (empty(args) || args[0] ==# ':') && s:buffer().commit() =~# '^[0-1]\=$' && s:repo().git_chomp_in_tree('ls-files', '--unmerged', '--', s:buffer().relative()) !=# ''
+    elseif (empty(args) || args[0] == ':') && s:buffer().commit() =~# '^[0-1]\=$' && s:repo().git_chomp_in_tree('ls-files', '--unmerged', '--', s:buffer().path()) !=# ''
         let vert = empty(a:vert) ? s:diff_modifier(3) : a:vert
         let nr = bufnr('')
         execute 'leftabove '.vert.'split' s:fnameescape(fugitive#repo().translate(s:buffer().expand(':2')))
@@ -1791,12 +1791,12 @@ function! s:Diff(vert,keepfocus,...) abort
         if arg ==# ''
             return post
         elseif arg ==# '/'
-      let file = s:buffer().relative('/')
+            let file = s:buffer().path('/')
         elseif arg ==# ':'
-      let file = s:buffer().relative(':0:')
+            let file = s:buffer().path(':0:')
         elseif arg =~# '^:/.'
             try
-        let file = s:repo().rev_parse(arg).s:buffer().relative(':')
+                let file = s:repo().rev_parse(arg).s:buffer().path(':')
             catch /^fugitive:/
                 return 'echoerr v:errmsg'
             endtry
@@ -1804,10 +1804,10 @@ function! s:Diff(vert,keepfocus,...) abort
             let file = s:buffer().expand(arg)
         endif
         if file !~# ':' && file !~# '^/' && s:repo().git_chomp('cat-file','-t',file) =~# '^\%(tag\|commit\)$'
-      let file = file.s:buffer().relative(':')
+            let file = file.s:buffer().path(':')
         endif
     else
-    let file = s:buffer().relative(empty(s:buffer().commit()) ? ':0:' : '/')
+        let file = s:buffer().path(s:buffer().commit() == '' ? ':0:' : '/')
     endif
     try
         let spec = s:repo().translate(file)
@@ -2223,7 +2223,7 @@ function! s:Browse(bang,line1,count,...) abort
         if rev ==# ''
             let expanded = s:buffer().rev()
         elseif rev ==# ':'
-      let expanded = s:buffer().relative('/')
+            let expanded = s:buffer().path('/')
         else
             let expanded = s:buffer().expand(rev)
         endif
