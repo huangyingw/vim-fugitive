@@ -3349,13 +3349,11 @@ function! s:LogFilter(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg1 . '"'
-    vert resize
 endfunction
 function! s:Jformat(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/bashrc/jformat.sh '
-    vert resize
 endfunction
 function! s:Gvd(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3367,7 +3365,6 @@ function! s:Gvd(...) abort
         let arg2 = (a:0 >= 2) ? a:2 : ''
         silent exec '!~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
     endif
-    vert resize
 endfunction
 function! s:Fr(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3375,25 +3372,21 @@ function! s:Fr(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     silent exec '!~/loadrc/bashrc/fr.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
-    vert resize
 endfunction
 function! s:Ga(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/ga.sh ' . '"' .  a:args . '"'
-    vert resize
 endfunction
 function! s:Gsave() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gsave.sh'
-    vert resize
 endfunction
 function! s:Gst() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gst.sh'
-    vert resize
 endfunction
 function! s:Gcp(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3401,7 +3394,6 @@ function! s:Gcp(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     silent exec '!~/loadrc/gitrc/gcp.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
-    vert resize
 endfunction
 function! s:BinaryGrep(...) abort
     let b:csdbpath = Find_in_parent("files.proj",Windowdir(),"/")
@@ -3422,7 +3414,6 @@ function! s:Fcscope() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/bashrc/fcscope.sh'
-    vert resize
 endfunction
 function! s:Glf() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3446,13 +3437,11 @@ function! s:Gstp(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"'
-    vert resize
 endfunction
 function! s:Gstv(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gstv.sh ' . '"' .  a:args . '"'
-    vert resize
 endfunction
 function! s:Gcof(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3468,7 +3457,6 @@ function! s:Gpl() abort
     silent exec '!~/loadrc/gitrc/gpl.sh 2>&1 | tee gpl.findresult'
     call OpenOrSwitch('gpl.findresult')
 
-    vert resize
 endfunction
 function! s:Fsync() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3480,25 +3468,21 @@ function! s:Gbis() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbis.sh'
-    vert resize
 endfunction
 function! s:Gbidebug() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbidebug.sh'
-    vert resize
 endfunction
 function! s:Gbib() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbib.sh'
-    vert resize
 endfunction
 function! s:Gbig() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbig.sh'
-    vert resize
 endfunction
 function! s:Gbil() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3516,7 +3500,6 @@ function! s:Gclean() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gclean.sh'
-    vert resize
 endfunction
 function! s:Gbra() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3540,19 +3523,16 @@ function! s:Grta(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     silent exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'
-    vert resize
 endfunction
 function! s:Grsh(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
-    vert resize
 endfunction
 function! s:Gsti() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gsti.sh'
-    vert resize
 endfunction
 function! s:Gstl() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3564,7 +3544,6 @@ function! s:Gstlv() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gstlv.sh'
-    vert resize
 endfunction
 function! s:G(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3576,7 +3555,6 @@ function! s:Gdev() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gdev.sh'
-    vert resize
 endfunction
 function! s:Gdi() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3593,7 +3571,6 @@ function! s:Grtu() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!git remote update'
-    vert resize
 endfunction
 function! s:VS(...) abort
     if a:0 >= 1
@@ -3612,13 +3589,11 @@ function! s:Gmet() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!git mergetool'
-    vert resize
 endfunction
 function! s:Gicb() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gicb.sh'
-    vert resize
 endfunction
 function! s:Gitk(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3626,21 +3601,18 @@ function! s:Gitk(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     silent exec '!gitk ' . '"' .  arg1 . '" "' .  arg2 . '"'
-    vert resize
 endfunction
 function! s:Gbrm(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gbrm.sh ' . '"' .  arg1 . '"'
-    vert resize
 endfunction
 function! s:Gbrd(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gbrd.sh ' . '"' .  arg1 . '"'
-    vert resize
 endfunction
 function! s:Gdif(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3654,7 +3626,6 @@ function! s:Gco(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gco.sh ' . '"' .  arg1 . '"'
-    vert resize
 endfunction
 function! s:Gcob(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3662,7 +3633,6 @@ function! s:Gcob(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     silent exec '!~/loadrc/gitrc/gcob.sh ' . '"' .  arg1 . '" "' .  arg2 . '"'
-    vert resize
 endfunction
 function! s:Dodev() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3673,7 +3643,6 @@ function! s:Gcom(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"'
-    vert resize
 endfunction
 function! s:Copy(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
@@ -3684,19 +3653,16 @@ function! s:Copy(...) abort
 endfunction
 function! s:Tail() abort
     exec '!tail -f ' . expand("%:p")
-    vert resize
 endfunction
 function! s:Greview() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/greview.sh'
-    vert resize
 endfunction
 function! s:Gres() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gres.sh'
-    vert resize
 endfunction
 function! s:Dps() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3708,7 +3674,6 @@ function! s:SvnUp() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnup.sh'
-    vert resize
 endfunction
 function! s:SvnReset() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3731,7 +3696,6 @@ function! s:SvnVdiff() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnvdiff.sh'
-    vert resize
 endfunction
 function! s:SvnApply() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
