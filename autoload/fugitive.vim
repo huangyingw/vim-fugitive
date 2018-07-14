@@ -3652,8 +3652,7 @@ function! s:Gcom(args, ...) abort
     silent exec '!~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"'
 endfunction
 function! s:Copy(...) abort
-    let arg1 = (a:0 >= 1) ? a:1 : ''
-    let newFile = expand('%:p:h') . '/' . arg1
+    let newFile = (a:0 >= 1) ? a:1 : expand("%:p") . '.bak'
     exec '!rm ' . newFile
     exec 'w ' . newFile
     call OpenOrSwitch(newFile)
