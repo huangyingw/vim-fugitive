@@ -3359,7 +3359,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnReset
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnRevert :execute s:SvnRevert()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnSt :execute s:SvnSt()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnUp :execute s:SvnUp()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete SvnVdiff :execute s:SvnVdiff()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Tail :execute s:Tail()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete VS :execute s:VS(<f-args>)")
 function! s:LogFilter(...) abort
@@ -3708,11 +3707,6 @@ function! s:SvnSt() abort
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnst.sh'
     call OpenOrSwitch('svnst.findresult')
-endfunction
-function! s:SvnVdiff() abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnvdiff.sh')
 endfunction
 function! s:SvnApply() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
