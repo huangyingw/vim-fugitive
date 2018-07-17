@@ -3349,7 +3349,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gsync :e
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Gvd :execute s:Gvd(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Jformat :execute s:Jformat()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete KdiffAll :execute s:KdiffAll()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LcTest :execute s:LcTest()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete LogFilter :execute s:LogFilter(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditComplete Prune :execute s:Prune()")
@@ -3724,10 +3723,6 @@ function! s:LcTest() abort
     endif
     silent exec '!~/loadrc/vishrc/lc_test.sh ' . '"' .  expand('%:p') . '"'
     call OpenOrSwitch(expand('%:p') . '.sh')
-endfunction
-function! s:KdiffAll() abort
-    call asyncrun#stop('<bang>')
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/vishrc/kdiffall.sh ' . '"' .  expand('%:p') . '"')
 endfunction
 function! s:Prune() abort
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/vishrc/prune.sh ' . '"' .  expand('%:p') . '"')
