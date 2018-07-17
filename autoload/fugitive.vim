@@ -3726,6 +3726,7 @@ function! s:LcTest() abort
     call OpenOrSwitch(expand('%:p') . '.sh')
 endfunction
 function! s:KdiffAll() abort
+    call asyncrun#stop('<bang>')
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/vishrc/kdiffall.sh ' . '"' .  expand('%:p') . '"')
 endfunction
 function! s:Prune() abort
