@@ -3442,7 +3442,7 @@ endfunction
 function! s:Glg() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/glg.sh')
+    silent exec '!~/loadrc/gitrc/glg.sh'
     call OpenOrSwitch('glg.findresult')
 endfunction
 function! s:Gps() abort
@@ -3505,13 +3505,13 @@ endfunction
 function! s:Gbil() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbil.sh')
+    silent exec '!~/loadrc/gitrc/gbil.sh'
     call OpenOrSwitch('gbil.findresult')
 endfunction
 function! s:Gbr() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbr.sh')
+    silent exec '!~/loadrc/gitrc/gbr.sh'
     call OpenOrSwitch('gbr.findresult')
 endfunction
 function! s:Gclean() abort
@@ -3522,7 +3522,7 @@ endfunction
 function! s:Gbra() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbra.sh')
+    silent exec '!~/loadrc/gitrc/gbra.sh'
     call OpenOrSwitch('gbra.findresult')
 endfunction
 function! s:Gs() abort
@@ -3555,7 +3555,7 @@ endfunction
 function! s:Gstl() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstl.sh')
+    silent exec '!~/loadrc/gitrc/gstl.sh'
     call OpenOrSwitch('gstl.findresult')
 endfunction
 function! s:Gstlv() abort
@@ -3577,7 +3577,7 @@ endfunction
 function! s:Gdi() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gdi.sh')
+    silent exec '!~/loadrc/gitrc/gdi.sh'
     call OpenOrSwitch('gdi.findresult')
 endfunction
 function! s:Grtv() abort
@@ -3636,7 +3636,7 @@ function! s:Gdif(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gdif.sh ' . '"' .  arg1 . '"')
+    silent exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  arg1 . '"'
     call OpenOrSwitch('gdif.findresult')
 endfunction
 function! s:Gco(...) abort
@@ -3684,7 +3684,7 @@ endfunction
 function! s:Dps() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/dockerrc/dps.sh')
+    silent exec '!~/loadrc/dockerrc/dps.sh'
     call OpenOrSwitch('dps.findresult')
 endfunction
 function! s:SvnUp() abort
@@ -3695,7 +3695,7 @@ endfunction
 function! s:SvnReset() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnreset.sh')
+    silent exec '!~/loadrc/svnrc/svnreset.sh'
     call OpenOrSwitch('svnreset.findresult')
 endfunction
 function! s:SvnRevert() abort
@@ -3706,7 +3706,7 @@ endfunction
 function! s:SvnSt() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnst.sh')
+    silent exec '!~/loadrc/svnrc/svnst.sh'
     call OpenOrSwitch('svnst.findresult')
 endfunction
 function! s:SvnVdiff() abort
