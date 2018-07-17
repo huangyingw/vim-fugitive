@@ -3466,7 +3466,7 @@ function! s:Gcof(...) abort
     exec "cd " . worktree
     let b:relativePath = substitute(expand('%:p'), worktree . '/', "", "g")
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"')
+    silent exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"'
     call OpenOrSwitch(expand('%:p') . '.bak')
 endfunction
 function! s:Gpl() abort
@@ -3728,7 +3728,7 @@ function! s:LcTest() abort
     if (expand("%") !~ '.*leetcode.*') || (expand("%") =~ '.*\.sh')
         return
     endif
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/vishrc/lc_test.sh ' . '"' .  expand('%:p') . '"')
+    silent exec '!~/loadrc/vishrc/lc_test.sh ' . '"' .  expand('%:p') . '"'
     call OpenOrSwitch(expand('%:p') . '.sh')
 endfunction
 function! s:KdiffAll() abort
