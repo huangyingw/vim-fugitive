@@ -3515,7 +3515,7 @@ endfunction
 function! s:Gclean() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gclean.sh')
+    silent exec '!~/loadrc/gitrc/gclean.sh'
 endfunction
 function! s:Gbra() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
@@ -3543,7 +3543,7 @@ endfunction
 function! s:Grsh(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"')
+    silent exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
 endfunction
 function! s:Gsti() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
