@@ -132,11 +132,11 @@ function! FugitiveStatusline(...) abort
 endfunction
 
 function! FugitiveHead(...) abort
-  let dir = a:0 > 1 ? a:2 : get(b:, 'git_dir', '')
-  if empty(dir)
+    let dir = a:0 > 1 ? a:2 : get(b:, 'git_dir', '')
+    if empty(dir)
         return ''
     endif
-  return fugitive#repo(dir).head(a:0 ? a:1 : 0)
+    return fugitive#repo(dir).head(a:0 ? a:1 : 0)
 endfunction
 
 function! FugitivePath(...) abort
@@ -161,7 +161,7 @@ augroup fugitive
                 \ if exists('b:NERDTree.root.path.str') |
                 \   call FugitiveDetect(b:NERDTree.root.path.str()) |
                 \ endif
-  autocmd VimEnter * if empty(expand('<amatch>'))|call FugitiveDetect(getcwd())|endif
+    autocmd VimEnter * if empty(expand('<amatch>'))|call FugitiveDetect(getcwd())|endif
     autocmd CmdWinEnter * call FugitiveDetect(expand('#:p'))
 
     autocmd FileType git
@@ -173,19 +173,19 @@ augroup fugitive
                 \   call fugitive#MapCfile() |
                 \ endif
 
-  autocmd BufReadCmd index{,.lock}
+    autocmd BufReadCmd index{,.lock}
                 \ if FugitiveIsGitDir(expand('<amatch>:p:h')) |
-        \   let b:git_dir = s:shellslash(expand('<amatch>:p:h')) |
+                \   let b:git_dir = s:shellslash(expand('<amatch>:p:h')) |
                 \   exe fugitive#BufReadStatus() |
                 \ elseif filereadable(expand('<amatch>')) |
                 \   read <amatch> |
-        \   1delete_ |
+                \   1delete_ |
                 \ endif
-  autocmd BufReadCmd    fugitive://*//*             exe fugitive#BufReadCmd()
-  autocmd BufWriteCmd   fugitive://*//[0-3]/*       exe fugitive#BufWriteCmd()
-  autocmd FileReadCmd   fugitive://*//*             exe fugitive#FileReadCmd()
-  autocmd FileWriteCmd  fugitive://*//[0-3]/*       exe fugitive#FileWriteCmd()
-  autocmd SourceCmd     fugitive://*//*      nested exe fugitive#SourceCmd()
+    autocmd BufReadCmd    fugitive://*//*             exe fugitive#BufReadCmd()
+    autocmd BufWriteCmd   fugitive://*//[0-3]/*       exe fugitive#BufWriteCmd()
+    autocmd FileReadCmd   fugitive://*//*             exe fugitive#FileReadCmd()
+    autocmd FileWriteCmd  fugitive://*//[0-3]/*       exe fugitive#FileWriteCmd()
+    autocmd SourceCmd     fugitive://*//*      nested exe fugitive#SourceCmd()
 
     autocmd User Flags call Hoist('buffer', function('FugitiveStatusline'))
 augroup END
