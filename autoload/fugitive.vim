@@ -385,7 +385,11 @@ function! s:repo_translate(spec, ...) dict abort
 endfunction
 
 function! s:Generate(rev, ...) abort
-  return fugitive#repo(a:0 ? a:1 : b:git_dir).translate(a:rev, 1)
+  let repo = fugitive#repo(a:0 ? a:1 : b:git_dir)
+  if a:rev =~# '^\%(\a\+:\)\=/' && getftime(a:rev) >= 0 && getftime(repo.tree() . a:rev) < 0
+    return s:PlatformSlash(a:rev)
+  endif
+  return repo.translate(a:rev, 1)
 endfunction
 
 function! s:repo_head(...) dict abort
@@ -498,7 +502,7 @@ function! fugitive#Path(url, ...) abort
     let file = '/.git'.url[strlen(dir) : -1]
   elseif len(tree) && s:cpath(url[0 : len(tree)]) ==# s:cpath(tree . '/')
     let file = url[len(tree) : -1]
-  elseif s:cpath(url) ==# s:cpath(tree)
+  elseif s:cpath(url) ==# s:cpath(tree) || len(argdir) && empty(file)
     let file = '/'
   endif
   if empty(file) && a:1 =~# '^\%([.:]\=/\)\=$'
@@ -1742,9 +1746,10 @@ function! s:Commit(mods, args, ...) abort
       else
         let command = 'env GIT_EDITOR=false '
       endif
-      let command .= s:UserCommand() . ' commit ' . a:args
+      let args = s:ExecExpand(a:args)
+      let command .= s:UserCommand() . ' commit ' . args
       if &shell =~# 'csh'
-        noautocmd silent execute '!('.command.' > '.outfile.') >& '.errorfile
+        noautocmd silent execute '!('.escape(command, '!#%').' > '.outfile.') >& '.errorfile
       elseif a:args =~# '\%(^\| \)-\%(-interactive\|p\|-patch\)\>'
         noautocmd execute '!'.command.' 2> '.errorfile
       else
@@ -1769,17 +1774,10 @@ function! s:Commit(mods, args, ...) abort
       let errors = readfile(errorfile)
       let error = get(errors,-2,get(errors,-1,'!'))
       if error =~# 'false''\=\.$'
-        let args = a:args
         let args = s:gsub(args,'%(%(^| )-- )@<!%(^| )@<=%(-[esp]|--edit|--interactive|--patch|--signoff)%($| )','')
         let args = s:gsub(args,'%(%(^| )-- )@<!%(^| )@<=%(-c|--reedit-message|--reuse-message|-F|--file|-m|--message)%(\s+|\=)%(''[^'']*''|"%(\\.|[^"])*"|\\.|\S)*','')
         let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
         let cwd = getcwd()
-        try
-          exe cd s:fnameescape(tree)
-          let args = s:gsub(args,'\\@<!(\%|##=|#\<=\d+)(:\w)*','\=fnamemodify(FugitivePath(expand(submatch(1))),":." . submatch(2))')
-        finally
-          exe cd cwd
-        endtry
         let args = s:sub(args, '\ze -- |$', ' --no-edit --no-interactive --no-signoff')
         let args = '-F '.s:shellesc(msgfile).' '.args
         if args !~# '\%(^\| \)--cleanup\>'
@@ -1994,7 +1992,7 @@ function! s:Grep(cmd,bang,arg) abort
     execute cd s:fnameescape(s:Tree())
     let &grepprg = s:UserCommand() . ' --no-pager grep -n --no-color'
     let &grepformat = '%f:%l:%m,%m %f match%ts,%f'
-    exe a:cmd.'! '.escape(matchstr(a:arg,'\v\C.{-}%($|[''" ]\@=\|)@='),'|')
+    exe a:cmd.'! '.escape(s:ExecExpand(matchstr(a:arg, '\v\C.{-}%($|[''" ]\@=\|)@=')), '|#%')
     let list = a:cmd =~# '^l' ? getloclist(0) : getqflist()
     for entry in list
       if bufname(entry.bufnr) =~ ':'
@@ -2039,7 +2037,7 @@ function! s:Log(cmd, bang, line1, line2, ...) abort
       let cmd += [s:Relative('')[5:-1]]
     endif
   end
-  let cmd += map(copy(a:000),'s:sub(v:val,"^\\%(%(:\\w)*)","\\=fnamemodify(s:Relative(''),submatch(1))")')
+  let cmd += map(copy(a:000),'s:ExecExpand(v:val)')
   if path =~# '/.'
     if a:line2
       let cmd += ['-L', a:line1 . ',' . a:line2 . ':' . path[1:-1]]
@@ -3072,17 +3070,42 @@ function! s:Browse(bang,line1,count,...) abort
       endif
     endif
 
+    let line1 = a:count > 0 ? a:line1 : 0
+    let line2 = a:count > 0 ? a:count : 0
     if empty(commit) && path !~# '^\.git/'
       if a:line1 && !a:count && !empty(merge)
         let commit = merge
       else
-        let commit = readfile(b:git_dir . '/HEAD', '', 1)[0]
-        let i = 0
-        while commit =~# '^ref: ' && i < 10
-          let commit = readfile(cdir . '/' . commit[5:-1], '', 1)[0]
-          let i -= 1
-        endwhile
+        let commit = ''
+        if len(merge)
+          let remotehead = cdir . '/refs/remotes/' . remote . '/' . merge
+          let commit = filereadable(remotehead) ? get(readfile(remotehead), 0, '') : ''
+          if a:count && !a:0 && commit =~# '^\x\{40\}$'
+            let blame_list = s:tempname()
+            call writefile([commit, ''], blame_list, 'b')
+            let blame_in = s:tempname()
+            silent exe '%write' blame_in
+            let blame = split(s:TreeChomp('blame', '--contents', blame_in, '-L', a:line1.','.a:count, '-S', blame_list, '-s', '--show-number', '--', path), "\n")
+            if !v:shell_error
+              let blame_regex = '^\^\x\+\s\+\zs\d\+\ze\s'
+              if get(blame, 0) =~# blame_regex && get(blame, -1) =~# blame_regex
+                let line1 = +matchstr(blame[0], blame_regex)
+                let line2 = +matchstr(blame[-1], blame_regex)
+              else
+                call s:throw("Can't browse to uncommitted change")
+              endif
+            endif
+          endif
+        endif
       endif
+      if empty(commit)
+        let commit = readfile(b:git_dir . '/HEAD', '', 1)[0]
+      endif
+      let i = 0
+      while commit =~# '^ref: ' && i < 10
+        let commit = readfile(cdir . '/' . commit[5:-1], '', 1)[0]
+        let i -= 1
+      endwhile
     endif
 
     if empty(remote)
@@ -3112,8 +3135,8 @@ function! s:Browse(bang,line1,count,...) abort
           \ 'commit': commit,
           \ 'path': path,
           \ 'type': type,
-          \ 'line1': a:count > 0 ? a:line1 : 0,
-          \ 'line2': a:count > 0 ? a:count : 0}
+          \ 'line1': line1,
+          \ 'line2': line2}
 
     for Handler in get(g:, 'fugitive_browse_handlers', [])
       let url = call(Handler, [copy(opts)])
