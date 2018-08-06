@@ -202,6 +202,22 @@ function! fugitive#Prepare(cmd, ...) abort
   return pre . g:fugitive_git_executable . ' ' . args
 endfunction
 
+function! fugitive#Head(...) abort
+  let dir = a:0 > 1 ? a:2 : get(b:, 'git_dir', '')
+  if empty(dir) || !filereadable(dir . '/HEAD')
+    return ''
+  endif
+  let head = readfile(dir . '/HEAD')[0]
+  if head =~# '^ref: '
+    return substitute(head, '\C^ref: \%(refs/\%(heads/\|remotes/\|tags/\)\=\)\=', '', '')
+  elseif head =~# '^\x\{40\}$'
+    let len = a:0 ? a:1 : 0
+    return len < 0 ? head : len ? head[0:len-1] : ''
+  else
+    return ''
+  endif
+endfunction
+
 function! fugitive#RevParse(rev, ...) abort
   let hash = system(s:Prepare(a:0 ? a:1 : b:git_dir, 'rev-parse', '--verify', a:rev))[0:-2]
   if !v:shell_error && hash =~# '^\x\{40\}$'
@@ -408,22 +424,7 @@ function! s:Generate(rev, ...) abort
 endfunction
 
 function! s:repo_head(...) dict abort
-    if !filereadable(self.dir('HEAD'))
-      return ''
-    endif
-    let head = readfile(self.dir('HEAD'))[0]
-
-    if head =~# '^ref: '
-      let branch = s:sub(head,'^ref: %(refs/%(heads/|remotes/|tags/)=)=','')
-    elseif head =~# '^\x\{40\}$'
-      " truncate hash to a:1 characters if we're in detached head mode
-      let len = a:0 ? a:1 : 0
-      let branch = len < 0 ? head : len ? head[0:len-1] : ''
-    else
-      return ''
-    endif
-
-    return branch
+  return fugitive#Head(a:0 ? a:1 : 0, self.git_dir)
 endfunction
 
 call s:add_methods('repo',['dir','tree','bare','translate','head'])
@@ -488,16 +489,21 @@ function! s:DirRev(url) abort
 endfunction
 
 function! fugitive#Real(url) abort
+  if empty(a:url)
+    return ''
+  endif
   let [dir, commit, file] = s:DirCommitFile(a:url)
   if len(dir)
     let tree = s:Tree(dir)
     return s:PlatformSlash((len(tree) ? tree : dir) . file)
   endif
-  let url = len(a:url) ? fnamemodify(a:url, ':p' . (a:url =~# '[\/]$' ? '' : ':s?[\/]$??')) : ''
-  if url =~# '^[\\/]\|^\a:[\\/]'
-    return s:PlatformSlash(url)
+  let pre = substitute(matchstr(a:url, '^\a\a\+\ze:'), '^.', '\u&', '')
+  if len(pre) && pre !=? 'fugitive' && exists('*' . pre . 'Real')
+    let url = {pre}Real(a:url)
+  else
+    let url = fnamemodify(a:url, ':p' . (a:url =~# '[\/]$' ? '' : ':s?[\/]$??'))
   endif
-  return ''
+  return s:PlatformSlash(empty(url) ? a:url : url)
 endfunction
 
 function! fugitive#Path(url, ...) abort
@@ -588,23 +594,26 @@ function! s:TreeInfo(dir, commit) abort
     return [get(s:indexes[a:dir][1], a:commit[-1:-1], {}), newftime]
   elseif a:commit =~# '^\x\{40\}$'
     if !has_key(s:trees, a:dir)
+      let s:trees[a:dir] = {}
+    endif
+    if !has_key(s:trees[a:dir], a:commit)
       let ftime = +system(git . ' log -1 --pretty=format:%ct ' . a:commit)
       if v:shell_error
-        let s:trees[a:dir] = [{}, -1]
-        return s:trees[a:dir]
+        let s:trees[a:dir][a:commit] = [{}, -1]
+        return s:trees[a:dir][a:commit]
       endif
-      let s:trees[a:dir] = [{}, +ftime]
+      let s:trees[a:dir][a:commit] = [{}, +ftime]
       let out = system(git . ' ls-tree -rtl --full-name ' . a:commit)
       if v:shell_error
-        return s:trees[a:dir]
+        return s:trees[a:dir][a:commit]
       endif
       for line in split(out, "\n")
         let [info, filename] = split(line, "\t")
         let [mode, type, sha, size] = split(info, '\s\+')
-        let s:trees[a:dir][0][filename] = [ftime, mode, type, sha, +size, filename]
+        let s:trees[a:dir][a:commit][0][filename] = [ftime, mode, type, sha, +size, filename]
       endfor
     endif
-    return s:trees[a:dir]
+    return s:trees[a:dir][a:commit]
   endif
   return [{}, -1]
 endfunction
@@ -3533,7 +3542,7 @@ function! fugitive#head(...) abort
     return ''
   endif
 
-  return fugitive#repo().head(a:0 ? a:1 : 0)
+  return fugitive#Head(a:0 ? a:1 : 0)
 endfunction
 
 " Section: Folding
