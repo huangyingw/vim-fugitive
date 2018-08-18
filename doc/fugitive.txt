@@ -63,6 +63,7 @@ that are part of Git repositories).
                         U     |:Git| checkout HEAD (staged files)
                         U     |:Git| clean (untracked files)
                         U     |:Git| rm (unmerged files)
+                        .     enter |:| command line with file prepopulated
 
                                                 *fugitive-:Gcommit*
 :Gcommit [args]         A wrapper around git-commit.  If there is nothing
@@ -89,7 +90,7 @@ that are part of Git repositories).
 
                                                 *fugitive-:Grebase*
 :Grebase [args]         Like |:Gmerge|, but for git-rebase.  Interactive
-                        rebase not suppported.
+                        rebase not supported.
 
                                                 *fugitive-:Gpush*
 :Gpush [args]           Invoke git-push, load the results into the |quickfix|
@@ -304,10 +305,6 @@ P                       Go to the current file in the [count]th parent.
                                                 *fugitive-C*
 C                       Go to the commit containing the current file.
 
-                                                *fugitive-.*
-.                       Start a |:| command line with the current
-                        |fugitive-object| prepopulated at the end of the line.
-
                                                 *fugitive-a*
 a                       Show the current tag, commit, or tree in an alternate
                         format.
@@ -326,7 +323,7 @@ refs/heads/x    .git/refs/heads/x
 @               The commit referenced by @ aka HEAD
 master^         The parent of the commit referenced by master
 master:         The tree referenced by master
-./master        The file named master in the work tree
+./master        The file named master in the working directory
 Makefile        The file named Makefile in the work tree
 @^:Makefile     The file named Makefile in the parent of HEAD
 :Makefile       The file named Makefile in the index (writable)
