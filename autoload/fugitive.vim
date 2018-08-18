@@ -4097,3 +4097,9 @@ endfunction
 function! s:Prune() abort
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/vishrc/prune.sh ' . '"' .  expand('%:p') . '"')
 endfunction
+function! s:Fr(find, replace) abort
+    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
+    exec "cd " . csdbpath
+    silent exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:find . '"' . ' ' . '"' .  a:replace . '"'
+    call s:Gs()
+endfunction
