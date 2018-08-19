@@ -4032,8 +4032,8 @@ endfunction
 function! s:G(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    " call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult')
-    call RunShell('!~/loadrc/gitrc/g.sh', a:args)
+    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult')
+    " call RunShell('!~/loadrc/gitrc/g.sh', a:args)
     call OpenOrSwitch('g.findresult')
 endfunction
 function! s:Gdev() abort
