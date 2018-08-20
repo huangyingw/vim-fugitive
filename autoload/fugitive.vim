@@ -74,7 +74,7 @@ function! s:warn(str) abort
 endfunction
 
 function! s:Slash(path) abort
-  if exists('+shellslash')
+    if exists('+shellslash')
         return tr(a:path, '\', '/')
     else
         return a:path
@@ -90,11 +90,11 @@ function! s:PlatformSlash(path) abort
 endfunction
 
 function! s:Resolve(path) abort
-  let path = resolve(a:path)
-  if has('win32')
-    let path = s:PlatformSlash(fnamemodify(fnamemodify(path, ':h'), ':p') . fnamemodify(path, ':t'))
-  endif
-  return path
+    let path = resolve(a:path)
+    if has('win32')
+        let path = s:PlatformSlash(fnamemodify(fnamemodify(path, ':h'), ':p') . fnamemodify(path, ':t'))
+    endif
+    return path
 endfunction
 
 function! s:cpath(path, ...) abort
@@ -500,7 +500,7 @@ function! fugitive#Path(url, ...) abort
 endfunction
 
 function! s:Relative(...) abort
-  return fugitive#Path(@%, a:0 ? a:1 : ':(top)')
+    return fugitive#Path(@%, a:0 ? a:1 : ':(top)')
 endfunction
 
 function! fugitive#Route(object, ...) abort
@@ -858,9 +858,9 @@ function! s:BlobTemp(url) abort
         return ''
     endif
     if !has_key(s:blobdirs, dir)
-    let s:blobdirs[dir] = tempname()
+        let s:blobdirs[dir] = tempname()
     endif
-  let tempfile = s:blobdirs[dir] . '/' . commit . file
+    let tempfile = s:blobdirs[dir] . '/' . commit . file
     let tempparent = fnamemodify(tempfile, ':h')
     if !isdirectory(tempparent)
         call mkdir(tempparent, 'p')
@@ -874,7 +874,7 @@ function! s:BlobTemp(url) abort
             return ''
         endif
     endif
-  return s:Resolve(tempfile)
+    return s:Resolve(tempfile)
 endfunction
 
 function! fugitive#readfile(url, ...) abort
@@ -894,7 +894,7 @@ function! fugitive#writefile(lines, url, ...) abort
     let [dir, commit, file] = s:DirCommitFile(url)
     let entry = s:PathInfo(url)
     if commit =~# '^\d$' && entry[2] !=# 'tree'
-    let temp = tempname()
+        let temp = tempname()
         if a:0 && a:1 =~# 'a' && entry[2] ==# 'blob'
             call writefile(fugitive#readfile(url, 'b'), temp, 'b')
         endif
@@ -1158,15 +1158,15 @@ endfunction
 " Section: Buffer auto-commands
 
 function! s:ReplaceCmd(cmd) abort
-  let temp = tempname()
-  let err = s:TempCmd(temp, a:cmd)
+    let temp = tempname()
+    let err = s:TempCmd(temp, a:cmd)
     if v:shell_error
-    call s:throw((len(err) ? err : filereadable(temp) ? join(readfile(temp), ' ') : 'unknown error running ' . a:cmd))
+        call s:throw((len(err) ? err : filereadable(temp) ? join(readfile(temp), ' ') : 'unknown error running ' . a:cmd))
     endif
-  let temp = s:Resolve(temp)
+    let temp = s:Resolve(temp)
     let fn = expand('%:p')
     silent exe 'doau BufReadPre '.s:fnameescape(fn)
-  silent exe 'keepalt file '.temp
+    silent exe 'keepalt file '.temp
     try
         silent noautocmd edit!
     finally
@@ -1174,8 +1174,8 @@ function! s:ReplaceCmd(cmd) abort
             silent exe 'keepalt file '.s:fnameescape(fn)
         catch /^Vim\%((\a\+)\)\=:E302:/
         endtry
-    call delete(temp)
-    if s:cpath(fnamemodify(bufname('$'), ':p'), temp)
+        call delete(temp)
+        if s:cpath(fnamemodify(bufname('$'), ':p'), temp)
             silent execute 'bwipeout '.bufnr('$')
         endif
         silent exe 'doau BufReadPost '.s:fnameescape(fn)
@@ -2275,7 +2275,7 @@ function! s:Edit(cmd, bang, mods, args, ...) abort
     let mods = a:mods ==# '<mods>' ? '' : a:mods
 
     if a:bang
-    let temp = tempname()
+        let temp = tempname()
         let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
         let cwd = getcwd()
         try
@@ -2287,7 +2287,7 @@ function! s:Edit(cmd, bang, mods, args, ...) abort
         finally
             execute cd s:fnameescape(cwd)
         endtry
-    let temp = s:Resolve(temp)
+        let temp = s:Resolve(temp)
         let s:temp_files[s:cpath(temp)] = { 'dir': b:git_dir, 'filetype': 'git' }
         if a:cmd ==# 'edit'
             call s:BlurStatus()
@@ -2903,7 +2903,7 @@ function! s:Blame(bang, line1, line2, count, mods, args) abort
                 let cwd = getcwd()
                 execute cd s:fnameescape(tree)
             endif
-      let error = tempname()
+            let error = tempname()
             let temp = error.'.fugitiveblame'
             if &shell =~# 'csh'
                 silent! execute '%write !('.basecmd.' > '.temp.') >& '.error
@@ -2947,7 +2947,7 @@ function! s:Blame(bang, line1, line2, count, mods, args) abort
                 endif
                 let top = line('w0') + &scrolloff
                 let current = line('.')
-        let temp = s:Resolve(temp)
+                let temp = s:Resolve(temp)
                 let s:temp_files[s:cpath(temp)] = { 'dir': b:git_dir, 'filetype': 'fugitiveblame', 'args': cmd, 'bufnr': bufnr }
                 exe 'keepalt leftabove vsplit '.temp
                 let b:fugitive_blamed_bufnr = bufnr
@@ -3259,9 +3259,9 @@ function! s:Browse(bang,line1,count,...) abort
                     let remotehead = cdir . '/refs/remotes/' . remote . '/' . merge
                     let commit = filereadable(remotehead) ? get(readfile(remotehead), 0, '') : ''
                     if a:count && !a:0 && commit =~# '^\x\{40\}$'
-            let blame_list = tempname()
+                        let blame_list = tempname()
                         call writefile([commit, ''], blame_list, 'b')
-            let blame_in = tempname()
+                        let blame_in = tempname()
                         silent exe '%write' blame_in
                         let blame = split(s:TreeChomp('blame', '--contents', blame_in, '-L', a:line1.','.a:count, '-S', blame_list, '-s', '--show-number', './' . path), "\n")
                         if !v:shell_error
@@ -4035,8 +4035,8 @@ endfunction
 function! s:G(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    " call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult')
-    call RunShell('~/loadrc/gitrc/g.sh', a:args)
+    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult')
+    " call RunShell('~/loadrc/gitrc/g.sh', '"' .  a:args . '" 2>&1 | tee g.findresult')
     call OpenOrSwitch('g.findresult')
 endfunction
 function! s:Gdev() abort
