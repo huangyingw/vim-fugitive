@@ -269,7 +269,7 @@ function! fugitive#Head(...) abort
 endfunction
 
 function! fugitive#RevParse(rev, ...) abort
-  let hash = system(s:Prepare(a:0 ? a:1 : b:git_dir, 'rev-parse', '--verify', a:rev, '--'))[0:-2]
+    let hash = system(s:Prepare(a:0 ? a:1 : b:git_dir, 'rev-parse', '--verify', a:rev, '--'))[0:-2]
     if !v:shell_error && hash =~# '^\x\{40\}$'
         return hash
     endif
@@ -300,7 +300,7 @@ function! fugitive#RemoteUrl(...) abort
     if fugitive#GitVersion() =~# '^[01]\.\|^2\.[0-6]\.'
         return fugitive#Config('remote.' . remote . '.url')
     endif
-  let cmd = s:Prepare(dir, 'remote', 'get-url', remote, '--')
+    let cmd = s:Prepare(dir, 'remote', 'get-url', remote, '--')
     let out = substitute(system(cmd), "\n$", '', '')
     return v:shell_error ? '' : out
 endfunction
@@ -508,7 +508,7 @@ function! fugitive#Route(object, ...) abort
         let prefix = matchstr(a:object, '^[~$]\i*')
         let owner = expand(prefix)
         return s:PlatformSlash((len(owner) ? owner : prefix) . strpart(a:object, len(prefix)))
-  elseif s:Slash(a:object) =~# '^$\|^/\|^\%(\a\a\+:\).*\%(//\|::\)' . (has('win32') ? '\|^\a:/' : '')
+    elseif s:Slash(a:object) =~# '^$\|^/\|^\%(\a\a\+:\).*\%(//\|::\)' . (has('win32') ? '\|^\a:/' : '')
         return s:PlatformSlash(a:object)
     elseif s:Slash(a:object) =~# '^\.\.\=\%(/\|$\)'
         return s:PlatformSlash(simplify(getcwd() . '/' . a:object))
@@ -521,26 +521,26 @@ function! fugitive#Route(object, ...) abort
             return fnamemodify(len(file) ? file : a:object, ':p')
         endif
     endif
-  let rev = s:Slash(a:object)
+    let rev = s:Slash(a:object)
     let tree = s:Tree(dir)
     let base = len(tree) ? tree : 'fugitive://' . dir . '//0'
-  if rev ==# '.git'
-    let f = len(tree) ? tree . '/.git' : dir
-  elseif rev =~# '^\.git/'
-    let f = substitute(rev, '^\.git', '', '')
+    if rev ==# '.git'
+        let f = len(tree) ? tree . '/.git' : dir
+    elseif rev =~# '^\.git/'
+        let f = substitute(rev, '^\.git', '', '')
         let cdir = fugitive#CommonDir(dir)
-    if f =~# '^/\.\./\.\.\%(/\|$\)'
-      let f = simplify(len(tree) ? tree . f[3:-1] : dir . f)
-    elseif f =~# '^/\.\.\%(/\|$\)'
-      let f = base . f[3:-1]
-    elseif cdir !=# dir && (
-          \ f =~# '^/\%(config\|hooks\|info\|logs/refs\|objects\|refs\|worktrees\)\%(/\|$\)' ||
-          \ f !~# '^/logs$\|/\w*HEAD$' && getftime(dir . f) < 0 && getftime(cdir . f) >= 0)
-      let f = simplify(cdir . f)
+        if f =~# '^/\.\./\.\.\%(/\|$\)'
+            let f = simplify(len(tree) ? tree . f[3:-1] : dir . f)
+        elseif f =~# '^/\.\.\%(/\|$\)'
+            let f = base . f[3:-1]
+        elseif cdir !=# dir && (
+                    \ f =~# '^/\%(config\|hooks\|info\|logs/refs\|objects\|refs\|worktrees\)\%(/\|$\)' ||
+                    \ f !~# '^/logs$\|/\w*HEAD$' && getftime(dir . f) < 0 && getftime(cdir . f) >= 0)
+            let f = simplify(cdir . f)
         else
-      let f = simplify(dir . f)
+            let f = simplify(dir . f)
         endif
-  elseif rev ==# ':/'
+    elseif rev ==# ':/'
         let f = base
     elseif rev =~# '^\.\%(/\|$\)'
         let f = base . rev[1:-1]
@@ -595,7 +595,7 @@ function! fugitive#Route(object, ...) abort
                 endif
             endif
             if commit !~# '^[0-9a-f]\{40\}$'
-        let commit = system(s:Prepare(dir, 'rev-parse', '--verify', commit, '--'))[0:-2]
+                let commit = system(s:Prepare(dir, 'rev-parse', '--verify', commit, '--'))[0:-2]
                 let commit = v:shell_error ? '' : commit
             endif
             if len(commit)
@@ -781,7 +781,7 @@ function! fugitive#getfsize(url) abort
     let entry = s:PathInfo(a:url)
     if entry[4] == -2 && entry[2] ==# 'blob' && len(entry[3])
         let dir = s:DirCommitFile(a:url)[0]
-    let size = +system(s:Prepare(dir, 'cat-file', '-s', entry[3], '--'))
+        let size = +system(s:Prepare(dir, 'cat-file', '-s', entry[3], '--'))
         let entry[4] = v:shell_error ? -1 : size
     endif
     return entry[4]
@@ -873,7 +873,7 @@ function! s:BlobTemp(url) abort
     endif
     if commit =~# '^\d$' || !filereadable(tempfile)
         let rev = s:DirRev(a:url)[1]
-    let command = s:Prepare(dir, 'cat-file', 'blob', rev, '--')
+        let command = s:Prepare(dir, 'cat-file', 'blob', rev, '--')
         call s:TempCmd(tempfile, command)
         if v:shell_error
             call delete(tempfile)
@@ -1295,9 +1295,9 @@ function! fugitive#FileReadCmd(...) abort
         return 'noautocmd ' . line . 'read ' . s:fnameescape(amatch)
     endif
     if rev !~# ':'
-    let cmd = s:Prepare(dir, 'log', '--pretty=format:%B', '-1', rev, '--')
+        let cmd = s:Prepare(dir, 'log', '--pretty=format:%B', '-1', rev, '--')
     else
-    let cmd = s:Prepare(dir, 'cat-file', '-p', rev, '--')
+        let cmd = s:Prepare(dir, 'cat-file', '-p', rev, '--')
     endif
     return line . 'read !' . escape(cmd, '!#%')
 endfunction
@@ -1314,14 +1314,14 @@ function! fugitive#FileWriteCmd(...) abort
         if commit !~# '^[0-3]$' || !v:cmdbang && (line("'[") != 1 || line("']") != line('$'))
             return "noautocmd '[,']write" . (v:cmdbang ? '!' : '') . ' ' . s:fnameescape(amatch)
         endif
-    silent execute "'[,']write !".s:Prepare(dir, 'hash-object', '-w', '--stdin', '--').' > '.tmp
+        silent execute "'[,']write !".s:Prepare(dir, 'hash-object', '-w', '--stdin', '--').' > '.tmp
         let sha1 = readfile(tmp)[0]
-    let old_mode = matchstr(system(s:Prepare(dir, 'ls-files', '--stage', '--', '.' . file)), '^\d\+')
-    if empty(old_mode)
+        let old_mode = matchstr(system(s:Prepare(dir, 'ls-files', '--stage', '--', '.' . file)), '^\d\+')
+        if empty(old_mode)
             let old_mode = executable(s:Tree(dir) . file) ? '100755' : '100644'
         endif
         let info = old_mode.' '.sha1.' '.commit."\t".file[1:-1]
-    let error = system(s:Prepare(dir, 'update-index', '--index-info'), info . "\n")
+        let error = system(s:Prepare(dir, 'update-index', '--index-info'), info . "\n")
         if v:shell_error == 0
             setlocal nomodified
             if exists('#' . autype . 'WritePost')
@@ -2231,7 +2231,7 @@ function! s:EditParse(args) abort
     let pre = []
     let args = copy(a:args)
     while !empty(args) && args[0] =~# '^+'
-    call add(pre, ' ' . escape(remove(args, 0), ' |"'))
+        call add(pre, ' ' . escape(remove(args, 0), ' |"'))
     endwhile
     if len(args)
         let file = join(args)
@@ -2310,7 +2310,7 @@ function! s:Edit(cmd, bang, mods, args, ...) abort
     if a:cmd ==# 'edit'
         call s:BlurStatus()
     endif
-  return mods . ' ' . a:cmd . pre . ' ' . s:fnameescape(file)
+    return mods . ' ' . a:cmd . pre . ' ' . s:fnameescape(file)
 endfunction
 
 function! s:Read(count, line1, line2, range, bang, mods, args, ...) abort
@@ -2345,10 +2345,10 @@ function! s:Read(count, line1, line2, range, bang, mods, args, ...) abort
     catch /^fugitive:/
         return 'echoerr v:errmsg'
     endtry
-  if file =~# '^fugitive:' && after is# 0
-    return 'exe ' .string(mods . ' ' . fugitive#FileReadCmd(file, 0, pre)) . '|diffupdate'
-  endif
-  return mods . ' ' . after . 'read' . pre . ' ' . s:fnameescape(file) . '|' . delete . 'diffupdate' . (a:count < 0 ? '|' . line('.') : '')
+    if file =~# '^fugitive:' && after is# 0
+        return 'exe ' .string(mods . ' ' . fugitive#FileReadCmd(file, 0, pre)) . '|diffupdate'
+    endif
+    return mods . ' ' . after . 'read' . pre . ' ' . s:fnameescape(file) . '|' . delete . 'diffupdate' . (a:count < 0 ? '|' . line('.') : '')
 endfunction
 
 function! s:EditRunComplete(A,L,P) abort
@@ -3773,6 +3773,7 @@ endfunction
 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete BinaryGrep :execute s:BinaryGrep(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Copy :execute s:Copy(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Deploy :execute s:Deploy()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dodev :execute s:Dodev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dps :execute s:Dps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Fcscope :execute s:Fcscope()")
@@ -4208,6 +4209,12 @@ function! s:Fr(find, replace) abort
     exec "cd " . csdbpath
     silent exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:find . '"' . ' ' . '"' .  a:replace . '"'
     call s:Gs()
+endfunction
+function! s:Deploy() abort
+    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
+    exec "cd " . csdbpath
+    exec '!~/loadrc/bashrc/deploy.sh 2>&1 | tee deploy.findresult'
+    call OpenOrSwitch('deploy.findresult')
 endfunction
 
 " Section: End
