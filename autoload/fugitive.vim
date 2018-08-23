@@ -3773,7 +3773,6 @@ endfunction
 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete BinaryGrep :execute s:BinaryGrep(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Copy :execute s:Copy(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Deploy :execute s:Deploy()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dodev :execute s:Dodev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dps :execute s:Dps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Fcscope :execute s:Fcscope()")
@@ -4209,12 +4208,6 @@ function! s:Fr(find, replace) abort
     exec "cd " . csdbpath
     silent exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:find . '"' . ' ' . '"' .  a:replace . '"'
     call s:Gs()
-endfunction
-function! s:Deploy() abort
-    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
-    exec "cd " . csdbpath
-    exec '!~/loadrc/bashrc/deploy.sh 2>&1 | tee deploy.findresult'
-    call OpenOrSwitch('deploy.findresult')
 endfunction
 
 " Section: End
