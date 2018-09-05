@@ -53,11 +53,12 @@ function! s:shellesc(arg) abort
     endif
 endfunction
 
+let s:fnameescape = " \t\n*?[{`$\\%#'\"|!<"
 function! s:fnameescape(file) abort
     if exists('*fnameescape')
         return fnameescape(a:file)
     else
-        return escape(a:file," \t\n*?[{`$\\%#'\"|!<")
+    return escape(a:file, s:fnameescape)
     endif
 endfunction
 
@@ -203,17 +204,23 @@ function! s:Tree(...) abort
     return FugitiveTreeForGitDir(a:0 ? a:1 : get(b:, 'git_dir', ''))
 endfunction
 
-function! s:PreparePathArgs(cmd, dir) abort
-    if fugitive#GitVersion() !~# '^[01]\.'
+function! s:PreparePathArgs(cmd, dir, literal) abort
+  let literal_supported = fugitive#GitVersion() !~# '^0\|^1\.[1-8]\.'
+  if a:literal && literal_supported
         call insert(a:cmd, '--literal-pathspecs')
     endif
     let split = index(a:cmd, '--')
-    let tree = s:Tree(a:dir)
-    if empty(tree) || split < 0
+  if split < 0
         return a:cmd
     endif
     for i in range(split + 1, len(a:cmd) - 1)
-        let a:cmd[i] = fugitive#Path(a:cmd[i], './', a:dir)
+    if type(a:cmd[i]) == type(0)
+      let a:cmd[i] = fugitive#Path(bufname(a:cmd[i]), './', a:dir)
+    elseif a:literal
+      let a:cmd[i] = fugitive#Path(a:cmd[i], './', a:dir)
+    elseif !literal_supported
+      let a:cmd[i] = substitute(a:cmd[i], '^:\%(/\|([^)]*)\)\=:\=', './', '')
+    endif
     endfor
     return a:cmd
 endfunction
@@ -221,7 +228,7 @@ endfunction
 function! s:TreeChomp(...) abort
     let args = copy(type(a:1) == type([]) ? a:1 : a:000)
     let dir = a:0 > 1 && type(a:1) == type([]) ? a:2 : b:git_dir
-    call s:PreparePathArgs(args, dir)
+  call s:PreparePathArgs(args, dir, 1)
     let tree = s:Tree(dir)
     let pre = ''
     if empty(tree)
@@ -237,15 +244,66 @@ function! s:TreeChomp(...) abort
                 \ join(map(args, 's:shellesc(v:val)'))), '\n$', '')
 endfunction
 
-function! fugitive#Prepare(cmd, ...) abort
-    let dir = a:0 ? a:1 : get(b:, 'git_dir', '')
-    let tree = s:Tree(dir)
-    let args = type(a:cmd) == type([]) ? join(map(s:PreparePathArgs(copy(a:cmd), dir), 's:shellesc(v:val)')) : a:cmd
+let s:prepare_env = {
+      \ 'sequence.editor': 'GIT_SEQUENCE_EDITOR',
+      \ 'core.editor': 'GIT_EDITOR',
+      \ 'core.askpass': 'GIT_ASKPASS',
+      \ }
+function! fugitive#Prepare(...) abort
+  if !a:0
+    return g:fugitive_git_executable
+  endif
+  if type(a:1) ==# type([])
+    let cmd = a:000[1:-1] + a:1
+  else
+    let cmd = copy(a:000)
+  endif
     let pre = ''
-    if empty(tree) || (type(a:cmd) == type([]) && index(a:cmd, '--') == len(a:cmd) - 1)
+  let i = 0
+  while i < len(cmd)
+    if cmd[i] =~# '^$\|[\/.]' && cmd[i] !~# '^-'
+      let dir = remove(cmd, 0)
+    elseif type(cmd[i]) ==# type(0)
+      let dir = getbufvar(remove(cmd, i), 'git_dir')
+    elseif cmd[i] ==# '-c' && len(cmd) > i + 1
+      let key = matchstr(cmd[i+1], '^[^=]*')
+      if has_key(s:prepare_env, tolower(key)) || key !~# '\.'
+        let var = get(s:prepare_env, tolower(key), key)
+        let val = matchstr(cmd[i+1], '=\zs.*')
+        if s:winshell()
+          let pre .= 'set ' . var . '=' . s:shellesc(val) . ' & '
+        else
+          let pre = (len(pre) ? pre : 'env ') . var . '=' . s:shellesc(val) . ' '
+        endif
+      endif
+      if fugitive#GitVersion() =~# '^0\|^1\.[1-7]\.' || cmd[i+1] !~# '\.'
+        call remove(cmd, i, i + 1)
+      else
+        let i += 2
+      endif
+    elseif cmd[i] =~# '^--.*pathspecs$'
+      let explicit_pathspec_option = 1
+      if fugitive#GitVersion() =~# '^0\|^1\.[1-8]\.'
+        call remove(cmd, i)
+      else
+        let i += 1
+      endif
+    elseif cmd[i] !~# '^-'
+      break
+    else
+      let i += 1
+    endif
+  endwhile
+  if !exists('dir')
+    let dir = get(b:, 'git_dir', '')
+  endif
+  let tree = s:Tree(dir)
+  call s:PreparePathArgs(cmd, dir, !exists('explicit_pathspec_option'))
+  let args = join(map(copy(cmd), 's:shellesc(v:val)'))
+  if empty(tree) || index(cmd, '--') == len(cmd) - 1
         let args = s:shellesc('--git-dir=' . dir) . ' ' . args
-    elseif fugitive#GitVersion() =~# '^[01]\.'
-        let pre = 'cd ' . s:shellesc(tree) . (s:winshell() ? ' & ' : '; ')
+  elseif fugitive#GitVersion() =~# '^0\|^1\.[1-8]\.'
+    let pre = 'cd ' . s:shellesc(tree) . (s:winshell() ? ' & ' : '; ') . pre
     else
         let args = '-C ' . s:shellesc(tree) . ' ' . args
     endif
@@ -376,6 +434,10 @@ endfunction
 
 call s:add_methods('repo',['dir','tree','bare','route','translate','head'])
 
+function! s:repo_prepare(...) dict abort
+  return call('fugitive#Prepare', [self.git_dir] + a:000)
+endfunction
+
 function! s:repo_git_command(...) dict abort
     let git = s:UserCommand() . ' --git-dir='.s:shellesc(self.git_dir)
     return git.join(map(copy(a:000),'" ".s:shellesc(v:val)'),'')
@@ -400,7 +462,7 @@ function! s:repo_rev_parse(rev) dict abort
     return fugitive#RevParse(a:rev, self.git_dir)
 endfunction
 
-call s:add_methods('repo',['git_command','git_chomp','git_chomp_in_tree','rev_parse'])
+call s:add_methods('repo',['prepare','git_command','git_chomp','git_chomp_in_tree','rev_parse'])
 
 function! s:repo_superglob(base) dict abort
     return map(fugitive#Complete(a:base, self.git_dir), 'substitute(v:val, ''\\\(.\)'', ''\1'', "g")')
@@ -474,15 +536,33 @@ function! fugitive#Real(url) abort
 endfunction
 
 function! fugitive#Path(url, ...) abort
-    if !a:0 || empty(a:url)
+  if empty(a:url)
+    return ''
+  endif
+  let dir = a:0 > 1 ? a:2 : get(b:, 'git_dir', '')
+  let tree = s:Tree(dir)
+  if !a:0
         return fugitive#Real(a:url)
+  elseif a:1 =~# '\.$'
+    let path = s:Slash(fugitive#Real(a:url))
+    let cwd = getcwd()
+    let lead = ''
+    while s:cpath(tree . '/', (cwd . '/')[0 : len(tree)])
+      if s:cpath(cwd . '/', path[0 : len(cwd)])
+        if strpart(path, len(cwd) + 1) =~# '^\.git\%(/\|$\)'
+          break
+        endif
+        return a:1[0:-2] . (empty(lead) ? './' : lead) . strpart(path, len(cwd) + 1)
+      endif
+      let cwd = fnamemodify(cwd, ':h')
+      let lead .= '../'
+    endwhile
+    return a:1[0:-2] . path
     endif
     let url = s:Slash(fnamemodify(a:url, ':p'))
     if url =~# '/$' && s:Slash(a:url) !~# '/$'
         let url = url[0:-2]
     endif
-    let dir = a:0 > 1 ? a:2 : get(b:, 'git_dir', '')
-    let tree = s:Tree(dir)
     let [argdir, commit, file] = s:DirCommitFile(a:url)
     if len(argdir) && s:cpath(argdir) !=# s:cpath(dir)
         let file = ''
@@ -504,7 +584,10 @@ function! s:Relative(...) abort
 endfunction
 
 function! fugitive#Route(object, ...) abort
-    if a:object =~# '^[~$]'
+  if type(a:object) == type(0)
+    let name = bufname(a:object)
+    return s:PlatformSlash(name =~# '^$\|^/\|^\a\+:' ? name : getcwd() . '/' . name)
+  elseif a:object =~# '^[~$]'
         let prefix = matchstr(a:object, '^[~$]\i*')
         let owner = expand(prefix)
         return s:PlatformSlash((len(owner) ? owner : prefix) . strpart(a:object, len(prefix)))
@@ -620,18 +703,13 @@ function! s:Generate(rev, ...) abort
     return fugitive#Route(object, dir)
 endfunction
 
-function! s:RemoveDot(path, ...) abort
-    if a:path !~# '^\./'
-        return a:path
+function! s:DotRelative(path) abort
+  let cwd = getcwd()
+  let path = substitute(a:path, '^[~$]\i*', '\=expand(submatch(0))', '')
+  if s:cpath(cwd . '/', (path . '/')[0 : len(cwd)])
+    return '.' . strpart(path, len(cwd))
     endif
-    let dir = a:0 ? a:1 : get(b:, 'git_dir', '')
-    let cdir = fugitive#CommonDir(dir)
-    if len(filter(['', '/tags', '/heads', '/remotes'], 'getftime(cdir . "/refs" . v:val . a:path[1:-1]) >= 0')) ||
-                \ a:path =~# 'HEAD$' && filereadable(dir . a:path[1:-1]) ||
-                \ a:path =~# '^\./refs/' && filereadable(cdir . a:path[1:-1])
-        return a:path
-    endif
-    return a:path[2:-1]
+  return a:path
 endfunction
 
 function! fugitive#Object(...) abort
@@ -660,6 +738,44 @@ function! fugitive#Object(...) abort
     endif
 endfunction
 
+let s:var = '\%(%\|#<\=\d\+\|##\=\)'
+let s:flag = '\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)'
+let s:expand = '\%(\(' . s:var . '\)\(' . s:flag . '*\)\(:S\)\=\)'
+
+function! s:BufName(var) abort
+  if a:var ==# '%'
+    return bufname(get(b:, 'fugitive_blamed_bufnr', ''))
+  elseif a:var =~# '^#\d*$'
+    let nr = getbufvar(+a:var[1:-1], 'fugitive_blamed_bufnr', '')
+    return bufname(nr ? nr : +a:var[1:-1])
+  else
+    return expand(a:var)
+  endif
+endfunction
+
+function! s:ExpandVar(other, var, flags, esc) abort
+  if a:other =~# '^\'
+    return a:other[1:-1]
+  elseif a:other =~# '^!'
+    let buffer = s:BufName(len(a:other) > 1 ? '#'. a:other[1:-1] : '%')
+    let owner = s:Owner(buffer)
+    return len(owner) ? owner : '@'
+  endif
+  let flags = a:flags
+  let file = s:DotRelative(fugitive#Real(s:BufName(a:var)))
+  while len(flags)
+    let flag = matchstr(flags, s:flag)
+    let flags = strpart(flags, len(flag))
+    if flag ==# ':.'
+      let file = s:DotRelative(file)
+    else
+      let file = fnamemodify(file, flag)
+    endif
+  endwhile
+  let file = s:Slash(file)
+  return (len(a:esc) ? shellescape(file) : file)
+endfunction
+
 function! s:Expand(rev) abort
     if a:rev =~# '^:[0-3]$'
         let file = a:rev . s:Relative(':')
@@ -667,19 +783,26 @@ function! s:Expand(rev) abort
         let file = 'HEAD^{}' . a:rev[1:-1] . s:Relative(':')
     elseif a:rev =~# '^@{'
         let file = 'HEAD' . a:rev. s:Relative(':')
-    elseif a:rev =~# '^[~^]/\@!'
+  elseif a:rev =~# '^\^[0-9~^{]\|^\~[0-9~^]'
         let commit = substitute(s:DirCommitFile(@%)[1], '^\d\=$', 'HEAD', '')
         let file = commit . a:rev . s:Relative(':')
     else
         let file = a:rev
     endif
-    return s:sub(substitute(file,
-                \ '\([%#]\)$\|\\\([[:punct:]]\)','\=len(submatch(2)) ? submatch(2) : fugitive#Path(expand(submatch(1)))','g'),
-                \ '\.\@<=/$','')
+  return substitute(file,
+        \ '\(\\[' . s:fnameescape . ']\|^\\[>+-]\|!\d*\)\|' . s:expand,
+        \ '\=s:ExpandVar(submatch(1),submatch(2),submatch(3),"")', 'g')
+endfunction
+
+function! fugitive#Expand(object) abort
+  return substitute(a:object,
+        \ '\(\\[' . s:fnameescape . ']\|^\\[>+-]\|!\d*\)\|' . s:expand,
+        \ '\=s:ExpandVar(submatch(1),submatch(2),submatch(3),submatch(5))', 'g')
 endfunction
 
 function! s:ShellExpand(cmd) abort
-    return substitute(a:cmd, '\\\@<![%#]:\@!', '\=s:RemoveDot(fugitive#Path(expand(submatch(0)), "./"))', 'g')
+  return substitute(a:cmd, '\(\\[!#%]\|!\d*\)\|' . s:expand,
+        \ '\=s:ExpandVar(submatch(1),submatch(2),submatch(3),submatch(5))', 'g')
 endfunction
 
 let s:trees = {}
@@ -1766,7 +1889,7 @@ endfunction
 
 function! s:StageToggle(lnum1,lnum2) abort
     if a:lnum1 == 1 && a:lnum2 == 1
-        return 'Gedit /.git|call search("^index$", "wc")'
+    return 'Gedit .git/|call search("^index$", "wc")'
     endif
     try
         let output = ''
@@ -1802,11 +1925,7 @@ function! s:StageToggle(lnum1,lnum2) abort
             endif
             execute lnum
             if section ==# 'staged'
-                if filename =~ ' -> '
-                    let files_to_unstage = split(filename,' -> ')
-                else
-                    let files_to_unstage = [filename]
-                endif
+        let files_to_unstage = split(filename, ' -> ')
                 let filename = files_to_unstage[-1]
                 let cmd = ['reset', '-q'] + map(copy(files_to_unstage), '"./" . v:val')
             elseif getline(lnum) =~# '^.\=\tdeleted:'
@@ -2185,10 +2304,10 @@ function! s:Log(cmd, bang, line1, line2, ...) abort
     let before = substitute(args, ' --\S\@!.*', '', '')
     let after = strpart(args, len(before))
     let path = s:Relative('/')
+  let relative = path[1:-1]
     if path =~# '^/\.git\%(/\|$\)' || len(after)
         let path = ''
     endif
-    let relative = s:Relative('')
     if before !~# '\s[^[:space:]-]'
         let owner = s:Owner(@%)
         if len(owner)
@@ -3451,7 +3570,7 @@ endfunction
 
 function! fugitive#StatusCfile() abort
     let file = s:Generate(s:StatusCfile())
-    return empty(file) ? "\<C-R>\<C-F>" : s:fnameescape(file)
+  return empty(file) ? fugitive#Cfile() : s:fnameescape(file)
 endfunction
 
 function! s:cfile() abort
