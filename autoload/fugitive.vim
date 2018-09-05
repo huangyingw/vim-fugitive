@@ -3887,7 +3887,7 @@ function! s:Gcp(...) abort
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gcp.sh ' . '"' .  arg1 . '" "' .  arg2 . '"')
 endfunction
 function! s:BinaryGrep(...) abort
-    let b:csdbpath = Find_in_parent("files.proj",Windowdir(),"/")
+    let b:csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
     exec "cd " . b:csdbpath
     let b:keyword = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/binaryGrep.sh ' . '"' .  b:keyword . '"')
@@ -3896,7 +3896,7 @@ function! s:BinaryGrep(...) abort
     call OpenOrSwitch(b:keyword . '.binaryGrep.findresult')
 endfunction
 function! s:Fnotinuse() abort
-    let b:csdbpath = Find_in_parent("files.proj",Windowdir(),"/")
+    let b:csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
     exec "cd " . b:csdbpath
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/fnotinuse.sh')
     call OpenOrSwitch('fnotinuse.findresult')
