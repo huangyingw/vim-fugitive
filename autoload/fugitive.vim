@@ -3901,7 +3901,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gcof 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gcom :execute s:Gcom(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gcp :execute s:Gcp(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdev :execute s:Gdev()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdi :execute s:Gdi()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdi :execute s:Gdi(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdif :execute s:Gdif(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gicb :execute s:Gicb()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gitk :execute s:Gitk(<f-args>)")
@@ -4153,11 +4153,12 @@ function! s:Gdev() abort
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gdev.sh')
 endfunction
-function! s:Gdi() abort
+function! s:Gdi(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    silent exec '!~/loadrc/gitrc/gdi.sh'
-    call OpenOrSwitch('gdi.findresult')
+    let arg1 = (a:0 >= 1) ? a:1 : ''
+    silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee gdi.diff'
+    call OpenOrSwitch('gdi.diff')
 endfunction
 function! s:Grtv() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
