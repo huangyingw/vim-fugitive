@@ -1,20 +1,23 @@
 [remote "github"]
     url = git@github.com:huangyingw/vim-fugitive.git
     fetch = +refs/heads/*:refs/remotes/github/*
-[remote "tpope"]
+[remote "bitbucket"]
+	url = git@bitbucket.org:huangyingw/vim-fugitive.git
+    fetch = +refs/heads/*:refs/remotes/bitbucket/*
+[remote "origin"]
     url = git@github.com:tpope/vim-fugitive.git
-    fetch = +refs/heads/*:refs/remotes/tpope/*
+    fetch = +refs/heads/*:refs/remotes/origin/*
 [push]
-    remote = origin
+    remote = bitbucket
     remote = github
 [gsync]
-    remote = tpope
+    remote = origin
     branch = master
 [commit]
     message = n
 [branch "dev"]
-    remote = origin
+    remote = bitbucket
     merge = refs/heads/dev
 [branch "RunShell"]
-    remote = origin
+    remote = bitbucket
     merge = refs/heads/RunShell
