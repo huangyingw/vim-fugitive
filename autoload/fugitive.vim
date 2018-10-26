@@ -3927,7 +3927,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gstv 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gsync :execute s:Gsync()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gvd :execute s:Gvd(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gvdf :execute s:Gvdf(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete LcTest :execute s:LcTest()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete LogFilter :execute s:LogFilter(<f-args>)")
@@ -4211,13 +4210,6 @@ function! s:Gbrd(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbrd.sh ' . '"' .  arg1 . '"')
-endfunction
-function! s:Gvdf(...) abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    let arg1 = (a:0 >= 1) ? a:1 : ''
-    silent exec '!~/loadrc/gitrc/gvdf.sh ' . '"' .  arg1 . '"'
-    call OpenOrSwitch('gvdf.findresult')
 endfunction
 function! s:Gdif(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
