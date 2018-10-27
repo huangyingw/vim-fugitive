@@ -401,11 +401,11 @@ function! s:repo_bare() dict abort
 endfunction
 
 function! s:repo_find(object) dict abort
-  return fugitive#Find(a:object, self.git_dir)
+    return fugitive#Find(a:object, self.git_dir)
 endfunction
 
 function! s:repo_translate(rev) dict abort
-  return s:Slash(fugitive#Find(substitute(a:rev, '^/', ':(top)', ''), self.git_dir))
+    return s:Slash(fugitive#Find(substitute(a:rev, '^/', ':(top)', ''), self.git_dir))
 endfunction
 
 function! s:repo_head(...) dict abort
@@ -638,7 +638,7 @@ function! fugitive#Find(object, ...) abort
         else
             let altdir = FugitiveExtractGitDir(f)
             if len(altdir) && !s:cpath(dir, altdir)
-        return fugitive#Find(a:object, altdir)
+                return fugitive#Find(a:object, altdir)
             endif
         endif
     elseif rev =~# '^:[0-3]:'
@@ -670,7 +670,7 @@ function! fugitive#Find(object, ...) abort
                 else
                     let altdir = FugitiveExtractGitDir(file)
                     if len(altdir) && !s:cpath(dir, altdir)
-            return fugitive#Find(a:object, altdir)
+                        return fugitive#Find(a:object, altdir)
                     endif
                     return file
                 endif
@@ -698,7 +698,7 @@ function! s:Generate(rev, ...) abort
     elseif a:rev =~# '^/' && len(tree) && getftime(tree . a:rev) >= 0 && getftime(a:rev) < 0
         let object = ':(top)' . a:rev[1:-1]
     endif
-  return fugitive#Find(object, dir)
+    return fugitive#Find(object, dir)
 endfunction
 
 function! s:DotRelative(path) abort
@@ -3902,6 +3902,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gcom 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gcp :execute s:Gcp(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdev :execute s:Gdev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdi :execute s:Gdi(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdi2 :execute s:Gdi2(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdif :execute s:Gdif(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gicb :execute s:Gicb()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gitk :execute s:Gitk(<f-args>)")
@@ -4158,6 +4159,13 @@ function! s:Gdi(...) abort
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee gdi.diff'
     call OpenOrSwitch('gdi.diff')
+endfunction
+function! s:Gdi2(...) abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    let arg1 = (a:0 >= 1) ? a:1 : ''
+    silent exec '!~/loadrc/gitrc/gdi2.sh ' . '"' .  arg1 . '"'
+    call s:Gs()
 endfunction
 function! s:Grtv() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
