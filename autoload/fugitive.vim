@@ -4157,8 +4157,8 @@ function! s:Gdi(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee gdi.findresult'
-    call OpenOrSwitch('gdi.findresult')
+    silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee gdi.diff'
+    call OpenOrSwitch('gdi.diff')
 endfunction
 function! s:Gdi2(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
