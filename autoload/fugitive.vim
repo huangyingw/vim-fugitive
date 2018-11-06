@@ -3954,8 +3954,12 @@ endfunction
 function! s:Gvd(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    if a:0 == 0 && expand('%:t') != 'index'
-        call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  expand('%:p') . '"')
+    if expand('%:t') != 'index'
+        if a:0 == 0
+            call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  expand('%:p') . '"')
+        else
+            call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  expand('%:p') . '"')
+        endif
     else
         let arg1 = (a:0 >= 1) ? a:1 : ''
         let arg2 = (a:0 >= 2) ? a:2 : ''
@@ -4157,8 +4161,23 @@ function! s:Gdi(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee gdi.diff'
-    call OpenOrSwitch('gdi.diff')
+    let output = 'gdi.diff'
+
+    if expand('%:t') != 'index'
+        let output = expand('%:p') . '.diff' 
+
+        if a:0 == 0
+            silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  expand('%:p') . '" 2>&1 | tee ' . '"' .  output . '"'
+        else
+            let arg1 = (a:0 >= 1) ? a:1 : ''
+            silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" "' .  expand('%:p') . '" 2>&1 | tee ' . '"' .  output . '"' 
+        endif
+    else
+        let arg1 = (a:0 >= 1) ? a:1 : ''
+        silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee ' . '"' .  output . '"'  
+    endif
+
+    call OpenOrSwitch(output)
 endfunction
 function! s:Gdi2(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
