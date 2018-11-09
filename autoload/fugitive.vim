@@ -3908,6 +3908,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gicb 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Glf :execute s:Glf()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Glg :execute s:Glg()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gme2 :execute s:Gme2()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gps :execute s:Gps()")
@@ -4224,7 +4225,7 @@ function! s:Gitk(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    call asyncrun#run('<bang>', '', 'gitk ' . '"' .  arg1 . ' "' . '"' .  arg2 . '"')
+    call asyncrun#run('<bang>', '', 'gitk ' . '"' .  arg1 . '"' . ' ' . '"' .  arg2 . '"')
 endfunction
 function! s:Gbrm(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
