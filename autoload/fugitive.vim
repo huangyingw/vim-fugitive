@@ -4213,7 +4213,7 @@ endfunction
 function! s:Gmet() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
-    silent exec '!git mergetool'
+    call asyncrun#run('<bang>', '', 'git mergetool')
 endfunction
 function! s:Gicb() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
