@@ -4224,7 +4224,7 @@ function! s:Gitk(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
-    silent exec '!gitk ' . '"' .  arg1 . '" "' .  arg2 . '"'
+    call asyncrun#run('<bang>', '', 'gitk ' . '"' .  arg1 . ' "' . '"' .  arg2 . '"')
 endfunction
 function! s:Gbrm(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
