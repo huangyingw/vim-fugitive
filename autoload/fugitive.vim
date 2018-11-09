@@ -3908,7 +3908,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gicb 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gitk :execute s:Gitk(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Glf :execute s:Glf()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Glg :execute s:Glg()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gme2 :execute s:Gme2()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gme2 :execute s:Gme2(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gps :execute s:Gps()")
@@ -4146,11 +4146,16 @@ function! s:Gstlv() abort
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstlv.sh')
 endfunction
+function! s:Gme2(args, ...) abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    silent exec '!~/loadrc/gitrc/gme2.sh ' . '"' .  a:args . '" 2>&1 | tee gme2.findresult')
+    call OpenOrSwitch(worktree . '/' . 'gme2.findresult')
+endfunction
 function! s:G(args, ...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult')
-    " call RunShell('~/loadrc/gitrc/g.sh', '"' .  a:args . '" 2>&1 | tee g.findresult')
     call OpenOrSwitch(worktree . '/' . 'g.findresult')
 endfunction
 function! s:Gdev() abort
@@ -4165,17 +4170,17 @@ function! s:Gdi(...) abort
     let output = 'gdi.diff'
 
     if expand('%:t') != 'index'
-        let output = expand('%:p') . '.diff' 
+        let output = expand('%:p') . '.diff'
 
         if a:0 == 0
             silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  expand('%:p') . '" 2>&1 | tee ' . '"' .  output . '"'
         else
             let arg1 = (a:0 >= 1) ? a:1 : ''
-            silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" "' .  expand('%:p') . '" 2>&1 | tee ' . '"' .  output . '"' 
+            silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" "' .  expand('%:p') . '" 2>&1 | tee ' . '"' .  output . '"'
         endif
     else
         let arg1 = (a:0 >= 1) ? a:1 : ''
-        silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee ' . '"' .  output . '"'  
+        silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee ' . '"' .  output . '"'
     endif
 
     call OpenOrSwitch(output)
