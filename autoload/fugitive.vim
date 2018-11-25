@@ -3880,6 +3880,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Copy 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dodev :execute s:Dodev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dps :execute s:Dps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Fcscope :execute s:Fcscope()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete FindDeleted :execute s:FindDeleted()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Fnotinuse :execute s:Fnotinuse()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Fr :execute s:Fr(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Fsync :execute s:Fsync()")
@@ -4341,5 +4342,10 @@ function! s:Fr(find, replace) abort
     silent exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:find . '"' . ' ' . '"' .  a:replace . '"'
     call s:Gs()
 endfunction
-
+function! s:FindDeleted() abort
+    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
+    exec "cd " . csdbpath
+    silent exec '!~/loadrc/gitrc/find_deleted.sh 2>&1 | tee find_deleted.findresult'
+    call OpenOrSwitch('find_deleted.findresult')
+endfunction
 " Section: End
