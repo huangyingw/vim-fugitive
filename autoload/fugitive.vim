@@ -3929,6 +3929,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gstv 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gsync :execute s:Gsync()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gvd :execute s:Gvd(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gwap :execute s:Gwap()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete LcTest :execute s:LcTest()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete LogFilter :execute s:LogFilter(<f-args>)")
@@ -4347,5 +4348,11 @@ function! s:FindDeleted() abort
     exec "cd " . csdbpath
     silent exec '!~/loadrc/gitrc/find_deleted.sh 2>&1 | tee find_deleted.findresult'
     call OpenOrSwitch('find_deleted.findresult', 'vs')
+endfunction
+function! s:Gwap() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    silent exec '!~/loadrc/gitrc/gwap.sh'
+    call s:Gs()
 endfunction
 " Section: End
