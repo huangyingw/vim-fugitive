@@ -3912,7 +3912,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Glg :
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gmet :execute s:Gmet()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gpl :execute s:Gpl()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gps :execute s:Gps()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gres :execute s:Gres()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Greview :execute s:Greview()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Grsh :execute s:Grsh(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Grta :execute s:Grta(<f-args>)")
@@ -4283,11 +4282,6 @@ function! s:Greview() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/greview.sh')
-endfunction
-function! s:Gres() abort
-    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
-    exec "cd " . worktree
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gres.sh')
 endfunction
 function! s:Dps() abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
