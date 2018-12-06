@@ -3905,6 +3905,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdev 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdi :execute s:Gdi(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdi2 :execute s:Gdi2(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdif :execute s:Gdif(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdifo :execute s:Gdifo(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gdio :execute s:Gdio(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gicb :execute s:Gicb()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gitk :execute s:Gitk(<f-args>)")
@@ -4296,6 +4297,15 @@ function! s:Gbrd(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbrd.sh ' . '"' .  arg1 . '"')
+endfunction
+
+function! s:Gdifo(...) abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    let remote = substitute(system("git config gsync.remote"), '\n', '', '')
+    let branch = substitute(system("git config gsync.branch"), '\n', '', '')
+    silent exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  remote . '/' . branch . '"'
+    call OpenOrSwitch('gdif.findresult', 'vs')
 endfunction
 
 function! s:Gdif(...) abort
