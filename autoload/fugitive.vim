@@ -3930,6 +3930,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gstv 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gsync :execute s:Gsync()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gtg :execute s:Gtg()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gvd :execute s:Gvd(<f-args>)")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gvdo :execute s:Gvdo()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gwap :execute s:Gwap()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Jformat :execute s:Jformat()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete LcTest :execute s:LcTest()")
@@ -3970,6 +3971,14 @@ function! s:Gvd(...) abort
         let arg2 = (a:0 >= 2) ? a:2 : ''
         call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  arg2 . '"')
     endif
+endfunction
+
+function! s:Gvdo() abort
+    let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
+    exec "cd " . worktree
+    let remote = substitute(system("git config gsync.remote"), '\n', '', '')
+    let branch = substitute(system("git config gsync.branch"), '\n', '', '')
+    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  remote . '/' . branch . '"')
 endfunction
 
 function! s:Fr(...) abort
