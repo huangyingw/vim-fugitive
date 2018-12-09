@@ -3962,8 +3962,9 @@ function! s:Gvd(...) abort
     exec "cd " . worktree
     if expand('%:t') != 'index'
         if a:0 == 0
-            call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  expand('%:p') . '"')
+            call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . 'HEAD ' . '"' .  expand('%:p') . '"')
         else
+            let arg1 = (a:0 >= 1) ? a:1 : ''
             call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  arg1 . '" "' .  expand('%:p') . '"')
         endif
     else
