@@ -376,7 +376,7 @@ function! fugitive#repo(...) abort
         endif
         return extend(repo, s:repo_prototype, 'keep')
     endif
-  call s:throw('not a Git repository: ' . string(dir))
+    call s:throw('not a Git repository: ' . string(dir))
 endfunction
 
 function! s:repo_dir(...) dict abort
@@ -1098,7 +1098,7 @@ function! fugitive#buffer(...) abort
     if buffer.getvar('git_dir') !=# ''
         return buffer
     endif
-  call s:throw('not a Fugitive buffer: ' . string(bufname(buffer['#'])))
+    call s:throw('not a Fugitive buffer: ' . string(bufname(buffer['#'])))
 endfunction
 
 function! s:buffer_getvar(var) dict abort
@@ -1516,7 +1516,7 @@ function! fugitive#BufReadCmd(...) abort
                     if lnum
                         silent keepjumps delete_
                     end
-          silent exe (exists(':keeppatterns') ? 'keeppatterns' : '') 'keepjumps 1,/^diff --git\|\%$/s/\r$//e'
+                    silent exe (exists(':keeppatterns') ? 'keeppatterns' : '') 'keepjumps 1,/^diff --git\|\%$/s/\r$//e'
                     keepjumps 1
                 endif
             elseif b:fugitive_type ==# 'stage'
@@ -2984,7 +2984,7 @@ function! s:Blame(bang, line1, line2, count, mods, args) abort
         if empty(s:Relative('/'))
             call s:throw('file or blob required')
         endif
-    if filter(copy(a:args),'v:val !~# "^\\%(--first-parent\\|--root\\|--show-name\\|-\\=\\%([ltfnsew]\\|[MC]\\d*\\)\\+\\)$"') != []
+        if filter(copy(a:args),'v:val !~# "^\\%(--first-parent\\|--root\\|--show-name\\|-\\=\\%([ltfnsew]\\|[MC]\\d*\\)\\+\\)$"') != []
             call s:throw('unsupported option')
         endif
         call map(a:args,'s:sub(v:val,"^\\ze[^-]","-")')
@@ -3960,6 +3960,7 @@ endfunction
 function! s:Gvd(...) abort
     let worktree = substitute(system("~/loadrc/gitrc/get_worktree.sh " . expand('%:p')), '\n', '', '')
     exec "cd " . worktree
+
     if expand('%:t') != 'index'
         if a:0 == 0
             call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . 'HEAD ' . '"' .  expand('%:p') . '"')
@@ -3979,7 +3980,12 @@ function! s:Gvdo() abort
     exec "cd " . worktree
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
-    call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  remote . '/' . branch . '"')
+
+    if expand('%:t') != 'index'
+        call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  remote . '/' . branch . '" "' .  expand('%:p') . '"')
+    else
+        call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gvd.sh ' . '"' .  remote . '/' . branch . '"')
+    endif
 endfunction
 
 function! s:Fr(...) abort
