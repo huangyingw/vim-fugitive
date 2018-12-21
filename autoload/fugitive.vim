@@ -3919,7 +3919,6 @@ endfunction
 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete BinaryGrep :execute s:BinaryGrep(<f-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Copy :execute s:Copy(<f-args>)")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete DiffClean :execute s:DiffClean()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dodev :execute s:Dodev()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Dps :execute s:Dps()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Fcscope :execute s:Fcscope()")
@@ -4277,6 +4276,7 @@ function! s:Gdi(...) abort
     endif
 
     call OpenOrSwitch(output, 'vs')
+    call s:DiffClean()
 endfunction
 
 function! s:Gdio(...) abort
@@ -4287,6 +4287,7 @@ function! s:Gdio(...) abort
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
     silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  remote . '/' . branch . '" 2>&1 | tee ' . '"' .  output . '"'
     call OpenOrSwitch(output, 'vs')
+    call s:DiffClean()
 endfunction
 
 function! s:Gdi2(...) abort
