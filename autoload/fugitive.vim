@@ -4275,7 +4275,11 @@ function! s:Gdi(...) abort
         silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  arg1 . '" 2>&1 | tee ' . '"' .  output . '"'
     endif
 
-    call OpenOrSwitch(output, 'vs')
+    if bufexists(output)
+        exe "bd!" . output
+    endif
+
+    silent exec 'vs ' . output
     call s:DiffClean()
 endfunction
 
@@ -4286,7 +4290,12 @@ function! s:Gdio(...) abort
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
     silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  remote . '/' . branch . '" 2>&1 | tee ' . '"' .  output . '"'
-    call OpenOrSwitch(output, 'vs')
+
+    if bufexists(output)
+        exe "bd!" . output
+    endif
+
+    silent exec 'vs ' . output
     call s:DiffClean()
 endfunction
 
