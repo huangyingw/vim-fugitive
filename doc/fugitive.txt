@@ -49,20 +49,25 @@ that are part of Git repositories).
                         cf    |:Gcommit| --fixup=
                         cs    |:Gcommit| --squash=
                         cA    |:Gcommit| --edit --squash=
+                        =     toggle inline diff
+                        <     show inline diff
+                        >     hide inline diff
                         D     |:Gdiff|
                         ds    |:Gsdiff|
                         dp    |:Git!| diff (p for patch; use :Gw to apply)
                         dp    |:Git| add --intent-to-add (untracked files)
                         dv    |:Gvdiff|
                         gO    |:Gvsplit|
-                        g|    |:Git| checkout
-                        g|    |:Git| checkout HEAD (staged files)
-                        g|    |:Git| clean (untracked files)
-                        g|    |:Git| rm (unmerged files)
                         O     |:Gtabedit|
                         o     |:Gsplit|
                         P     |:Git| add --patch
                         P     |:Git| reset --patch (staged files)
+                        s     |:Git| add
+                        u     |:Git| reset
+                        X     |:Git| checkout
+                        X     |:Git| checkout HEAD (staged files)
+                        X     |:Git| clean (untracked files)
+                        X     |:Git| rm (unmerged files)
                         q     close status
                         r     reload status
                         .     enter |:| command line with file prepopulated
