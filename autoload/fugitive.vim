@@ -1154,39 +1154,39 @@ function! fugitive#buffer(...) abort
 endfunction
 
 function! s:buffer_getvar(var) dict abort
-    throw 'fugitive: Removed in favor of getbufvar()'
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().getvar() which has been removed. Replace it with the local variable or getbufvar()"
 endfunction
 
 function! s:buffer_getline(lnum) dict abort
-    throw 'fugitive: Removed in favor of getbufline()'
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().getline() which has been removed. Replace it with getline() or getbufline()"
 endfunction
 
 function! s:buffer_repo() dict abort
-    throw 'fugitive: Removed in favor of fugitive#repo()'
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().repo() which has been removed. Replace it with fugitive#repo()"
 endfunction
 
 function! s:buffer_type(...) dict abort
-    throw 'fugitive: Removed in favor of b:fugitive_type (or ideally avoid entirely)'
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().type() which has been removed. Replace it with get(b:, 'fugitive_type', '')"
 endfunction
 
 function! s:buffer_spec() dict abort
-    throw "fugitive: Removed in favor of bufname(), expand('%:p'), etc."
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().spec() which has been removed. Replace it with bufname(), expand('%:p'), etc"
 endfunction
 
 function! s:buffer_name() dict abort
-    throw "fugitive: Removed in favor of bufname(), expand('%:p'), etc."
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().name() which has been removed. Replace it with bufname(), expand('%:p'), etc"
 endfunction
 
 function! s:buffer_commit() dict abort
-    throw 'fugitive: Removed in favor of FugitiveParse()'
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().commit() which has been removed. Replace it with matchstr(FugitiveParse()[0], '^\x\+')"
 endfunction
 
 function! s:buffer_relative(...) dict abort
-    throw 'fugitive: Removed in favor of FugitivePath(bufname, ' . string(a:0 ? a:1 : '') . ')'
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().relative() which has been removed. Replace it with FugitivePath(@%, " . string(a:0 ? a:1 : '') . ")"
 endfunction
 
 function! s:buffer_path(...) dict abort
-    throw 'fugitive: Removed in favor of FugitivePath(bufname, ' . string(a:0 ? a:1 : '') . ')'
+  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().path() which has been removed. Replace it with FugitivePath(@%, " . string(a:0 ? a:1 : '') . ")"
 endfunction
 
 call s:add_methods('buffer',['getvar','getline','repo','type','spec','name','commit','path','relative'])
@@ -1400,6 +1400,9 @@ function! fugitive#BufReadStatus() abort
             let file = line[3:-1]
             let files = file
             let i += 1
+      if line[2] !=# ' '
+        continue
+      endif
             if line[0:1] =~# '[RC]'
                 let files = output[i] . ' -> ' . file
                 let i += 1
@@ -1882,37 +1885,36 @@ call s:command("-bar -bang -range=-1 G       :execute s:Status(<bang>0, <count>,
 augroup fugitive_status
     autocmd!
     if !has('win32')
-        autocmd FocusGained,ShellCmdPost * call fugitive#ReloadStatus()
-        autocmd QuickFixCmdPost c*file call fugitive#ReloadStatus()
-        autocmd BufDelete term://* call fugitive#ReloadStatus()
+    autocmd ShellCmdPost        * call fugitive#ReloadStatus()
+    autocmd QuickFixCmdPost c*ile call fugitive#ReloadStatus()
+    autocmd FocusGained         * call fugitive#ReloadStatus()
+    autocmd BufDelete    term://* call fugitive#ReloadStatus()
     endif
 augroup END
 
 function! s:Status(bang, count, mods) abort
     try
-        let dir = b:git_dir
-        let mods = a:mods ==# '<mods>' || empty(a:mods) ? 'leftabove' : a:mods
+    let mods = a:mods ==# '<mods>' || empty(a:mods) ? '' : a:mods . ' '
+    if mods !~# 'aboveleft|belowright\|leftabove\|rightbelow\|topleft\|botright'
+      let mods = 'topleft ' . mods
+    endif
         let file = fugitive#Find(':')
+    let arg = ' +setl\ foldmethod=syntax\ foldlevel=1\|let\ w:fugitive_status=FugitiveGitDir() ' .
+          \ s:fnameescape(file)
         for winnr in range(1, winnr('$'))
             if s:cpath(file, fnamemodify(bufname(winbufnr(winnr)), ':p'))
                 exe winnr . 'wincmd w'
-                let w:fugitive_status = dir
+        let w:fugitive_status = FugitiveGitDir()
                 return s:ReloadStatus()
             endif
         endfor
-        let wide = winwidth(0) >= 160
         if a:count ==# 0
-            exe mods 'Gedit :'
+      return mods . 'edit' . (a:bang ? '!' : '') . arg
         elseif a:bang
-            exe mods (a:count ==# -1 && wide ? 'vert' : '') 'Gpedit :'
-            wincmd P
-        elseif a:count ==# -1 && wide
-            exe mods 'Gvsplit :'
+      return mods . 'pedit' . arg . '|wincmd P'
         else
-            exe mods a:count > 0 ? a:count : '' 'Gsplit :'
+      return mods . (a:count > 0 ? a:count : '') . 'split' . arg
         endif
-        let w:fugitive_status = dir
-        setlocal foldmethod=syntax foldlevel=1
     catch /^fugitive:/
         return 'echoerr v:errmsg'
     endtry
@@ -2349,7 +2351,7 @@ function! s:StageToggle(lnum1, count) abort
             if info.section ==# 'Staged'
                 let files_to_unstage = split(filename, ' -> ')
                 let filename = files_to_unstage[-1]
-                let cmd = ['reset', '-q'] + map(copy(files_to_unstage), '"./" . v:val')
+        let cmd = ['reset', '-q', '--'] + map(copy(files_to_unstage), 's:Tree() . "/" . v:val')
             elseif getline(lnum) =~# '^D'
                 let cmd = ['rm', './' . filename]
             elseif getline(lnum) =~# '^M'
@@ -2857,7 +2859,7 @@ endfunction
 
 function! s:UsableWin(nr) abort
     return a:nr && !getwinvar(a:nr, '&previewwindow') &&
-                \ empty(getwinvar(a:nr, 'fugitive_status')) &&
+        \ (empty(getwinvar(a:nr, 'fugitive_status')) || getwinvar(a:nr, 'fugitive_type') !=# 'index') &&
                 \ index(['gitrebase', 'gitcommit'], getbufvar(winbufnr(a:nr), '&filetype')) < 0 &&
                 \ index(['nofile','help','quickfix'], getbufvar(winbufnr(a:nr), '&buftype')) < 0
 endfunction
@@ -2886,8 +2888,7 @@ function! s:BlurStatus() abort
         if len(winnrs)
             exe winnrs[0].'wincmd w'
         else
-            let wide = winwidth(0) >= 160
-            exe 'rightbelow' (winwidth(0) >= 160 ? 'vert' : '') 'new'
+      belowright new
         endif
         if &diff
             let mywinnr = winnr()
@@ -2977,6 +2978,9 @@ function! s:Read(count, line1, line2, range, bang, mods, args, ...) abort
     if file =~# '^fugitive:' && after is# 0
         return 'exe ' .string(mods . ' ' . fugitive#FileReadCmd(file, 0, pre)) . '|diffupdate'
     endif
+  if foldlevel(after)
+    exe after . 'foldopen!'
+  endif
     return mods . ' ' . after . 'read' . pre . ' ' . s:fnameescape(file) . '|' . delete . 'diffupdate' . (a:count < 0 ? '|' . line('.') : '')
 endfunction
 
@@ -3177,7 +3181,7 @@ function! s:Dispatch(bang, args)
         else
             silent noautocmd make!
             redraw!
-            return 'call fugitive#Cwindow()'
+      return 'call fugitive#Cwindow()|call fugitive#ReloadStatus()'
         endif
         return ''
     finally
@@ -4068,6 +4072,17 @@ function! fugitive#MapJumps(...) abort
         nnoremap <buffer>          cf    :<C-U>Gcommit --fixup=<C-R>=<SID>SquashArgument()<CR>
         nnoremap <buffer>          cs    :<C-U>Gcommit --squash=<C-R>=<SID>SquashArgument()<CR>
         nnoremap <buffer>          cA    :<C-U>Gcommit --edit --squash=<C-R>=<SID>SquashArgument()<CR>
+    nnoremap <buffer> <silent> ri    :<C-U>Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR><CR>
+    nnoremap <buffer> <silent> rf    :<C-U>Grebase --autosquash<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR><CR>
+    nnoremap <buffer> <silent> ru    :<C-U>Grebase --interactive @{upstream}<CR>
+    nnoremap <buffer> <silent> rp    :<C-U>Grebase --interactive @{push}<CR>
+    nnoremap <buffer> <silent> rw    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/reword/e<CR>
+    nnoremap <buffer> <silent> rm    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/edit/e<CR>
+    nnoremap <buffer> <silent> rk    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/drop/e<CR>
+    nnoremap <buffer> <silent> rr    :<C-U>Grebase --continue<CR>
+    nnoremap <buffer> <silent> rs    :<C-U>Grebase --skip<CR>
+    nnoremap <buffer> <silent> re    :<C-U>Grebase --edit-todo<CR>
+    nnoremap <buffer> <silent> ra    :<C-U>Grebase --abort<CR>
         nmap     <buffer>          .     <SID>: <Plug><cfile><Home>
     endif
 endfunction
