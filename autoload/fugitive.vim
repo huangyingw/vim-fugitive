@@ -5066,6 +5066,8 @@ function! s:DiffClean() abort
     call OpenOrSwitch(buffername, 'vs')
     silent exec 'g!/\c^[-|+]/d'
     silent exec 'g/\c^[-|+]$/d'
+    silent exec '%s/^--- a\//--- \.\//g'
+    silent exec '%s/^+++ b\//+++ \.\//g'
     w
 
 endfunction
