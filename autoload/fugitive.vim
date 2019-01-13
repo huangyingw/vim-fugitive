@@ -4533,6 +4533,11 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Tail 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete VS :execute s:VS(<f-args>)")
 function! s:LogFilter(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg1 . '"')
@@ -4540,12 +4545,22 @@ endfunction
 
 function! s:Jformat(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/jformat.sh ')
 endfunction
 
 function! s:Gvd(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
 
     if expand('%:t') != 'index'
@@ -4564,6 +4579,11 @@ endfunction
 
 function! s:Gvdo() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
@@ -4577,6 +4597,11 @@ endfunction
 
 function! s:Fr(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
@@ -4585,24 +4610,44 @@ endfunction
 
 function! s:Ga(args, ...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/ga.sh ' . '"' .  a:args . '"')
 endfunction
 
 function! s:Gsave() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gsave.sh')
 endfunction
 
 function! s:Gst() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gst.sh')
 endfunction
 
 function! s:Gcp(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
@@ -4610,8 +4655,13 @@ function! s:Gcp(...) abort
 endfunction
 
 function! s:BinaryGrep(...) abort
-    let b:csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
-    exec "cd " . b:csdbpath
+    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
+
+    if csdbpath == "Nothing"
+        return 
+    endif
+
+    exec "cd " . csdbpath
     let b:keyword = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/binaryGrep.sh ' . '"' .  b:keyword . '"')
     let b:keyword = substitute(b:keyword, " ", "_", "g")
@@ -4620,20 +4670,35 @@ function! s:BinaryGrep(...) abort
 endfunction
 
 function! s:Fnotinuse() abort
-    let b:csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
-    exec "cd " . b:csdbpath
+    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
+
+    if csdbpath == "Nothing"
+        return 
+    endif
+
+    exec "cd " . csdbpath
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/fnotinuse.sh')
     call OpenOrSwitch('fnotinuse.findresult', 'vs')
 endfunction
 
 function! s:Fcscope() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/fcscope.sh')
 endfunction
 
 function! s:Glf() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!git ls-files | tee glf.findresult'
     call OpenOrSwitch('glf.findresult', 'vs')
@@ -4641,6 +4706,11 @@ endfunction
 
 function! s:Glg() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/glg.sh'
     call OpenOrSwitch('glg.findresult', 'vs')
@@ -4648,24 +4718,44 @@ endfunction
 
 function! s:Gps() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gps.sh 2>&1 | tee gps.findresult')
 endfunction
 
 function! s:Gstp(args, ...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"')
 endfunction
 
 function! s:Gstv(args, ...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstv.sh ' . '"' .  a:args . '"')
 endfunction
 
 function! s:Gcof(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let b:relativePath = substitute(expand('%:p'), worktree . '/', "", "g")
     let arg1 = (a:0 >= 1) ? a:1 : ''
@@ -4675,12 +4765,22 @@ endfunction
 
 function! s:Gpl() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gpl.sh 2>&1 | tee gpl.findresult')
 endfunction
 
 function! s:Fsync() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/fsync.sh 2>&1 | tee fsync.findresult')
     call OpenOrSwitch('fsync.findresult', 'vs')
@@ -4688,30 +4788,55 @@ endfunction
 
 function! s:Gbis() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbis.sh')
 endfunction
 
 function! s:Gbidebug() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbidebug.sh')
 endfunction
 
 function! s:Gbib() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbib.sh')
 endfunction
 
 function! s:Gbig() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbig.sh')
 endfunction
 
 function! s:Gbil() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbil.sh'
     call OpenOrSwitch('gbil.findresult', 'vs')
@@ -4719,6 +4844,11 @@ endfunction
 
 function! s:Gbr() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbr.sh'
     call OpenOrSwitch('gbr.findresult', 'vs')
@@ -4726,12 +4856,22 @@ endfunction
 
 function! s:Gclean() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gclean.sh'
 endfunction
 
 function! s:Gbra() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbra.sh'
     call OpenOrSwitch('gbra.findresult', 'vs')
@@ -4744,12 +4884,22 @@ endfunction
 
 function! s:Gsync() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gsync.sh 2>&1 | tee gsync.findresult')
 endfunction
 
 function! s:Grta(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
@@ -4758,18 +4908,33 @@ endfunction
 
 function! s:Grsh(args, ...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
 endfunction
 
 function! s:Gsti() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gsti.sh')
 endfunction
 
 function! s:Gstl() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gstl.sh'
     call OpenOrSwitch('gstl.findresult', 'vs')
@@ -4777,12 +4942,22 @@ endfunction
 
 function! s:Gstlv() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstlv.sh')
 endfunction
 
 function! s:Gme2(args, ...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gme2.sh ' . '"' .  a:args . '" 2>&1 | tee gme2.findresult')
     call OpenOrSwitch(worktree . '/' . 'gme2.findresult', 'vs')
@@ -4790,18 +4965,33 @@ endfunction
 
 function! s:G(args, ...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult')
 endfunction
 
 function! s:Gdev() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gdev.sh')
 endfunction
 
 function! s:Gdi(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let output = 'gdi.diff'
@@ -4830,6 +5020,11 @@ endfunction
 
 function! s:Gdio(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let output = 'gdi.diff'
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
@@ -4846,6 +5041,11 @@ endfunction
 
 function! s:Gdi2(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gdi2.sh ' . '"' .  arg1 . '"'
@@ -4854,12 +5054,22 @@ endfunction
 
 function! s:Grtv() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call OpenOrSwitch('git/config', 'vs')
 endfunction
 
 function! s:Grtu() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!git remote update'
 endfunction
@@ -4874,6 +5084,11 @@ endfunction
 
 function! s:Gtg() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
     call OpenOrSwitch('gtg.findresult', 'vs')
@@ -4881,18 +5096,33 @@ endfunction
 
 function! s:Gmet() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'git mergetool')
 endfunction
 
 function! s:Gicb() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gicb.sh')
 endfunction
 
 function! s:Gitk(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
@@ -4901,6 +5131,11 @@ endfunction
 
 function! s:Gbrm(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbrm.sh ' . '"' .  arg1 . '"')
@@ -4908,6 +5143,11 @@ endfunction
 
 function! s:Gbrd(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbrd.sh ' . '"' .  arg1 . '"')
@@ -4915,6 +5155,11 @@ endfunction
 
 function! s:Gdifo(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
@@ -4924,6 +5169,11 @@ endfunction
 
 function! s:Gdif(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  arg1 . '"'
@@ -4932,6 +5182,11 @@ endfunction
 
 function! s:Gco(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gco.sh ' . '"' .  arg1 . '"')
@@ -4939,6 +5194,11 @@ endfunction
 
 function! s:Gcob(...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
@@ -4947,12 +5207,22 @@ endfunction
 
 function! s:Dodev() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call OpenOrSwitch('docker-compose.yml', 'vs')
 endfunction
 
 function! s:Gcom(args, ...) abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"')
 endfunction
@@ -4970,12 +5240,22 @@ endfunction
 
 function! s:Greview() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/greview.sh')
 endfunction
 
 function! s:Dps() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/dockerrc/dps.sh'
     call OpenOrSwitch('dps.findresult', 'vs')
@@ -4983,12 +5263,22 @@ endfunction
 
 function! s:SvnUp() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnup.sh')
 endfunction
 
 function! s:SvnReset() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnreset.sh'
     call OpenOrSwitch('svnreset.findresult', 'vs')
@@ -4996,12 +5286,22 @@ endfunction
 
 function! s:SvnRevert() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnrevert.sh ' . '"' .  expand('%:p') . '"')
 endfunction
 
 function! s:SvnSt() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnst.sh'
     call OpenOrSwitch('svnst.findresult', 'vs')
@@ -5009,12 +5309,22 @@ endfunction
 
 function! s:SvnApply() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnapply.sh')
 endfunction
 
 function! s:SvnDiff() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"')
 endfunction
@@ -5033,6 +5343,11 @@ endfunction
 
 function! s:Fr(find, replace) abort
     let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
+
+    if csdbpath == "Nothing"
+        return 
+    endif
+
     exec "cd " . csdbpath
     silent exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:find . '"' . ' ' . '"' .  a:replace . '"'
     call s:Gs()
@@ -5040,6 +5355,11 @@ endfunction
 
 function! s:FindDeleted() abort
     let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
+
+    if csdbpath == "Nothing"
+        return 
+    endif
+
     exec "cd " . csdbpath
     silent exec '!~/loadrc/gitrc/find_deleted.sh 2>&1 | tee find_deleted.findresult'
     call OpenOrSwitch('find_deleted.findresult', 'vs')
@@ -5047,6 +5367,11 @@ endfunction
 
 function! s:Gwap() abort
     let worktree = GetWorktree()
+
+    if worktree == "Nothing"
+        return 
+    endif
+
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gwap.sh'
     call s:Gs()
