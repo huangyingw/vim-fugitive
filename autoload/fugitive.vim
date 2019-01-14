@@ -4627,13 +4627,7 @@ function! s:Gcp(...) abort
 endfunction
 
 function! s:BinaryGrep(...) abort
-    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
-
-    if csdbpath == "Nothing"
-        return 
-    endif
-
-    exec "cd " . csdbpath
+    Cd2ParentFolder("files.proj")
     let b:keyword = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/binaryGrep.sh ' . '"' .  b:keyword . '"')
     let b:keyword = substitute(b:keyword, " ", "_", "g")
@@ -4642,13 +4636,7 @@ function! s:BinaryGrep(...) abort
 endfunction
 
 function! s:Fnotinuse() abort
-    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
-
-    if csdbpath == "Nothing"
-        return 
-    endif
-
-    exec "cd " . csdbpath
+    Cd2ParentFolder("files.proj")
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/fnotinuse.sh')
     call OpenOrSwitch('fnotinuse.findresult', 'vs')
 endfunction
@@ -5059,25 +5047,13 @@ function! s:Prune() abort
 endfunction
 
 function! s:Fr(find, replace) abort
-    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
-
-    if csdbpath == "Nothing"
-        return 
-    endif
-
-    exec "cd " . csdbpath
+    Cd2ParentFolder("files.proj")
     silent exec '!~/loadrc/bashrc/fr.sh ' . '"' .  a:find . '"' . ' ' . '"' .  a:replace . '"'
     call s:Gs()
 endfunction
 
 function! s:FindDeleted() abort
-    let csdbpath = Find_in_parent("files.proj", Windowdir(), "/")
-
-    if csdbpath == "Nothing"
-        return 
-    endif
-
-    exec "cd " . csdbpath
+    Cd2ParentFolder("files.proj")
     silent exec '!~/loadrc/gitrc/find_deleted.sh 2>&1 | tee find_deleted.findresult'
     call OpenOrSwitch('find_deleted.findresult', 'vs')
 endfunction
