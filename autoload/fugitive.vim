@@ -183,21 +183,21 @@ function! fugitive#GitVersion(...) abort
     if !has_key(s:git_versions, g:fugitive_git_executable)
         let s:git_versions[g:fugitive_git_executable] = matchstr(system(g:fugitive_git_executable.' --version'), "\\S\\+\\ze\n")
     endif
-  if !a:0
-    return s:git_versions[g:fugitive_git_executable]
-  endif
-  let components = split(s:git_versions[g:fugitive_git_executable], '\D\+')
-  if empty(components)
-    return -1
-  endif
-  for i in range(len(a:000))
-    if a:000[i] > +get(components, i)
-      return 0
-    elseif a:000[i] < +get(components, i)
-      return 1
+    if !a:0
+        return s:git_versions[g:fugitive_git_executable]
     endif
-  endfor
-  return a:000[i] ==# get(components, i)
+    let components = split(s:git_versions[g:fugitive_git_executable], '\D\+')
+    if empty(components)
+        return -1
+    endif
+    for i in range(len(a:000))
+        if a:000[i] > +get(components, i)
+            return 0
+        elseif a:000[i] < +get(components, i)
+            return 1
+        endif
+    endfor
+    return a:000[i] ==# get(components, i)
 endfunction
 
 let s:commondirs = {}
@@ -227,7 +227,7 @@ function! s:Tree(...) abort
 endfunction
 
 function! s:PreparePathArgs(cmd, dir, literal) abort
-  let literal_supported = fugitive#GitVersion(1, 9)
+    let literal_supported = fugitive#GitVersion(1, 9)
     if a:literal && literal_supported
         call insert(a:cmd, '--literal-pathspecs')
     endif
@@ -279,17 +279,17 @@ function! fugitive#Prepare(...) abort
                     let pre = (len(pre) ? pre : 'env ') . var . '=' . s:shellesc(val) . ' '
                 endif
             endif
-      if fugitive#GitVersion(1, 8) && cmd[i+1] =~# '\.'
+            if fugitive#GitVersion(1, 8) && cmd[i+1] =~# '\.'
                 let i += 2
-      else
-        call remove(cmd, i, i + 1)
+            else
+                call remove(cmd, i, i + 1)
             endif
         elseif cmd[i] =~# '^--.*pathspecs$'
             let explicit_pathspec_option = 1
-      if fugitive#GitVersion(1, 9)
+            if fugitive#GitVersion(1, 9)
                 let i += 1
-      else
-        call remove(cmd, i)
+            else
+                call remove(cmd, i)
             endif
         elseif cmd[i] !~# '^-'
             break
@@ -305,10 +305,10 @@ function! fugitive#Prepare(...) abort
     let args = join(map(copy(cmd), 's:shellesc(v:val)'))
     if empty(tree) || index(cmd, '--') == len(cmd) - 1
         let args = s:shellesc('--git-dir=' . dir) . ' ' . args
-  elseif fugitive#GitVersion(1, 9)
+    elseif fugitive#GitVersion(1, 9)
         let args = '-C ' . s:shellesc(tree) . ' ' . args
-  else
-    let pre = 'cd ' . s:shellesc(tree) . (s:winshell() ? ' & ' : '; ') . pre
+    else
+        let pre = 'cd ' . s:shellesc(tree) . (s:winshell() ? ' & ' : '; ') . pre
     endif
     return pre . g:fugitive_git_executable . ' ' . args
 endfunction
@@ -406,7 +406,7 @@ endfunction
 function! fugitive#RemoteUrl(...) abort
     let dir = a:0 > 1 ? a:2 : get(b:, 'git_dir', '')
     let remote = !a:0 || a:1 =~# '^\.\=$' ? s:Remote(dir) : a:1
-  if !fugitive#GitVersion(2, 7)
+    if !fugitive#GitVersion(2, 7)
         return fugitive#Config('remote.' . remote . '.url')
     endif
     let cmd = s:Prepare(dir, 'remote', 'get-url', remote, '--')
@@ -637,7 +637,7 @@ function! fugitive#Path(url, ...) abort
         let file = '/.git'.url[strlen(dir) : -1]
     elseif len(tree) && s:cpath(url[0 : len(tree)]) ==# s:cpath(tree . '/')
         let file = url[len(tree) : -1]
-  elseif s:cpath(url) ==# s:cpath(tree)
+    elseif s:cpath(url) ==# s:cpath(tree)
         let file = '/'
     endif
     if empty(file) && a:1 =~# '^$\|^[.:]/$'
@@ -1168,39 +1168,39 @@ function! fugitive#buffer(...) abort
 endfunction
 
 function! s:buffer_getvar(var) dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().getvar() which has been removed. Replace it with the local variable or getbufvar()"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().getvar() which has been removed. Replace it with the local variable or getbufvar()"
 endfunction
 
 function! s:buffer_getline(lnum) dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().getline() which has been removed. Replace it with getline() or getbufline()"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().getline() which has been removed. Replace it with getline() or getbufline()"
 endfunction
 
 function! s:buffer_repo() dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().repo() which has been removed. Replace it with fugitive#repo()"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().repo() which has been removed. Replace it with fugitive#repo()"
 endfunction
 
 function! s:buffer_type(...) dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().type() which has been removed. Replace it with get(b:, 'fugitive_type', '')"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().type() which has been removed. Replace it with get(b:, 'fugitive_type', '')"
 endfunction
 
 function! s:buffer_spec() dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().spec() which has been removed. Replace it with bufname(), expand('%:p'), etc"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().spec() which has been removed. Replace it with bufname(), expand('%:p'), etc"
 endfunction
 
 function! s:buffer_name() dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().name() which has been removed. Replace it with bufname(), expand('%:p'), etc"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().name() which has been removed. Replace it with bufname(), expand('%:p'), etc"
 endfunction
 
 function! s:buffer_commit() dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().commit() which has been removed. Replace it with matchstr(FugitiveParse()[0], '^\x\+')"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().commit() which has been removed. Replace it with matchstr(FugitiveParse()[0], '^\x\+')"
 endfunction
 
 function! s:buffer_relative(...) dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().relative() which has been removed. Replace it with FugitivePath(@%, " . string(a:0 ? a:1 : '') . ")"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().relative() which has been removed. Replace it with FugitivePath(@%, " . string(a:0 ? a:1 : '') . ")"
 endfunction
 
 function! s:buffer_path(...) dict abort
-  throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().path() which has been removed. Replace it with FugitivePath(@%, " . string(a:0 ? a:1 : '') . ")"
+    throw "fugitive: A third-party plugin or vimrc is calling fugitive#buffer().path() which has been removed. Replace it with FugitivePath(@%, " . string(a:0 ? a:1 : '') . ")"
 endfunction
 
 call s:add_methods('buffer',['getvar','getline','repo','type','spec','name','commit','path','relative'])
@@ -1414,9 +1414,9 @@ function! fugitive#BufReadStatus() abort
             let file = line[3:-1]
             let files = file
             let i += 1
-      if line[2] !=# ' '
-        continue
-      endif
+            if line[2] !=# ' '
+                continue
+            endif
             if line[0:1] =~# '[RC]'
                 let files = output[i] . ' -> ' . file
                 let i += 1
@@ -1735,7 +1735,7 @@ function! fugitive#BufReadCmd(...) abort
             if &bufhidden ==# ''
                 setlocal bufhidden=delete
             endif
-      let &l:modifiable = modifiable
+            let &l:modifiable = modifiable
             if b:fugitive_type !=# 'blob'
                 setlocal filetype=git foldmethod=syntax
                 nnoremap <buffer> <silent> a :<C-U>let b:fugitive_display_format += v:count1<Bar>exe fugitive#BufReadCmd(@%)<CR>
@@ -1745,7 +1745,7 @@ function! fugitive#BufReadCmd(...) abort
             endif
         endtry
 
-    setlocal modifiable
+        setlocal modifiable
         return 'silent doautocmd' . (v:version >= 704 ? ' <nomodeline>' : '') .
                     \ ' BufReadPost' . (modifiable ? '' : '|setl nomodifiable')
     catch /^fugitive:/
@@ -1899,35 +1899,35 @@ call s:command("-bar -bang -range=-1 G       :execute s:Status(<bang>0, <count>,
 augroup fugitive_status
     autocmd!
     if !has('win32')
-    autocmd ShellCmdPost        * call fugitive#ReloadStatus()
-    autocmd QuickFixCmdPost c*ile call fugitive#ReloadStatus()
-    autocmd FocusGained         * call fugitive#ReloadStatus()
-    autocmd BufDelete    term://* call fugitive#ReloadStatus()
+        autocmd ShellCmdPost        * call fugitive#ReloadStatus()
+        autocmd QuickFixCmdPost c*ile call fugitive#ReloadStatus()
+        autocmd FocusGained         * call fugitive#ReloadStatus()
+        autocmd BufDelete    term://* call fugitive#ReloadStatus()
     endif
 augroup END
 
 function! s:Status(bang, count, mods) abort
     try
-    let mods = a:mods ==# '<mods>' || empty(a:mods) ? '' : a:mods . ' '
-    if mods !~# 'aboveleft\|belowright\|leftabove\|rightbelow\|topleft\|botright'
-      let mods = 'topleft ' . mods
-    endif
+        let mods = a:mods ==# '<mods>' || empty(a:mods) ? '' : a:mods . ' '
+        if mods !~# 'aboveleft\|belowright\|leftabove\|rightbelow\|topleft\|botright'
+            let mods = 'topleft ' . mods
+        endif
         let file = fugitive#Find(':')
-    let arg = ' +setl\ foldmethod=syntax\ foldlevel=1\|let\ w:fugitive_status=FugitiveGitDir() ' .
-          \ s:fnameescape(file)
+        let arg = ' +setl\ foldmethod=syntax\ foldlevel=1\|let\ w:fugitive_status=FugitiveGitDir() ' .
+                    \ s:fnameescape(file)
         for winnr in range(1, winnr('$'))
             if s:cpath(file, fnamemodify(bufname(winbufnr(winnr)), ':p'))
                 exe winnr . 'wincmd w'
-        let w:fugitive_status = FugitiveGitDir()
+                let w:fugitive_status = FugitiveGitDir()
                 return s:ReloadStatus()
             endif
         endfor
         if a:count ==# 0
-      return mods . 'edit' . (a:bang ? '!' : '') . arg
+            return mods . 'edit' . (a:bang ? '!' : '') . arg
         elseif a:bang
-      return mods . 'pedit' . arg . '|wincmd P'
+            return mods . 'pedit' . arg . '|wincmd P'
         else
-      return mods . (a:count > 0 ? a:count : '') . 'split' . arg
+            return mods . (a:count > 0 ? a:count : '') . 'split' . arg
         endif
     catch /^fugitive:/
         return 'echoerr v:errmsg'
@@ -2365,7 +2365,7 @@ function! s:StageToggle(lnum1, count) abort
             if info.section ==# 'Staged'
                 let files_to_unstage = split(filename, ' -> ')
                 let filename = files_to_unstage[-1]
-        let cmd = ['reset', '-q', '--'] + map(copy(files_to_unstage), 's:Tree() . "/" . v:val')
+                let cmd = ['reset', '-q', '--'] + map(copy(files_to_unstage), 's:Tree() . "/" . v:val')
             elseif getline(lnum) =~# '^D'
                 let cmd = ['rm', './' . filename]
             elseif getline(lnum) =~# '^M'
@@ -2793,10 +2793,10 @@ function! s:Grep(cmd,bang,arg) abort
     try
         let cdback = s:Cd(s:Tree())
         let &grepprg = s:UserCommand() . ' --no-pager grep -n --no-color'
-    let &grepformat = '%f:%l:%c:%m,%f:%l:%m,%m %f match%ts,%f'
-    if fugitive#GitVersion(2, 19)
-      let &grepprg .= ' --column'
-    endif
+        let &grepformat = '%f:%l:%c:%m,%f:%l:%m,%m %f match%ts,%f'
+        if fugitive#GitVersion(2, 19)
+            let &grepprg .= ' --column'
+        endif
         exe a:cmd.'! '.escape(s:ShellExpand(matchstr(a:arg, '\v\C.{-}%($|[''" ]\@=\|)@=')), '|#%')
         let list = a:cmd =~# '^l' ? getloclist(0) : getqflist()
         for entry in list
@@ -2854,17 +2854,17 @@ function! s:Log(cmd, bang, line1, line2, ...) abort
     let grepprg = &grepprg
     try
         let cdback = s:Cd(s:Tree())
-    let format = before =~# ' -g\| --walk-reflogs' ? '%gD %gs' : g:fugitive_summary_format
+        let format = before =~# ' -g\| --walk-reflogs' ? '%gD %gs' : g:fugitive_summary_format
         let &grepprg = escape(s:UserCommand() . ' --no-pager log --no-color ' .
-          \ s:shellesc('--pretty=format:fugitive://'.b:git_dir.'//%H'.path.'::'.format), '%#')
+                    \ s:shellesc('--pretty=format:fugitive://'.b:git_dir.'//%H'.path.'::'.format), '%#')
         let &grepformat = '%Cdiff %.%#,%C--- %.%#,%C+++ %.%#,%Z@@ -%\d%\+\,%\d%\+ +%l\,%\d%\+ @@,%-G-%.%#,%-G+%.%#,%-G %.%#,%A%f::%m,%-G%.%#'
         exe a:cmd . (a:bang ? '! ' : ' ') . s:ShellExpand(before . after)
-    if len(path) && a:line2 == -1
-      redraw
-      echohl WarningMsg
-      echo ':Glog will soon default to all files. Use :0Glog to target current file'
-      echohl NONE
-    endif
+        if len(path) && a:line2 == -1
+            redraw
+            echohl WarningMsg
+            echo ':Glog will soon default to all files. Use :0Glog to target current file'
+            echohl NONE
+        endif
     finally
         let &grepformat = grepformat
         let &grepprg = grepprg
@@ -2876,7 +2876,7 @@ endfunction
 
 function! s:UsableWin(nr) abort
     return a:nr && !getwinvar(a:nr, '&previewwindow') &&
-        \ (empty(getwinvar(a:nr, 'fugitive_status')) || getwinvar(a:nr, 'fugitive_type') !=# 'index') &&
+                \ (empty(getwinvar(a:nr, 'fugitive_status')) || getwinvar(a:nr, 'fugitive_type') !=# 'index') &&
                 \ index(['gitrebase', 'gitcommit'], getbufvar(winbufnr(a:nr), '&filetype')) < 0 &&
                 \ index(['nofile','help','quickfix'], getbufvar(winbufnr(a:nr), '&buftype')) < 0
 endfunction
@@ -2905,7 +2905,7 @@ function! s:BlurStatus() abort
         if len(winnrs)
             exe winnrs[0].'wincmd w'
         else
-      belowright new
+            belowright new
         endif
         if &diff
             let mywinnr = winnr()
@@ -2995,9 +2995,9 @@ function! s:Read(count, line1, line2, range, bang, mods, args, ...) abort
     if file =~# '^fugitive:' && after is# 0
         return 'exe ' .string(mods . ' ' . fugitive#FileReadCmd(file, 0, pre)) . '|diffupdate'
     endif
-  if foldlevel(after)
-    exe after . 'foldopen!'
-  endif
+    if foldlevel(after)
+        exe after . 'foldopen!'
+    endif
     return mods . ' ' . after . 'read' . pre . ' ' . s:fnameescape(file) . '|' . delete . 'diffupdate' . (a:count < 0 ? '|' . line('.') : '')
 endfunction
 
@@ -3194,11 +3194,11 @@ function! s:Dispatch(bang, args)
         let &l:errorformat = s:common_efm
         let &l:makeprg = substitute(s:UserCommand() . ' ' . a:args, '\s\+$', '', '')
         if exists(':Make') == 2
-      Make
+            Make
         else
             silent noautocmd make!
             redraw!
-      return 'call fugitive#Cwindow()|call fugitive#ReloadStatus()'
+            return 'call fugitive#Cwindow()|call fugitive#ReloadStatus()'
         endif
         return ''
     finally
@@ -3700,10 +3700,10 @@ endfunction
 
 function! s:BlameJump(suffix) abort
     let commit = matchstr(getline('.'),'^\^\=\zs\x\+')
-  let suffix = a:suffix
+    let suffix = a:suffix
     if commit =~# '^0\+$'
         let commit = ':0'
-    let suffix = ''
+        let suffix = ''
     endif
     let lnum = matchstr(getline('.'),' \zs\d\+\ze\s\+[([:digit:]]')
     let path = matchstr(getline('.'),'^\^\=\x\+\s\+\zs.\{-\}\ze\s*\d\+ ')
@@ -3717,7 +3717,7 @@ function! s:BlameJump(suffix) abort
     if winnr > 0
         exe winnr.'wincmd w'
     endif
-  execute 'Gedit' s:fnameescape(commit . suffix . ':' . path)
+    execute 'Gedit' s:fnameescape(commit . suffix . ':' . path)
     execute lnum
     if winnr > 0
         exe bufnr.'bdelete'
@@ -4091,17 +4091,17 @@ function! fugitive#MapJumps(...) abort
         nnoremap <buffer>          cf    :<C-U>Gcommit --fixup=<C-R>=<SID>SquashArgument()<CR>
         nnoremap <buffer>          cs    :<C-U>Gcommit --squash=<C-R>=<SID>SquashArgument()<CR>
         nnoremap <buffer>          cA    :<C-U>Gcommit --edit --squash=<C-R>=<SID>SquashArgument()<CR>
-    nnoremap <buffer> <silent> ri    :<C-U>Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR><CR>
-    nnoremap <buffer> <silent> rf    :<C-U>Grebase --autosquash<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR><CR>
-    nnoremap <buffer> <silent> ru    :<C-U>Grebase --interactive @{upstream}<CR>
-    nnoremap <buffer> <silent> rp    :<C-U>Grebase --interactive @{push}<CR>
-    nnoremap <buffer> <silent> rw    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/reword/e<CR>
-    nnoremap <buffer> <silent> rm    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/edit/e<CR>
-    nnoremap <buffer> <silent> rk    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/drop/e<CR>
-    nnoremap <buffer> <silent> rr    :<C-U>Grebase --continue<CR>
-    nnoremap <buffer> <silent> rs    :<C-U>Grebase --skip<CR>
-    nnoremap <buffer> <silent> re    :<C-U>Grebase --edit-todo<CR>
-    nnoremap <buffer> <silent> ra    :<C-U>Grebase --abort<CR>
+        nnoremap <buffer> <silent> ri    :<C-U>Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR><CR>
+        nnoremap <buffer> <silent> rf    :<C-U>Grebase --autosquash<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR><CR>
+        nnoremap <buffer> <silent> ru    :<C-U>Grebase --interactive @{upstream}<CR>
+        nnoremap <buffer> <silent> rp    :<C-U>Grebase --interactive @{push}<CR>
+        nnoremap <buffer> <silent> rw    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/reword/e<CR>
+        nnoremap <buffer> <silent> rm    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/edit/e<CR>
+        nnoremap <buffer> <silent> rk    :<C-U>exe 'Grebase --interactive<C-R>=substitute(<SID>SquashArgument(),'.\+',' &^','')<CR>'<Bar>s/^pick/drop/e<CR>
+        nnoremap <buffer> <silent> rr    :<C-U>Grebase --continue<CR>
+        nnoremap <buffer> <silent> rs    :<C-U>Grebase --skip<CR>
+        nnoremap <buffer> <silent> re    :<C-U>Grebase --edit-todo<CR>
+        nnoremap <buffer> <silent> ra    :<C-U>Grebase --abort<CR>
         nmap     <buffer>          .     <SID>: <Plug><cfile><Home>
     endif
 endfunction
@@ -4549,21 +4549,18 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete SvnUp
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Tail :execute s:Tail()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete VS :execute s:VS(<f-args>)")
 function! s:LogFilter(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/logFilter.sh ' . '"' .  expand('%:p') . '" "' .  arg1 . '"')
 endfunction
 
 function! s:Jformat(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/jformat.sh ')
 endfunction
 
 function! s:Gvd(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
 
     if expand('%:t') != 'index'
         if a:0 == 0
@@ -4580,8 +4577,7 @@ function! s:Gvd(...) abort
 endfunction
 
 function! s:Gvdo() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
 
@@ -4593,34 +4589,29 @@ function! s:Gvdo() abort
 endfunction
 
 function! s:Fr(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/fr.sh ' . '"' .  arg1 . '" "' .  arg2 . '"')
 endfunction
 
 function! s:Ga(args, ...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/ga.sh ' . '"' .  a:args . '"')
 endfunction
 
 function! s:Gsave() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gsave.sh')
 endfunction
 
 function! s:Gst() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gst.sh')
 endfunction
 
 function! s:Gcp(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gcp.sh ' . '"' .  arg1 . '" "' .  arg2 . '"')
@@ -4642,46 +4633,39 @@ function! s:Fnotinuse() abort
 endfunction
 
 function! s:Fcscope() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/fcscope.sh')
 endfunction
 
 function! s:Glf() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!git ls-files | tee glf.findresult'
     call OpenOrSwitch('glf.findresult', 'vs')
 endfunction
 
 function! s:Glg() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/glg.sh'
     call OpenOrSwitch('glg.findresult', 'vs')
 endfunction
 
 function! s:Gps() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gps.sh 2>&1 | tee gps.findresult')
 endfunction
 
 function! s:Gstp(args, ...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstp.sh ' . '"' .  a:args . '"')
 endfunction
 
 function! s:Gstv(args, ...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstv.sh ' . '"' .  a:args . '"')
 endfunction
 
 function! s:Gcof(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let b:relativePath = substitute(expand('%:p'), worktree . '/', "", "g")
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"'
@@ -4689,65 +4673,55 @@ function! s:Gcof(...) abort
 endfunction
 
 function! s:Gpl() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gpl.sh 2>&1 | tee gpl.findresult')
 endfunction
 
 function! s:Fsync() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/fsync.sh 2>&1 | tee fsync.findresult')
     call OpenOrSwitch('fsync.findresult', 'vs')
 endfunction
 
 function! s:Gbis() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbis.sh')
 endfunction
 
 function! s:Gbidebug() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbidebug.sh')
 endfunction
 
 function! s:Gbib() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbib.sh')
 endfunction
 
 function! s:Gbig() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbig.sh')
 endfunction
 
 function! s:Gbil() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/gbil.sh'
     call OpenOrSwitch('gbil.findresult', 'vs')
 endfunction
 
 function! s:Gbr() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/gbr.sh'
     call OpenOrSwitch('gbr.findresult', 'vs')
 endfunction
 
 function! s:Gclean() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/gclean.sh'
 endfunction
 
 function! s:Gbra() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/gbra.sh'
     call OpenOrSwitch('gbra.findresult', 'vs')
 endfunction
@@ -4758,66 +4732,56 @@ function! s:Gs() abort
 endfunction
 
 function! s:Gsync() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gsync.sh 2>&1 | tee gsync.findresult')
 endfunction
 
 function! s:Grta(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     silent exec '!git remote add ' . '"' .  arg1 . '" "' .  arg2 . '"'
 endfunction
 
 function! s:Grsh(args, ...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/grsh.sh ' . '"' .  a:args . '"'
 endfunction
 
 function! s:Gsti() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gsti.sh')
 endfunction
 
 function! s:Gstl() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/gstl.sh'
     call OpenOrSwitch('gstl.findresult', 'vs')
 endfunction
 
 function! s:Gstlv() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gstlv.sh')
 endfunction
 
 function! s:Gme2(args, ...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/gme2.sh ' . '"' .  a:args . '" 2>&1 | tee gme2.findresult')
     call OpenOrSwitch(worktree . '/' . 'gme2.findresult', 'vs')
 endfunction
 
 function! s:G(args, ...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/g.sh ' . '"' .  a:args . '" 2>&1 | tee g.findresult')
 endfunction
 
 function! s:Gdev() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gdev.sh')
 endfunction
 
 function! s:Gdi(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let output = 'gdi.diff'
 
@@ -4844,8 +4808,7 @@ function! s:Gdi(...) abort
 endfunction
 
 function! s:Gdio(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let output = 'gdi.diff'
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
@@ -4860,22 +4823,19 @@ function! s:Gdio(...) abort
 endfunction
 
 function! s:Gdi2(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gdi2.sh ' . '"' .  arg1 . '"'
     call s:Gs()
 endfunction
 
 function! s:Grtv() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call OpenOrSwitch('git/config', 'vs')
 endfunction
 
 function! s:Grtu() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!git remote update'
 endfunction
 
@@ -4888,49 +4848,42 @@ function! s:VS(...) abort
 endfunction
 
 function! s:Gtg() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
     call OpenOrSwitch('gtg.findresult', 'vs')
 endfunction
 
 function! s:Gmet() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'git mergetool')
 endfunction
 
 function! s:Gicb() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gicb.sh')
 endfunction
 
 function! s:Gitk(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     call asyncrun#run('<bang>', '', 'gitk ' . '"' .  arg1 . '"' . ' ' . '"' .  arg2 . '"')
 endfunction
 
 function! s:Gbrm(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbrm.sh ' . '"' .  arg1 . '"')
 endfunction
 
 function! s:Gbrd(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gbrd.sh ' . '"' .  arg1 . '"')
 endfunction
 
 function! s:Gdifo(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
     silent exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  remote . '/' . branch . '"'
@@ -4938,37 +4891,32 @@ function! s:Gdifo(...) abort
 endfunction
 
 function! s:Gdif(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  arg1 . '"'
     call OpenOrSwitch('gdif.findresult', 'vs')
 endfunction
 
 function! s:Gco(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gco.sh ' . '"' .  arg1 . '"')
 endfunction
 
 function! s:Gcob(...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     let arg2 = (a:0 >= 2) ? a:2 : ''
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gcob.sh ' . '"' .  arg1 . '" "' .  arg2 . '"')
 endfunction
 
 function! s:Dodev() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call OpenOrSwitch('docker-compose.yml', 'vs')
 endfunction
 
 function! s:Gcom(args, ...) abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"')
 endfunction
 
@@ -4984,53 +4932,45 @@ function! s:Tail() abort
 endfunction
 
 function! s:Greview() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/greview.sh')
 endfunction
 
 function! s:Dps() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/dockerrc/dps.sh'
     call OpenOrSwitch('dps.findresult', 'vs')
 endfunction
 
 function! s:SvnUp() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnup.sh')
 endfunction
 
 function! s:SvnReset() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/svnrc/svnreset.sh'
     call OpenOrSwitch('svnreset.findresult', 'vs')
 endfunction
 
 function! s:SvnRevert() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnrevert.sh ' . '"' .  expand('%:p') . '"')
 endfunction
 
 function! s:SvnSt() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/svnrc/svnst.sh'
     call OpenOrSwitch('svnst.findresult', 'vs')
 endfunction
 
 function! s:SvnApply() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svnapply.sh')
 endfunction
 
 function! s:SvnDiff() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/svnrc/svndiff.sh ' . '"' .  expand('%:p') . '"')
 endfunction
 
@@ -5059,8 +4999,7 @@ function! s:FindDeleted() abort
 endfunction
 
 function! s:Gwap() abort
-    let worktree = GetWorktree()
-    exec "cd " . worktree
+    let worktree = Cd2Worktree()
     silent exec '!~/loadrc/gitrc/gwap.sh'
     call s:Gs()
 endfunction
