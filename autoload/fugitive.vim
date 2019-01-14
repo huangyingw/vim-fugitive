@@ -4632,13 +4632,13 @@ function! s:BinaryGrep(...) abort
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/binaryGrep.sh ' . '"' .  b:keyword . '"')
     let b:keyword = substitute(b:keyword, " ", "_", "g")
     let b:keyword = substitute(b:keyword, "/", "_", "g")
-    OpenOrSwitch(b:keyword . '.binaryGrep.findresult', 'vs')
+    call OpenOrSwitch(b:keyword . '.binaryGrep.findresult', 'vs')
 endfunction
 
 function! s:Fnotinuse() abort
     Cd2ParentFolder("files.proj")
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/bashrc/fnotinuse.sh')
-    OpenOrSwitch('fnotinuse.findresult', 'vs')
+    call OpenOrSwitch('fnotinuse.findresult', 'vs')
 endfunction
 
 function! s:Fcscope() abort
@@ -4651,14 +4651,14 @@ function! s:Glf() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!git ls-files | tee glf.findresult'
-    OpenOrSwitch('glf.findresult', 'vs')
+    call OpenOrSwitch('glf.findresult', 'vs')
 endfunction
 
 function! s:Glg() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/glg.sh'
-    OpenOrSwitch('glg.findresult', 'vs')
+    call OpenOrSwitch('glg.findresult', 'vs')
 endfunction
 
 function! s:Gps() abort
@@ -4685,7 +4685,7 @@ function! s:Gcof(...) abort
     let b:relativePath = substitute(expand('%:p'), worktree . '/', "", "g")
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gcof.sh ' . '"' .  b:relativePath . '" "' .  arg1 . '"'
-    OpenOrSwitch(expand('%:p') . '.bak', 'vs')
+    call OpenOrSwitch(expand('%:p') . '.bak', 'vs')
 endfunction
 
 function! s:Gpl() abort
@@ -4698,7 +4698,7 @@ function! s:Fsync() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/fsync.sh 2>&1 | tee fsync.findresult')
-    OpenOrSwitch('fsync.findresult', 'vs')
+    call OpenOrSwitch('fsync.findresult', 'vs')
 endfunction
 
 function! s:Gbis() abort
@@ -4729,14 +4729,14 @@ function! s:Gbil() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbil.sh'
-    OpenOrSwitch('gbil.findresult', 'vs')
+    call OpenOrSwitch('gbil.findresult', 'vs')
 endfunction
 
 function! s:Gbr() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbr.sh'
-    OpenOrSwitch('gbr.findresult', 'vs')
+    call OpenOrSwitch('gbr.findresult', 'vs')
 endfunction
 
 function! s:Gclean() abort
@@ -4749,12 +4749,12 @@ function! s:Gbra() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gbra.sh'
-    OpenOrSwitch('gbra.findresult', 'vs')
+    call OpenOrSwitch('gbra.findresult', 'vs')
 endfunction
 
 function! s:Gs() abort
     let indexFolder = substitute(system("~/loadrc/gitrc/get_index.sh " . '"' . expand('%:p') . '"'), '\n', '', '')
-    OpenOrSwitch(indexFolder . '/index', 'vs')
+    call OpenOrSwitch(indexFolder . '/index', 'vs')
 endfunction
 
 function! s:Gsync() abort
@@ -4787,7 +4787,7 @@ function! s:Gstl() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gstl.sh'
-    OpenOrSwitch('gstl.findresult', 'vs')
+    call OpenOrSwitch('gstl.findresult', 'vs')
 endfunction
 
 function! s:Gstlv() abort
@@ -4800,7 +4800,7 @@ function! s:Gme2(args, ...) abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/gitrc/gme2.sh ' . '"' .  a:args . '" 2>&1 | tee gme2.findresult')
-    OpenOrSwitch(worktree . '/' . 'gme2.findresult', 'vs')
+    call OpenOrSwitch(worktree . '/' . 'gme2.findresult', 'vs')
 endfunction
 
 function! s:G(args, ...) abort
@@ -4870,7 +4870,7 @@ endfunction
 function! s:Grtv() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
-    OpenOrSwitch('git/config', 'vs')
+    call OpenOrSwitch('git/config', 'vs')
 endfunction
 
 function! s:Grtu() abort
@@ -4881,9 +4881,9 @@ endfunction
 
 function! s:VS(...) abort
     if a:0 >= 1
-        OpenOrSwitch(a:1, 'vs')
+        call OpenOrSwitch(a:1, 'vs')
     else
-        OpenOrSwitch(expand("%:p") . '.findresult', 'vs')
+        call OpenOrSwitch(expand("%:p") . '.findresult', 'vs')
     endif
 endfunction
 
@@ -4891,7 +4891,7 @@ function! s:Gtg() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!git tag -l -n1 2>&1 | tee gtg.findresult'
-    OpenOrSwitch('gtg.findresult', 'vs')
+    call OpenOrSwitch('gtg.findresult', 'vs')
 endfunction
 
 function! s:Gmet() abort
@@ -4934,7 +4934,7 @@ function! s:Gdifo(...) abort
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
     silent exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  remote . '/' . branch . '"'
-    OpenOrSwitch('gdif.findresult', 'vs')
+    call OpenOrSwitch('gdif.findresult', 'vs')
 endfunction
 
 function! s:Gdif(...) abort
@@ -4942,7 +4942,7 @@ function! s:Gdif(...) abort
     exec "cd " . worktree
     let arg1 = (a:0 >= 1) ? a:1 : ''
     silent exec '!~/loadrc/gitrc/gdif.sh ' . '"' .  arg1 . '"'
-    OpenOrSwitch('gdif.findresult', 'vs')
+    call OpenOrSwitch('gdif.findresult', 'vs')
 endfunction
 
 function! s:Gco(...) abort
@@ -4963,7 +4963,7 @@ endfunction
 function! s:Dodev() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
-    OpenOrSwitch('docker-compose.yml', 'vs')
+    call OpenOrSwitch('docker-compose.yml', 'vs')
 endfunction
 
 function! s:Gcom(args, ...) abort
@@ -4976,7 +4976,7 @@ function! s:Copy(...) abort
     let newFile = (a:0 >= 1) ? a:1 : expand("%:p") . '.bak'
     exec '!rm ' . newFile
     exec 'w ' . newFile
-    OpenOrSwitch(newFile, 'vs')
+    call OpenOrSwitch(newFile, 'vs')
 endfunction
 
 function! s:Tail() abort
@@ -4993,7 +4993,7 @@ function! s:Dps() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/dockerrc/dps.sh'
-    OpenOrSwitch('dps.findresult', 'vs')
+    call OpenOrSwitch('dps.findresult', 'vs')
 endfunction
 
 function! s:SvnUp() abort
@@ -5006,7 +5006,7 @@ function! s:SvnReset() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnreset.sh'
-    OpenOrSwitch('svnreset.findresult', 'vs')
+    call OpenOrSwitch('svnreset.findresult', 'vs')
 endfunction
 
 function! s:SvnRevert() abort
@@ -5019,7 +5019,7 @@ function! s:SvnSt() abort
     let worktree = GetWorktree()
     exec "cd " . worktree
     silent exec '!~/loadrc/svnrc/svnst.sh'
-    OpenOrSwitch('svnst.findresult', 'vs')
+    call OpenOrSwitch('svnst.findresult', 'vs')
 endfunction
 
 function! s:SvnApply() abort
@@ -5039,7 +5039,7 @@ function! s:LcTest() abort
         return
     endif
     silent exec '!~/loadrc/vishrc/lc_test.sh ' . '"' .  expand('%:p') . '"'
-    OpenOrSwitch(expand('%:p') . '.sh', 'vs')
+    call OpenOrSwitch(expand('%:p') . '.sh', 'vs')
 endfunction
 
 function! s:Prune() abort
@@ -5055,7 +5055,7 @@ endfunction
 function! s:FindDeleted() abort
     Cd2ParentFolder("files.proj")
     silent exec '!~/loadrc/gitrc/find_deleted.sh 2>&1 | tee find_deleted.findresult'
-    OpenOrSwitch('find_deleted.findresult', 'vs')
+    call OpenOrSwitch('find_deleted.findresult', 'vs')
 endfunction
 
 function! s:Gwap() abort
@@ -5078,7 +5078,7 @@ function! s:DiffClean() abort
     endif
 
     silent exec 'w! ' . buffername
-    OpenOrSwitch(buffername, 'vs')
+    call OpenOrSwitch(buffername, 'vs')
     silent exec 'g!/\c^[-|+]/d'
     silent exec 'g/\c^[-|+]$/d'
     silent exec '%s/^--- a\//--- \.\//g'
