@@ -4548,7 +4548,6 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete SvnRe
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete SvnSt :execute s:SvnSt()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete SvnUp :execute s:SvnUp()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Tail :execute s:Tail()")
-call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete VS :execute s:VS(<f-args>)")
 function! s:LogFilter(...) abort
     let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
@@ -4838,14 +4837,6 @@ endfunction
 function! s:Grtu() abort
     let worktree = Cd2Worktree()
     silent exec '!git remote update'
-endfunction
-
-function! s:VS(...) abort
-    if a:0 >= 1
-        call OpenOrSwitch(a:1, 'vs')
-    else
-        call OpenOrSwitch(expand("%:p") . '.findresult', 'vs')
-    endif
 endfunction
 
 function! s:Gtg() abort
