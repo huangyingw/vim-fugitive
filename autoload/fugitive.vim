@@ -1660,7 +1660,7 @@ function! fugitive#BufReadCmd(...) abort
                 let error = b:fugitive_type
                 unlet b:fugitive_type
                 if rev =~# '^:\d:'
-          let &l:readonly = !filewritable(dir . '/index')
+                    let &l:readonly = !filewritable(dir . '/index')
                     return 'silent doautocmd BufNewFile'
                 else
                     setlocal readonly nomodifiable
@@ -1730,7 +1730,7 @@ function! fugitive#BufReadCmd(...) abort
             keepjumps call setpos('.',pos)
             setlocal nomodified noswapfile
             let modifiable = rev =~# '^:.:' && b:fugitive_type !=# 'tree'
-      let &l:readonly = !modifiable || !filewritable(dir . '/index')
+            let &l:readonly = !modifiable || !filewritable(dir . '/index')
             if &bufhidden ==# ''
                 setlocal bufhidden=delete
             endif
@@ -4811,6 +4811,7 @@ function! s:Gdio(...) abort
     let output = 'gdi.diff'
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
+    exec '!~/loadrc/gitrc/gsync.sh'
     silent exec '!~/loadrc/gitrc/gdi.sh ' . '"' .  remote . '/' . branch . '" 2>&1 | tee ' . '"' .  output . '"'
 
     if bufexists(output)
@@ -4824,6 +4825,7 @@ endfunction
 function! s:Gdi2(...) abort
     let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
+    exec '!~/loadrc/gitrc/gsync.sh'
     silent exec '!~/loadrc/gitrc/gdi2.sh ' . '"' .  arg1 . '"'
     call s:Gs()
 endfunction
