@@ -4798,7 +4798,7 @@ endfunction
 
 function! s:Gdio(...) abort
     let worktree = Cd2Worktree()
-    let output = 'gdi.diff'
+    let output = 'gdio.diff'
     let remote = substitute(system("git config gsync.remote"), '\n', '', '')
     let branch = substitute(system("git config gsync.branch"), '\n', '', '')
     exec '!~/loadrc/gitrc/gsync.sh'
