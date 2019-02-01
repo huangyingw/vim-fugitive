@@ -4992,7 +4992,7 @@ function! s:DiffClean() abort
         return
     endif
 
-    let buffername = expand('%:p') . '.findresult'
+    let buffername = expand('%:p') . '.bak'
     silent exec '!rm ' . buffername
 
     if bufexists(buffername)
