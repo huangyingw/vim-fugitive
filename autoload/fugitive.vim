@@ -4904,14 +4904,14 @@ function! s:Gcom(args, ...) abort
 endfunction
 
 function! s:Copy(...) abort
-    let newFile = (a:0 >= 1) ? a:1 : expand("%:p") . '.bak'
+    let newFile = (a:0 >= 1) ? a:1 : GetCurrentFileName() . '.bak'
     exec '!rm ' . newFile
     exec 'w ' . newFile
     call OpenOrSwitch(newFile, 'vs')
 endfunction
 
 function! s:Tail() abort
-    exec '!tail -f ' . expand("%:p")
+    exec '!tail -f ' . GetCurrentFileName()
 endfunction
 
 function! s:Greview() abort
