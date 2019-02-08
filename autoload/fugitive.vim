@@ -4719,7 +4719,7 @@ function! s:Gbra() abort
 endfunction
 
 function! s:Gs() abort
-    let indexFolder = substitute(system("~/loadrc/gitrc/get_index.sh " . '"' . expand('%:p') . '"'), '\n', '', '')
+    let indexFolder = substitute(system("~/loadrc/gitrc/get_git.sh " . '"' . expand('%:p') . '"'), '\n', '', '')
     call OpenOrSwitch(indexFolder . '/index', 'vs')
 endfunction
 
