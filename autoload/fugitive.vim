@@ -5038,7 +5038,6 @@ function! s:Gdi2(...) abort
     let worktree = Cd2Worktree()
     let output = 'gdi2.findresult'
     let arg1 = (a:0 >= 1) ? a:1 : ''
-    exec '!~/loadrc/gitrc/gsync.sh'
     exec '!~/loadrc/gitrc/gdi2.sh 2>&1 | tee ' . '"' .  output . '"' 
     call OpenOrSwitch(output, 'vs')
 endfunction
