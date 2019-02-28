@@ -5014,7 +5014,7 @@ function! s:Gdi(...) abort
         exe "bd!" . output
     endif
 
-    silent exec 'vs ' . output
+    call OpenOrSwitch(output, 'vs')
     call s:DiffClean()
 endfunction
 
@@ -5030,16 +5030,17 @@ function! s:Gdio(...) abort
         exe "bd!" . output
     endif
 
-    silent exec 'vs ' . output
+    call OpenOrSwitch(output, 'vs')
     call s:DiffClean()
 endfunction
 
 function! s:Gdi2(...) abort
     let worktree = Cd2Worktree()
+    let output = 'gdi2.findresult'
     let arg1 = (a:0 >= 1) ? a:1 : ''
     exec '!~/loadrc/gitrc/gsync.sh'
-    exec '!~/loadrc/gitrc/gdi2.sh 2>&1 | tee gdi2.findresult' 
-    call OpenOrSwitch('gdi2.findresult', 'vs')
+    exec '!~/loadrc/gitrc/gdi2.sh 2>&1 | tee ' . '"' .  output . '"' 
+    call OpenOrSwitch(output, 'vs')
 endfunction
 
 function! s:Grtv() abort
