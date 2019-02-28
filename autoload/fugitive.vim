@@ -5009,8 +5009,8 @@ function! s:Gdi2(...) abort
     let worktree = Cd2Worktree()
     let arg1 = (a:0 >= 1) ? a:1 : ''
     exec '!~/loadrc/gitrc/gsync.sh'
-    silent exec '!~/loadrc/gitrc/gdi2.sh ' . '"' .  arg1 . '"'
-    call s:Gs()
+    exec '!~/loadrc/gitrc/gdi2.sh 2>&1 | tee gdi2.findresult' 
+    call OpenOrSwitch('gdi2.findresult', 'vs')
 endfunction
 
 function! s:Grtv() abort
