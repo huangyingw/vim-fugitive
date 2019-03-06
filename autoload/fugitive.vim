@@ -4730,6 +4730,7 @@ call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Grtu 
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Grtv :execute s:Grtv()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gs :execute s:Gs()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gsave :execute s:Gsave()")
+call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gshow :execute s:Gshow(<q-args>)")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gst :execute s:Gst()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gsti :execute s:Gsti()")
 call s:command("-bang -bar -nargs=* -complete=customlist,s:EditRunComplete Gstl :execute s:Gstl()")
@@ -5116,6 +5117,12 @@ endfunction
 function! s:Gcom(args, ...) abort
     let worktree = Cd2Worktree()
     call asyncrun#run('<bang>', '', 'bash ~/loadrc/gitrc/gcom.sh ' . '"' .  a:args . '"')
+endfunction
+
+function! s:Gshow(args, ...) abort
+    let worktree = Cd2Worktree()
+    silent exec '!~/loadrc/gitrc/gshow.sh ' . '"' .  a:args . '" 2>&1 | tee gshow.diff'
+    call OpenOrSwitch('gshow.diff', 'vs')
 endfunction
 
 function! s:Copy(...) abort
