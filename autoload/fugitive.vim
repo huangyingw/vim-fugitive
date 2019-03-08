@@ -5215,12 +5215,12 @@ function! s:DiffClean() abort
     endif
 
     let buffername = expand('%:p') . '.bak'
-    silent exec '!rm ' . buffername
 
     if bufexists(buffername)
         exe "bd!" . buffername
     endif
 
+    silent exec '!rm ' . buffername
     silent exec 'w! ' . buffername
     call OpenOrSwitch(buffername, 'vs')
     silent exec 'g!/\c^[-|+]/d'
