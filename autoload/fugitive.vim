@@ -1923,7 +1923,6 @@ call s:command("-bar -bang -nargs=? -complete=customlist,s:DirComplete Glcd :exe
 " Section: :Gstatus
 
 call s:command("-bar -bang -range=-1 Gstatus", "Status")
-call s:command("-bar -bang -range=-1 G", "Status")
 
 function! s:StatusCommand(line1, line2, range, count, bang, mods, reg, arg, args) abort
   try
