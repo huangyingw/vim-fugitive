@@ -3156,6 +3156,7 @@ function! s:Open(cmd, bang, mods, arg, args) abort
       silent! execute '!' . escape(git . ' --no-pager ' . args, '!#%') .
             \ (&shell =~# 'csh' ? ' >& ' . temp : ' > ' . temp . ' 2>&1')
     finally
+      redraw!
       execute cdback
     endtry
     let temp = s:Resolve(temp)
@@ -3165,7 +3166,7 @@ function! s:Open(cmd, bang, mods, arg, args) abort
     endif
     silent execute mods a:cmd temp
     call fugitive#ReloadStatus()
-    return 'redraw|echo ' . string(':!' . git . ' ' . args)
+    return 'echo ' . string(':!' . git . ' ' . args)
   endif
 
   let [file, pre] = s:OpenParse(a:args)
