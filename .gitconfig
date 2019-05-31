@@ -8,7 +8,8 @@
     remote = origin
     remote = github
 [gsync]
-    remote = tpope/master
+    remote = tpope
+    branch = master
 [commit]
     message = n
 [branch "dev"]
