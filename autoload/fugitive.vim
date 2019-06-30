@@ -2277,12 +2277,15 @@ function! s:Do(action, visual) abort
     if status < 0
       execute record.lnum + 1
     endif
-    call s:StageReveal()
+    let success = 1
   catch /^fugitive:/
     return 'echoerr v:errmsg'
   finally
     if reload
       execute s:ReloadStatus()
+    endif
+    if exists('success')
+      call s:StageReveal()
     endif
   endtry
   return ''
@@ -2295,7 +2298,7 @@ function! s:StageReveal(...) abort
     while getline(end) =~# '^[ \+-]'
       let end += 1
     endwhile
-    while line('w$') > line('$') && end > line('w$') && line('.') > line('w0') + &scrolloff
+    while line('w$') < line('$') && end > line('w$') && line('.') > line('w0') + &scrolloff
       execute "normal! \<C-E>"
     endwhile
   endif
@@ -2424,10 +2427,10 @@ function! s:StageDiff(diff) abort
     return a:diff.' HEAD:'.s:fnameescape(info.paths[1])
   elseif info.section ==# 'Staged' && info.sigil ==# '-'
     execute 'Gedit' prefix s:fnameescape('@:'.info.paths[0])
-    return a:diff.'! :0'
+    return a:diff.'! :0:%'
   elseif info.section ==# 'Staged'
     execute 'Gedit' prefix s:fnameescape(':0:'.info.paths[0])
-    return a:diff . (info.sigil ==# '+' ? '!' : '') . ' -'
+    return a:diff . (info.sigil ==# '+' ? '!' : '') . ' @:%'
   elseif info.sigil ==# '-'
     execute 'Gedit' prefix s:fnameescape(':0:'.info.paths[0])
     return a:diff . '!'
@@ -2532,6 +2535,7 @@ function! s:StageDelete(lnum, count) abort
     call s:TreeChomp('checkout', 'HEAD^{}', '--', info.paths[0])
   endif
   exe s:ReloadStatus()
+  call s:StageReveal()
   let @@ = hash
   return 'checktime|redraw|echomsg ' .
         \ string('To restore, :Git cat-file blob '.hash[0:6].' > '.info.paths[0])
@@ -3105,23 +3109,18 @@ function! s:Log(cmd, bang, line1, line2, ...) abort
   let before = substitute(args, ' --\S\@!.*', '', '')
   let after = strpart(args, len(before))
   let path = s:Relative('/')
-  let relative = path[1:-1]
-  if path =~# '^/\.git\%(/\|$\)' || len(after)
+  if path =~# '^/\.git\%(/\|$\)' || a:line2 < 0
     let path = ''
+  elseif a:line2 > 0
+    let before .= ' -L ' . s:shellesc(a:line1 . ',' . a:line2 . ':' . path[1:-1])
+  else
+    let after = (len(after) > 3 ? after : ' -- ') . path[1:-1]
   endif
-  if before !~# '\s[^[:space:]-]'
+  if len(path) && before !~# '\s[^[:space:]-]'
     let owner = s:Owner(@%)
     if len(owner)
       let before .= ' ' . s:shellesc(owner)
     endif
-  endif
-  if relative =~# '^\.git\%(/\|$\)'
-    let relative = ''
-  endif
-  if len(relative) && a:line2 > 0
-    let before .= ' -L ' . s:shellesc(a:line1 . ',' . a:line2 . ':' . relative)
-  elseif len(relative) && (empty(after) || a:line2 == 0)
-    let after = (len(after) > 3 ? after : ' -- ') . relative
   endif
   let grepformat = &grepformat
   let grepprg = &grepprg
@@ -3132,12 +3131,6 @@ function! s:Log(cmd, bang, line1, line2, ...) abort
           \ s:shellesc('--pretty=format:fugitive://'.s:Dir().'//%H'.path.'::'.format), '%#')
     let &grepformat = '%Cdiff %.%#,%C--- %.%#,%C+++ %.%#,%Z@@ -%\d%\+\,%\d%\+ +%l\,%\d%\+ @@,%-G-%.%#,%-G+%.%#,%-G %.%#,%A%f::%m,%-G%.%#'
     exe a:cmd . (a:bang ? '! ' : ' ') . s:ShellExpand(before . after)
-    if len(path) && a:line2 == -1
-      redraw
-      echohl WarningMsg
-      echo ':Glog will soon default to all files. Use :0Glog to target current file'
-      echohl NONE
-    endif
   finally
     let &grepformat = grepformat
     let &grepprg = grepprg
