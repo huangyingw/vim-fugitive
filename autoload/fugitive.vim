@@ -63,8 +63,7 @@ function! s:fnameescape(file) abort
 endfunction
 
 function! s:throw(string) abort
-  let v:errmsg = 'fugitive: '.a:string
-  throw v:errmsg
+  throw 'fugitive: '.a:string
 endfunction
 
 function! s:warn(str) abort
@@ -1627,7 +1626,7 @@ function! fugitive#BufReadStatus() abort
 
     return ''
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
 endfunction
 
@@ -1791,7 +1790,7 @@ function! fugitive#BufReadCmd(...) abort
     return 'silent doautocmd' . (v:version >= 704 ? ' <nomodeline>' : '') .
           \ ' BufReadPost' . (modifiable ? '' : '|setl nomodifiable')
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
 endfunction
 
@@ -1960,7 +1959,7 @@ function! s:StatusCommand(line1, line2, range, count, bang, mods, reg, arg, args
       return mods . (a:count > 0 ? a:count : '') . 'split' . arg
     endif
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
   return ''
 endfunction
@@ -2279,7 +2278,7 @@ function! s:Do(action, visual) abort
     endif
     let success = 1
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   finally
     if reload
       execute s:ReloadStatus()
@@ -2514,7 +2513,7 @@ function! s:StageDelete(lnum, count) abort
     try
       call s:StageApply(info, 1, info.section ==# 'Staged' ? ['--index'] : [])
     catch /^fugitive:/
-      return 'echoerr v:errmsg'
+      return 'echoerr ' . string(v:exception)
     endtry
   elseif a:count == 2
     call s:TreeChomp('checkout', '--ours', '--', info.paths[0])
@@ -2657,7 +2656,7 @@ function! s:StagePatch(lnum1,lnum2) abort
       execute "Git reset --patch -- ".join(map(reset,'s:shellesc(v:val)'))
     endif
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
   return s:ReloadStatus()
 endfunction
@@ -2681,9 +2680,7 @@ function! s:CommitCommand(line1, line2, range, count, bang, mods, reg, arg, args
       endif
       let cdback = s:Cd(tree)
       if s:winshell()
-        let command = ''
-        let old_editor = $GIT_EDITOR
-        let $GIT_EDITOR = 'false'
+        let command = 'set GIT_EDITOR=false & '
       else
         let command = 'env GIT_EDITOR=false '
       endif
@@ -2741,11 +2738,8 @@ function! s:CommitCommand(line1, line2, range, count, bang, mods, reg, arg, args
       endif
     endif
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   finally
-    if exists('old_editor')
-      let $GIT_EDITOR = old_editor
-    endif
     call delete(outfile)
     call delete(errorfile)
   endtry
@@ -3218,7 +3212,7 @@ function! s:Open(cmd, bang, mods, arg, args) abort
     let [file, pre] = s:OpenParse(a:args)
     let file = s:Generate(file)
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
   if file !~# '^\a\a\+:'
     let file = s:sub(file, '/$', '')
@@ -3257,7 +3251,7 @@ function! s:ReadCommand(line1, line2, range, count, bang, mods, reg, arg, args) 
     let [file, pre] = s:OpenParse(a:args)
     let file = s:Generate(file)
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
   if file =~# '^fugitive:' && after is# 0
     return 'exe ' .string(mods . fugitive#FileReadCmd(file, 0, pre)) . '|diffupdate'
@@ -3647,7 +3641,7 @@ function! s:Diff(vert,keepfocus,...) abort
       try
         let file = fugitive#RevParse(arg).s:Relative(':')
       catch /^fugitive:/
-        return 'echoerr v:errmsg'
+        return 'echoerr ' . string(v:exception)
       endtry
     else
       let file = s:Expand(arg)
@@ -3682,7 +3676,7 @@ function! s:Diff(vert,keepfocus,...) abort
     endif
     return post
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
 endfunction
 
@@ -3915,7 +3909,7 @@ function! s:BlameCommand(line1, line2, range, count, bang, mods, reg, arg, args)
     endtry
     return ''
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
 endfunction
 
@@ -4275,7 +4269,7 @@ function! s:BrowseCommand(line1, line2, range, count, bang, mods, reg, arg, args
       endif
     endif
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
 endfunction
 
@@ -4599,7 +4593,7 @@ function! s:GF(mode) abort
   try
     let results = &filetype ==# 'fugitive' ? s:StatusCfile() : &filetype ==# 'gitcommit' ? [s:MessageCfile()] : s:cfile()
   catch /^fugitive:/
-    return 'echoerr v:errmsg'
+    return 'echoerr ' . string(v:exception)
   endtry
   if len(results) > 1
     return 'G' . a:mode .
