@@ -2015,7 +2015,6 @@ augroup END
 " Section: :Git
 
 call s:command("-bang -nargs=? -range=-1 -complete=customlist,fugitive#CompleteGit Git", "Git")
-call s:command("-bar -bang -range=-1 -nargs=* -complete=customlist,fugitive#CompleteGit G", "")
 
 function! s:GitExec(line1, line2, range, count, bang, mods, reg, args, dir) abort
   if empty(a:args)
