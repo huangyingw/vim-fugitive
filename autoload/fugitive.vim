@@ -2101,7 +2101,6 @@ function! fugitive#Complete(...) abort
 endfunction
 
 call s:command("-bang -nargs=? -range=-1 -complete=customlist,fugitive#CompleteGit Git", "Git")
-call s:command("-bang -nargs=? -range=-1 -complete=customlist,fugitive#CompleteGit G", "")
 
 " Section: :Gcd, :Glcd
 
