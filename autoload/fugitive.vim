@@ -420,6 +420,14 @@ endfunction
 
 function! s:SystemError(cmd, ...) abort
   try
+    if &shellredir ==# '>' && &shell =~# 'sh\|cmd'
+      let shellredir = &shellredir
+      if &shell =~# 'csh'
+        set shellredir=>&
+      else
+        set shellredir=>%s\ 2>&1
+      endif
+    endif
     let out = call('system', [type(a:cmd) ==# type([]) ? fugitive#Prepare(a:cmd) : a:cmd] + a:000)
     return [out, v:shell_error]
   catch /^Vim\%((\a\+)\)\=:E484:/
@@ -427,6 +435,10 @@ function! s:SystemError(cmd, ...) abort
     call filter(opts, 'exists("+".v:val) && !empty(eval("&".v:val))')
     call map(opts, 'v:val."=".eval("&".v:val)')
     call s:throw('failed to run `' . a:cmd . '` with ' . join(opts, ' '))
+  finally
+    if exists('shellredir')
+      let &shellpipe = shellredir
+    endif
   endtry
 endfunction
 
@@ -5171,8 +5183,8 @@ function! s:GF(mode) abort
   endtry
   if len(results) > 1
     return 'G' . a:mode .
-          \ ' +' . escape(join(results[1:-1], '|'), '| ') . ' ' .
-          \ s:fnameescape(results[0])
+          \ ' +' . escape(results[1], ' ') . ' ' .
+          \ s:fnameescape(results[0]) . join(map(results[2:-1], '"|" . v:val'), '')
   elseif len(results) && len(results[0])
     return 'G' . a:mode . ' ' . s:fnameescape(results[0])
   else
