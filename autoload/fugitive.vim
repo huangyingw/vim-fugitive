@@ -437,7 +437,7 @@ function! s:SystemError(cmd, ...) abort
     call s:throw('failed to run `' . a:cmd . '` with ' . join(opts, ' '))
   finally
     if exists('shellredir')
-      let &shellpipe = shellredir
+      let &shellredir = shellredir
     endif
   endtry
 endfunction
@@ -499,7 +499,7 @@ function! fugitive#RevParse(rev, ...) abort
   if !exec_error && hash =~# '^\x\{40,\}$'
     return hash
   endif
-  throw 'vim-fugitive: rev-parse '.a:rev.': '.hash
+  throw 'fugitive: rev-parse '.a:rev.': '.hash
 endfunction
 
 function! s:ConfigTimestamps(dir, dict) abort
@@ -1753,9 +1753,16 @@ function! fugitive#BufReadStatus() abort
       endfor
     endif
 
-    let b:fugitive_diff = {
-          \ 'Staged': s:LinesError(['diff', '--color=never', '--no-ext-diff', '--no-prefix', '--cached'])[0],
-          \ 'Unstaged': s:LinesError(['diff', '--color=never', '--no-ext-diff', '--no-prefix'])[0]}
+    let diff = {'Staged': [], 'Unstaged': []}
+    if len(staged)
+      let diff['Staged'] =
+          \ s:LinesError(['diff', '--color=never', '--no-ext-diff', '--no-prefix', '--cached'])[0]
+    endif
+    if len(unstaged)
+      let diff['Unstaged'] =
+          \ s:LinesError(['diff', '--color=never', '--no-ext-diff', '--no-prefix'])[0]
+    endif
+    let b:fugitive_diff = diff
     let expanded = get(b:, 'fugitive_expanded', {'Staged': {}, 'Unstaged': {}})
     let b:fugitive_expanded = {'Staged': {}, 'Unstaged': {}}
 
@@ -4926,7 +4933,9 @@ function! fugitive#MapJumps(...) abort
     nnoremap <buffer>      cz<Space> :G stash<Space>
     nnoremap <buffer>         cz<CR> :G stash<CR>
     nnoremap <buffer> <silent> cza   :<C-U>exe <SID>EchoExec(['stash', 'apply', '--quiet', 'stash@{' . v:count . '}'])<CR>
+    nnoremap <buffer> <silent> czA   :<C-U>exe <SID>EchoExec(['stash', 'apply', '--quiet', 'stash@{' . v:count . '}'])<CR>
     nnoremap <buffer> <silent> czp   :<C-U>exe <SID>EchoExec(['stash', 'pop', '--quiet', 'stash@{' . v:count . '}'])<CR>
+    nnoremap <buffer> <silent> czP   :<C-U>exe <SID>EchoExec(['stash', 'pop', '--quiet', 'stash@{' . v:count . '}'])<CR>
     nnoremap <buffer> <silent> czv   :<C-U>exe 'Gedit' fugitive#RevParse('stash@{' . v:count . '}')<CR>
     nnoremap <buffer> <silent> czw   :<C-U>exe <SID>EchoExec(['stash', '--keep-index'] + (v:count > 1 ? ['--all'] : v:count ? ['--include-untracked'] : []))<CR>
     nnoremap <buffer> <silent> czz   :<C-U>exe <SID>EchoExec(['stash'] + (v:count > 1 ? ['--all'] : v:count ? ['--include-untracked'] : []))<CR>
