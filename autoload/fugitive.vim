@@ -584,10 +584,8 @@ endfunction
 function! s:Command(command, line1, line2, range, bang, mods, arg, args) abort
   try
     if exists('*s:' . a:command . 'Subcommand')
-      let dir = s:Dir()
-      exe s:DirCheck(dir)
-      let [args, after] = s:SplitExpandChain(a:arg, s:Tree(dir))
-      return 'exe ' . string(s:{a:command}Subcommand(a:line1, a:line2, a:range, a:bang, s:Mods(a:mods), args)) . after
+      let hyphenated = tolower(substitute(a:command, '\l\zs\u', '-\1', 'g'))
+      return s:GitCommand(a:line1, a:line2, a:range, a:line2, a:bang, s:Mods(a:mods), '', hyphenated . ' ' . a:arg, [hyphenated] + a:args)
     endif
     return s:{a:command}Command(a:line1, a:line2, a:range, a:line2, a:bang, s:Mods(a:mods), '', a:arg, a:args)
   catch /^fugitive:/
@@ -812,8 +810,9 @@ function! fugitive#Path(url, ...) abort
     return a:1[0:-2] . path
   endif
   let url = a:url
-  if has_key(get(s:temp_files, s:cpath(url), {}), 'bufnr')
-    let url = bufname(s:temp_files[s:cpath(url)].bufnr)
+  let temp_state = s:TempState(url)
+  if has_key(temp_state, 'bufnr')
+    let url = bufname(temp_state.bufnr)
   endif
   let url = s:Slash(fnamemodify(url, ':p'))
   if url =~# '/$' && s:Slash(a:url) !~# '/$'
@@ -993,9 +992,9 @@ let s:expand = '\%(\(' . s:var . '\)\(' . s:flag . '*\)\(:S\)\=\)'
 
 function! s:BufName(var) abort
   if a:var ==# '%'
-    return bufname(get(b:, 'fugitive_blamed_bufnr', ''))
+    return bufname(get(s:TempState(), 'bufnr', ''))
   elseif a:var =~# '^#\d*$'
-    let nr = getbufvar(+a:var[1:-1], 'fugitive_blamed_bufnr', '')
+    let nr = get(s:TempState(bufname(+a:var[1:-1])), 'bufnr', '')
     return bufname(nr ? nr : +a:var[1:-1])
   else
     return expand(a:var)
@@ -1687,14 +1686,11 @@ function! fugitive#BufReadStatus() abort
       endif
       if line[0] !~# '[ ?!#]'
         call add(staged, {'type': 'File', 'status': line[0], 'filename': files})
-        let b:fugitive_status['Staged'][files] = line[0]
       endif
-      if line[1] =~# '?'
+      if line[0:1] ==# '??'
         call add(untracked, {'type': 'File', 'status': line[1], 'filename': files})
-        let b:fugitive_status['Unstaged'][files] = line[1]
       elseif line[1] !~# '[ !#]'
         call add(unstaged, {'type': 'File', 'status': line[1], 'filename': files})
-        let b:fugitive_status['Unstaged'][files] = line[1]
       endif
     endwhile
 
@@ -2066,38 +2062,45 @@ if !exists('s:temp_files')
   let s:temp_files = {}
 endif
 
-function! s:SetupTemp(file) abort
+function! s:TempState(...) abort
+  return get(s:temp_files, s:cpath(fnamemodify(a:0 ? a:1 : @%, ':p')), {})
+endfunction
+
+function! s:TempReadPre(file) abort
+  if has_key(s:temp_files, s:cpath(a:file))
+    let dict = s:temp_files[s:cpath(a:file)]
+    setlocal nomodeline
+    setlocal bufhidden=delete nobuflisted
+    setlocal buftype=nowrite
+    if has_key(dict, 'modifiable')
+      let &l:modifiable = dict.modifiable
+    endif
+    if len(dict.dir)
+      let b:git_dir = dict.dir
+      call extend(b:, {'fugitive_type': 'temp'}, 'keep')
+    endif
+  endif
+endfunction
+
+function! s:TempReadPost(file) abort
   if has_key(s:temp_files, s:cpath(a:file))
     let dict = s:temp_files[s:cpath(a:file)]
     if has_key(dict, 'filetype') && dict.filetype !=# &l:filetype
       let &l:filetype = dict.filetype
     endif
     setlocal foldmarker=<<<<<<<,>>>>>>>
-    setlocal bufhidden=delete nobuflisted
-    setlocal buftype=nowrite
-    setlocal nomodeline
     if empty(mapcheck('q', 'n'))
-      nnoremap <buffer> <silent> q    :<C-U>bdelete<CR>
+      nnoremap <buffer> <silent> q    :<C-U>bdelete<Bar>echohl WarningMsg<Bar>echo "Temp file q is deprecated in favor of the built-in <Lt>C-W>q"<Bar>echohl NONE<CR>
     endif
     exe 'nnoremap <buffer> <silent>' s:nowait "gq :<C-U>bdelete<CR>"
-    if getline(1) !~# '^diff '
-      setlocal nomodifiable
-    endif
-    if len(dict.dir)
-      let b:git_dir = dict.dir
-      call extend(b:, {'fugitive_type': 'temp'}, 'keep')
-      call FugitiveDetect(a:file)
-      if &filetype ==# 'git'
-        call fugitive#MapJumps()
-      endif
-    endif
   endif
   return ''
 endfunction
 
 augroup fugitive_temp
   autocmd!
-  autocmd BufNewFile,BufReadPost * exe s:SetupTemp(expand('<amatch>:p'))
+  autocmd BufReadPre  * exe s:TempReadPre( expand('<amatch>:p'))
+  autocmd BufReadPost * exe s:TempReadPost(expand('<amatch>:p'))
 augroup END
 
 " Section: :Git
@@ -2110,13 +2113,13 @@ function! s:GitCommand(line1, line2, range, count, bang, mods, reg, arg, args) a
     return (empty(cmd) ? 'exe' : cmd) . after
   endif
   let alias = get(s:Aliases(dir), args[0], '!')
-  if alias !~# '^!\|[\"'']' && !filereadable(s:ExecPath() . '/git-' . args[0])
+  if get(args, 1, '') !=# '--help' && alias !~# '^!\|[\"'']' && !filereadable(s:ExecPath() . '/git-' . args[0])
         \ && !(has('win32') && filereadable(s:ExecPath() . '/git-' . args[0] . '.exe'))
     call remove(args, 0)
     call extend(args, split(alias, '\s\+'), 'keep')
   endif
   let name = substitute(args[0], '\%(^\|-\)\(\l\)', '\u\1', 'g')
-  if exists('*s:' . name . 'Subcommand')
+  if exists('*s:' . name . 'Subcommand') && get(args, 1, '') !=# '--help'
     try
       exe s:DirCheck(dir)
       return 'exe ' . string(s:{name}Subcommand(a:line1, a:count, a:range, a:bang, a:mods, args[1:-1])) . after
@@ -2124,7 +2127,9 @@ function! s:GitCommand(line1, line2, range, count, bang, mods, reg, arg, args) a
       return 'echoerr ' . string(v:exception)
     endtry
   endif
-  if a:bang || args[0] =~# '^-P$\|^--no-pager$\|diff\%(tool\)\@!\|log'
+  if a:bang || args[0] =~# '^-P$\|^--no-pager$\|diff\%(tool\)\@!\|log\|^show$' ||
+        \ (args[0] ==# 'stash' && get(args, 1, '') ==# 'show') ||
+        \ (args[0] ==# 'help' || get(args, 1, '') ==# '--help') && !s:HasOpt(args, '--web')
     return s:OpenExec((a:count > 0 ? a:count : '') . (a:count ? 'split' : 'edit'), a:mods, args, dir) . after
   endif
   let git = s:UserCommandList(dir)
@@ -2236,7 +2241,8 @@ function! s:StatusCommand(line1, line2, range, count, bang, mods, reg, arg, args
           exe winnr . 'wincmd w'
         endif
         let w:fugitive_status = dir
-        return 1
+        1
+        return ''
       endif
     endfor
     if a:count ==# 0
@@ -3219,6 +3225,16 @@ endfunction
 
 " Section: :Gcommit, :Grevert
 
+function! s:CommitInteractive(line1, line2, range, bang, mods, args, patch) abort
+  let status = s:StatusCommand(a:line1, a:line2, a:range, a:line2, a:bang, a:mods, '', '', [])
+  let status = len(status) ? status . '|' : ''
+  if a:patch
+    return status . 'if search("^Unstaged")|exe "+"|endif'
+  else
+    return status . 'if search("^Untracked\\|^Unstaged")|exe "+"|endif'
+  endif
+endfunction
+
 function! s:CommitSubcommand(line1, line2, range, bang, mods, args, ...) abort
   let mods = substitute(s:Mods(a:mods), '\C\<tab\>', '-tab', 'g')
   let dir = a:0 ? a:1 : s:Dir()
@@ -3226,43 +3242,33 @@ function! s:CommitSubcommand(line1, line2, range, bang, mods, args, ...) abort
   let msgfile = fugitive#Find('.git/COMMIT_EDITMSG', dir)
   let outfile = tempname()
   try
-    let guioptions = &guioptions
-    try
-      if &guioptions =~# '!'
-        setglobal guioptions-=!
-      endif
-      if s:winshell()
-        let command = 'set GIT_EDITOR=false& '
+    if s:winshell()
+      let command = 'set GIT_EDITOR=false& '
+    else
+      let command = 'env GIT_EDITOR=false '
+    endif
+    let argv = a:args
+    let i = 0
+    while get(argv, i, '--') !=# '--'
+      if argv[i] =~# '^-[apzsneiovq].'
+        call insert(argv, argv[i][0:1])
+        let argv[i+1] = '-' . argv[i+1][2:-1]
       else
-        let command = 'env GIT_EDITOR=false '
+        let i += 1
       endif
-      let argv = a:args
-      let i = 0
-      while get(argv, i, '--') !=# '--'
-        if argv[i] =~# '^-[apzsneiovq].'
-          call insert(argv, argv[i][0:1])
-          let argv[i+1] = '-' . argv[i+1][2:-1]
-        else
-          let i += 1
-        endif
-      endwhile
-      let command .= s:UserCommand(dir) . ' commit ' . s:shellesc(argv)
-      if s:HasOpt(argv, '-i', '--interactive', '-p', '--patch') && &shell !~# 'csh'
-        let errorfile = tempname()
-        noautocmd execute '!'.command.' 2> '.errorfile
-        let errors = readfile(errorfile)
-        let exec_error = v:shell_error
-        call delete(errorfile)
-      else
-        if (&autowrite || &autowriteall) && !a:0
-          silent! wall
-        endif
-        let [error_string, exec_error] = s:TempCmd(outfile, command)
-        let errors = split(error_string, "\n")
-      endif
-    finally
-      let &guioptions = guioptions
-    endtry
+    endwhile
+    let command .= s:UserCommand(dir) . ' commit ' . s:shellesc(argv)
+    if (&autowrite || &autowriteall) && !a:0
+      silent! wall
+    endif
+    if s:HasOpt(argv, '-i', '--interactive')
+      return s:CommitInteractive(a:line1, a:line2, a:range, a:bang, a:mods, argv, 0)
+    elseif s:HasOpt(argv, '-p', '--patch')
+      return s:CommitInteractive(a:line1, a:line2, a:range, a:bang, a:mods, argv, 1)
+    else
+      let [error_string, exec_error] = s:TempCmd(outfile, command)
+      let errors = split(error_string, "\n")
+    endif
     if !has('gui_running')
       redraw!
     endif
@@ -3916,11 +3922,25 @@ function! s:OpenExec(cmd, mods, args, ...) abort
   let args = s:shellesc(a:args)
   let temp = tempname()
   let git = s:UserCommand(dir)
-  silent! execute '!' . escape(git . ' --no-pager ' . args, '!#%') .
+  let columns = get(g:, 'fugitive_columns', 80)
+  if columns <= 0
+    let env = ''
+  elseif s:winshell()
+    let env = 'set COLUMNS=' . columns . '& '
+  else
+    let env = 'env COLUMNS=' . columns . ' '
+  endif
+  silent! execute '!' . escape(env . git . ' --no-pager ' . args, '!#%') .
         \ (&shell =~# 'csh' ? ' >& ' . temp : ' > ' . temp . ' 2>&1')
   redraw!
   let temp = s:Resolve(temp)
-  let s:temp_files[s:cpath(temp)] = { 'dir': dir, 'filetype': 'git' }
+  let first = join(readfile(temp, '', 2), "\n")
+  if first =~# '\<\([[:upper:][:digit:]_-]\+(\d\+)\).*\1'
+    let filetype = 'man'
+  else
+    let filetype = 'git'
+  endif
+  let s:temp_files[s:cpath(temp)] = { 'dir': dir, 'filetype': filetype, 'modifiable': first =~# '^diff ' }
   if a:cmd ==# 'edit'
     call s:BlurStatus()
   endif
@@ -4546,17 +4566,6 @@ function! s:Keywordprg() abort
   endif
 endfunction
 
-augroup fugitive_blame
-  autocmd!
-  autocmd FileType fugitiveblame setlocal nomodeline | if len(s:Dir()) | let &l:keywordprg = s:Keywordprg() | endif
-  autocmd User Fugitive
-        \ if get(b:, 'fugitive_type') =~# '^\%(file\|blob\|blame\)$' || filereadable(@%) |
-        \   exe "command! -buffer -bar -bang -range=-1 -nargs=* Gblame :execute s:BlameCommand(<line1>,<line2>,+'<range>',<count>,<bang>0,'<mods>',<q-reg>,<q-args>,[<f-args>])" |
-        \ endif
-  autocmd ColorScheme,GUIEnter * call s:RehighlightBlame()
-  autocmd BufWinLeave * execute getwinvar(+bufwinnr(+expand('<abuf>')), 'fugitive_leave')
-augroup END
-
 function! s:linechars(pattern) abort
   let chars = strlen(s:gsub(matchstr(getline('.'), a:pattern), '.', '.'))
   if exists('*synconcealed') && &conceallevel > 1
@@ -4567,28 +4576,100 @@ function! s:linechars(pattern) abort
   return chars
 endfunction
 
-function! s:BlameCommand(line1, line2, range, count, bang, mods, reg, arg, args) abort
-  if exists('b:fugitive_blamed_bufnr')
+function! s:BlameBufnr(...) abort
+  let state = s:TempState(bufname(a:0 ? a:1 : ''))
+  if get(state, 'filetype', '') ==# 'fugitiveblame'
+    return get(state, 'bufnr', -1)
+  else
+    return -1
+  endif
+endfunction
+
+function! s:BlameCommitFileLnum(...) abort
+  let line = a:0 ? a:1 : getline('.')
+  let commit = matchstr(line, '^\^\=\zs\x\+')
+  if commit =~# '^0\+$'
+    let commit = ''
+  endif
+  let lnum = +matchstr(line, ' \zs\d\+\ze \%((\| *\d\+)\)')
+  let path = matchstr(line, '^\^\=\x* \+\%(\d\+ \+\d\+ \+\)\=\zs.\{-\}\ze\s\+\%(\%( \d\+ \)\@<!([^()]*\w \d\+)\|\d\+ \)')
+  if empty(path) && lnum
+    let path = fugitive#Path(bufname(a:0 ? a:2 : s:BlameBufnr()), '')
+  endif
+  return [commit, path, lnum]
+endfunction
+
+function! s:BlameLeave() abort
+  let bufwinnr = bufwinnr(s:BlameBufnr())
+  if bufwinnr > 0
+    let bufnr = bufnr('')
+    exe bufwinnr . 'wincmd w'
+    return bufnr . 'bdelete'
+  endif
+  return ''
+endfunction
+
+function! s:BlameQuit() abort
+  let cmd = s:BlameLeave()
+  if empty(cmd)
     return 'bdelete'
+  elseif len(s:DirCommitFile(@%)[1])
+    return cmd . '|Gedit'
+  else
+    return cmd
+  endif
+endfunction
+
+function! s:BlameComplete(A, L, P) abort
+  return s:CompleteSub('blame', a:A, a:L, a:P, [])
+endfunction
+
+function! s:BlameCommand(line1, line2, range, count, bang, mods, reg, arg, args) abort
+  if has_key(s:TempState(), 'blame_flags')
+    return substitute(s:BlameLeave(), '^$', 'bdelete', '')
   endif
   exe s:DirCheck()
+  let flags = copy(a:args)
+  let i = 0
+  while i < len(flags)
+    let match = matchlist(flags[i], '^\(-[a-zABDFH-KN-RT-Z]\)\ze\(.*\)')
+    if len(match) && len(match[2])
+      call insert(flags, match[1])
+      let flags[i+1] = '-' . match[2]
+      continue
+    endif
+    let arg = flags[i]
+    if arg =~# '^-[Lp]$\|^--\%(help\|porcelain\|line-porcelain\|incremental\|contents\)$'
+      return 'echoerr ' . string('fugitive: blame ' . arg . ' unsupported')
+    elseif arg =~# '^-[GLS]$\|^--\%(date\|encoding\)$'
+      let i += 1
+      if i == len(flags)
+        echohl ErrorMsg
+        echo s:ChompError(['blame', arg])[0]
+        echohl NONE
+        return ''
+      endif
+    elseif arg !~# '^-'
+      return 'echoerr ' . string("fugitive: '-' required for all blame options")
+    elseif arg ==# '--'
+      call remove(flags, i)
+      continue
+    endif
+    let i += 1
+  endwhile
   try
     if empty(s:Relative('/'))
       call s:throw('file or blob required')
     endif
-    if filter(copy(a:args),'v:val !~# "^-"') != []
-      call s:throw("'-' required for all options")
-    elseif filter(copy(a:args),'v:val !~# "^\\%(--abbrev=\\d*\\|--relative-date\\|--first-parent\\|--root\\|--show-name\\|-\\%([ltfnsew]\\|[MC]\\d*\\)\\+\\)$"') != []
-      call s:throw('unsupported option')
-    endif
-    let cmd = ['--no-pager', '-c', 'blame.coloring=none', 'blame', '--show-number']
+    let commit = matchstr(s:DirCommitFile(@%)[1], '^\x\x\+$')
+    let cmd = ['--no-pager', '-c', 'blame.coloring=none', '-c', 'blame.blankBoundary=false', 'blame', '--show-number']
+    call extend(cmd, filter(copy(flags), 'v:val !~# "\\v^%(-b|--%(no-)=color-.*|--progress)$"'))
     if a:count > 0
       let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
     endif
-    let cmd += a:args
-    if s:DirCommitFile(@%)[1] =~# '\D\|..'
-      let cmd += [s:DirCommitFile(@%)[1]]
-    else
+    if len(commit)
+      let cmd += [commit]
+    elseif !s:HasOpt(flags, '--reverse')
       let cmd += ['--contents', '-']
     endif
     let cmd += ['--', expand('%:p')]
@@ -4600,24 +4681,47 @@ function! s:BlameCommand(line1, line2, range, count, bang, mods, reg, arg, args)
     else
       silent! execute '%write !'.basecmd.' > '.temp.' 2> '.error
     endif
+    redraw
     try
       if v:shell_error
-        call s:throw(join(readfile(error),"\n"))
+        let lines = readfile(error)
+        if empty(lines)
+          let lines = readfile(temp)
+        endif
+        for i in range(len(lines))
+          if lines[i] =~# '^error: \|^fatal: '
+            echohl ErrorMsg
+            echon lines[i]
+            echohl NONE
+            break
+          else
+            echon lines[i]
+          endif
+          if i != len(lines) - 1
+            echon "\n"
+          endif
+        endfor
+        return ''
       endif
       if a:count > 0
-        let edit = s:Mods(a:mods) . get(['edit', 'split', 'pedit'], a:count - (a:line1 ? a:line1 : 1), 'split')
-        return s:BlameCommit(edit, get(readfile(temp), 0, ''))
+        let edit = s:Mods(a:mods) . get(['edit', 'split', 'pedit', 'vsplit', 'tabedit'], a:count - (a:line1 ? a:line1 : 1), 'split')
+        return s:BlameCommit(edit, get(readfile(temp), 0, ''), bufnr(''))
       else
+        let temp = s:Resolve(temp)
+        let s:temp_files[s:cpath(temp)] = {'dir': s:Dir(), 'filetype': 'fugitiveblame', 'blame_flags': flags, 'modifiable': 0}
         for winnr in range(winnr('$'),1,-1)
-          call setwinvar(winnr, '&scrollbind', 0)
-          if exists('+cursorbind')
+          if getwinvar(winnr, '&scrollbind')
+            call setwinvar(winnr, '&scrollbind', 0)
+          endif
+          if exists('+cursorbind') && getwinvar(winnr, '&cursorbind')
             call setwinvar(winnr, '&cursorbind', 0)
           endif
-          if getbufvar(winbufnr(winnr), 'fugitive_blamed_bufnr')
+          if s:BlameBufnr(winbufnr(winnr)) > 0
             execute winbufnr(winnr).'bdelete'
           endif
         endfor
         let bufnr = bufnr('')
+        let s:temp_files[s:cpath(temp)].bufnr = bufnr
         let restore = 'call setwinvar(bufwinnr('.bufnr.'),"&scrollbind",0)'
         if exists('+cursorbind')
           let restore .= '|call setwinvar(bufwinnr('.bufnr.'),"&cursorbind",0)'
@@ -4634,42 +4738,19 @@ function! s:BlameCommand(line1, line2, range, count, bang, mods, reg, arg, args)
         endif
         let top = line('w0') + &scrolloff
         let current = line('.')
-        let temp = s:Resolve(temp)
-        let s:temp_files[s:cpath(temp)] = { 'dir': s:Dir(), 'filetype': 'fugitiveblame', 'args': cmd, 'bufnr': bufnr }
         exe 'keepalt' (a:bang ? 'split' : 'leftabove vsplit') s:fnameescape(temp)
-        let b:fugitive_blamed_bufnr = bufnr
-        let b:fugitive_type = 'blame'
         let w:fugitive_leave = restore
-        let b:fugitive_blame_arguments = join(a:args,' ')
         execute top
         normal! zt
         execute current
         if exists('+cursorbind')
           setlocal cursorbind
         endif
-        setlocal nomodified nomodifiable nonumber scrollbind nowrap foldcolumn=0 nofoldenable winfixwidth filetype=fugitiveblame buftype=nowrite
-        if exists('+concealcursor')
-          setlocal concealcursor=nc conceallevel=2
-        endif
+        setlocal nonumber scrollbind nowrap foldcolumn=0 nofoldenable winfixwidth
         if exists('+relativenumber')
           setlocal norelativenumber
         endif
         execute "vertical resize ".(s:linechars('.\{-\}\ze\s\+\d\+)')+1)
-        let nowait = v:version >= 704 ? '<nowait>' : ''
-        nnoremap <buffer> <silent> <F1> :help fugitive-:Gblame<CR>
-        nnoremap <buffer> <silent> g?   :help fugitive-:Gblame<CR>
-        if empty(mapcheck('q', 'n'))
-          nnoremap <buffer> <silent> q    :exe substitute(bufwinnr(b:fugitive_blamed_bufnr).' wincmd w<Bar>'.bufnr('').'bdelete','^-1','','')<CR>
-        endif
-        exe 'nnoremap <buffer> <silent>' s:nowait "gq :exe substitute(bufwinnr(b:fugitive_blamed_bufnr).' wincmd w<Bar>'.bufnr('').'bdelete<Bar>if expand(''%:p'') =~# ''^fugitive:[\\/][\\/]''<Bar>Gedit<Bar>endif','^-1','','')<CR>"
-        nnoremap <buffer> <silent> <CR> :<C-U>exe <SID>BlameCommit("exe 'norm gq'<Bar>edit")<CR>
-        nnoremap <buffer> <silent> -    :<C-U>exe <SID>BlameJump('')<CR>
-        nnoremap <buffer> <silent> P    :<C-U>exe <SID>BlameJump('^'.v:count1)<CR>
-        nnoremap <buffer> <silent> ~    :<C-U>exe <SID>BlameJump('~'.v:count1)<CR>
-        nnoremap <buffer> <silent> i    :<C-U>exe <SID>BlameCommit("exe 'norm q'<Bar>edit")<CR>
-        nnoremap <buffer> <silent> o    :<C-U>exe <SID>BlameCommit((&splitbelow ? "botright" : "topleft")." split")<CR>
-        nnoremap <buffer> <silent> O    :<C-U>exe <SID>BlameCommit("tabedit")<CR>
-        nnoremap <buffer> <silent> p    :<C-U>exe <SID>Open((&splitbelow ? "botright" : "topleft").' pedit', 0, '', matchstr(getline('.'), '\x\+'), [matchstr(getline('.'), '\x\+')])<CR>
         nnoremap <buffer> <silent> A    :<C-u>exe "vertical resize ".(<SID>linechars('.\{-\}\ze [0-9:/+-][0-9:/+ -]* \d\+)')+1+v:count)<CR>
         nnoremap <buffer> <silent> C    :<C-u>exe "vertical resize ".(<SID>linechars('^\S\+')+1+v:count)<CR>
         nnoremap <buffer> <silent> D    :<C-u>exe "vertical resize ".(<SID>linechars('.\{-\}\ze\d\ze\s\+\d\+)')+1-v:count)<CR>
@@ -4684,21 +4765,16 @@ function! s:BlameCommand(line1, line2, range, count, bang, mods, reg, arg, args)
 endfunction
 
 function! s:BlameCommit(cmd, ...) abort
-  let line = a:0 ? a:1 : getline('.')
-  if line =~# '^0\{4,\} '
-    return 'echoerr ' . string('Not Committed Yet')
+  let [commit, path, lnum] = call('s:BlameCommitFileLnum', a:000)
+  if commit =~# '^0*$'
+    return 'echoerr ' . string('fugitive: no commit')
   endif
-  let cmd = s:Open(a:cmd, 0, '', matchstr(line, '\x\+'), [matchstr(line, '\x\+')])
+  let cmd = s:Open((&splitbelow ? "botright " : "topleft ") . a:cmd, 0, '', commit, [commit])
   if cmd =~# '^echoerr'
     return cmd
   endif
-  let lnum = matchstr(line, ' \zs\d\+\ze\s\+[([:digit:]]')
-  let path = matchstr(line, '^\^\=\x\+\s\+\zs.\{-\}\ze\s*\d\+ ')
-  if path ==# ''
-    let path = fugitive#Path(a:0 ? @% : bufname(b:fugitive_blamed_bufnr), '')
-  endif
   execute cmd
-  if a:cmd ==# 'pedit'
+  if a:cmd ==# 'pedit' || empty(path)
     return ''
   endif
   if search('^diff .* b/\M'.escape(path,'\').'$','W')
@@ -4732,21 +4808,18 @@ function! s:BlameCommit(cmd, ...) abort
 endfunction
 
 function! s:BlameJump(suffix) abort
-  let commit = matchstr(getline('.'),'^\^\=\zs\x\+')
   let suffix = a:suffix
-  if commit =~# '^0\+$'
+  let [commit, path, lnum] = s:BlameCommitFileLnum()
+  if empty(path)
+    return 'echoerr ' . string('fugitive: could not determine filename for blame')
+  endif
+  if commit =~# '^0*$'
     let commit = 'HEAD'
     let suffix = ''
   endif
-  let lnum = matchstr(getline('.'),' \zs\d\+\ze\s\+[([:digit:]]')
-  let path = matchstr(getline('.'),'^\^\=\x\+\s\+\zs.\{-\}\ze\s*\d\+ ')
-  if path ==# ''
-    let path = fugitive#Path(bufname(b:fugitive_blamed_bufnr), '')
-  endif
-  let args = b:fugitive_blame_arguments
   let offset = line('.') - line('w0')
   let bufnr = bufnr('%')
-  let winnr = bufwinnr(b:fugitive_blamed_bufnr)
+  let winnr = bufwinnr(s:BlameBufnr())
   if winnr > 0
     exe winnr.'wincmd w'
   endif
@@ -4756,7 +4829,8 @@ function! s:BlameJump(suffix) abort
     exe bufnr.'bdelete'
   endif
   if exists(':Gblame')
-    execute 'Gblame '.args
+    let flags = get(s:TempState(), 'blame_flags', [])
+    execute 'Gblame ' . s:fnameescape(flags)
     execute lnum
     let delta = line('.') - line('w0') - offset
     if delta > 0
@@ -4773,21 +4847,30 @@ let s:hash_colors = {}
 
 function! fugitive#BlameSyntax() abort
   let conceal = has('conceal') ? ' conceal' : ''
-  syn match FugitiveblameBoundary "^\^"
-  syn match FugitiveblameBlank                      "^\s\+\s\@=" nextgroup=FugitiveblameAnnotation,fugitiveblameOriginalFile,FugitiveblameOriginalLineNumber skipwhite
-  syn match FugitiveblameHash       "\%(^\^\=\)\@<=\<\x\{7,\}\>" nextgroup=FugitiveblameAnnotation,FugitiveblameOriginalLineNumber,fugitiveblameOriginalFile skipwhite
-  syn match FugitiveblameUncommitted "\%(^\^\=\)\@<=\<0\{7,\}\>" nextgroup=FugitiveblameAnnotation,FugitiveblameOriginalLineNumber,fugitiveblameOriginalFile skipwhite
-  syn region FugitiveblameAnnotation matchgroup=FugitiveblameDelimiter start="(" end="\%( \d\+\)\@<=)" contained keepend oneline
-  syn match FugitiveblameTime "[0-9:/+-][0-9:/+ -]*[0-9:/+-]\%( \+\d\+)\)\@=" contained containedin=FugitiveblameAnnotation
-  exec 'syn match FugitiveblameLineNumber         " *\d\+)\@=" contained containedin=FugitiveblameAnnotation' conceal
-  exec 'syn match FugitiveblameOriginalFile       " \%(\f\+\D\@<=\|\D\@=\f\+\)\%(\%(\s\+\d\+\)\=\s\%((\|\s*\d\+)\)\)\@=" contained nextgroup=FugitiveblameOriginalLineNumber,FugitiveblameAnnotation skipwhite' conceal
-  exec 'syn match FugitiveblameOriginalLineNumber " *\d\+\%(\s(\)\@=" contained nextgroup=FugitiveblameAnnotation skipwhite' conceal
-  exec 'syn match FugitiveblameOriginalLineNumber " *\d\+\%(\s\+\d\+)\)\@=" contained nextgroup=FugitiveblameShort skipwhite' conceal
+  let config = fugitive#Config()
+  let flags = get(s:TempState(), 'blame_flags', [])
+  syn match FugitiveblameBlank                      "^\s\+\s\@=" nextgroup=FugitiveblameAnnotation,FugitiveblameScoreDebug,FugitiveblameOriginalFile,FugitiveblameOriginalLineNumber skipwhite
+  syn match FugitiveblameHash       "\%(^\^\=\)\@<=\<\x\{7,\}\>" nextgroup=FugitiveblameAnnotation,FugitiveblameScoreDebug,FugitiveblameOriginalLineNumber,FugitiveblameOriginalFile skipwhite
+  syn match FugitiveblameUncommitted "\%(^\^\=\)\@<=\<0\{7,\}\>" nextgroup=FugitiveblameAnnotation,FugitiveblameScoreDebug,FugitiveblameOriginalLineNumber,FugitiveblameOriginalFile skipwhite
+  if get(get(config, 'blame.blankboundary', ['x']), 0, 'x') =~# '^$\|^true$' || s:HasOpt(flags, '-b')
+    syn match FugitiveblameBoundaryIgnore "^\^\x\{7,\}\>" nextgroup=FugitiveblameAnnotation,FugitiveblameScoreDebug,FugitiveblameOriginalLineNumber,FugitiveblameOriginalFile skipwhite
+  else
+    syn match FugitiveblameBoundary "^\^"
+  endif
+  syn match FugitiveblameScoreDebug        " *\d\+\s\+\d\+\s\@=" nextgroup=FugitiveblameAnnotation,FugitiveblameOriginalLineNumber,fugitiveblameOriginalFile contained skipwhite
+  syn region FugitiveblameAnnotation matchgroup=FugitiveblameDelimiter start="(" end="\%(\s\d\+\)\@<=)" contained keepend oneline
+  syn match FugitiveblameTime "[0-9:/+-][0-9:/+ -]*[0-9:/+-]\%(\s\+\d\+)\)\@=" contained containedin=FugitiveblameAnnotation
+  exec 'syn match FugitiveblameLineNumber         "\s*\d\+)\@=" contained containedin=FugitiveblameAnnotation' conceal
+  exec 'syn match FugitiveblameOriginalFile       "\s\%(\f\+\D\@<=\|\D\@=\f\+\)\%(\%(\s\+\d\+\)\=\s\%((\|\s*\d\+)\)\)\@=" contained nextgroup=FugitiveblameOriginalLineNumber,FugitiveblameAnnotation skipwhite' (s:HasOpt(flags, '--show-name', '-f') ? '' : conceal)
+  exec 'syn match FugitiveblameOriginalLineNumber "\s*\d\+\%(\s(\)\@=" contained nextgroup=FugitiveblameAnnotation skipwhite' (s:HasOpt(flags, '--show-number', '-n') ? '' : conceal)
+  exec 'syn match FugitiveblameOriginalLineNumber "\s*\d\+\%(\s\+\d\+)\)\@=" contained nextgroup=FugitiveblameShort skipwhite' (s:HasOpt(flags, '--show-number', '-n') ? '' : conceal)
   syn match FugitiveblameShort              " \d\+)" contained contains=FugitiveblameLineNumber
   syn match FugitiveblameNotCommittedYet "(\@<=Not Committed Yet\>" contained containedin=FugitiveblameAnnotation
   hi def link FugitiveblameBoundary           Keyword
   hi def link FugitiveblameHash               Identifier
+  hi def link FugitiveblameBoundaryIgnore     Ignore
   hi def link FugitiveblameUncommitted        Ignore
+  hi def link FugitiveblameScoreDebug         Debug
   hi def link FugitiveblameTime               PreProc
   hi def link FugitiveblameLineNumber         Number
   hi def link FugitiveblameOriginalFile       String
@@ -4795,7 +4878,7 @@ function! fugitive#BlameSyntax() abort
   hi def link FugitiveblameShort              FugitiveblameDelimiter
   hi def link FugitiveblameDelimiter          Delimiter
   hi def link FugitiveblameNotCommittedYet    Comment
-  if !get(g:, 'fugitive_dynamic_colors', 1)
+  if !get(g:, 'fugitive_dynamic_colors', 1) && !s:HasOpt(flags, '--color-lines') || s:HasOpt(flags, '--no-color-lines')
     return
   endif
   let seen = {}
@@ -4818,10 +4901,10 @@ function! fugitive#BlameSyntax() abort
     endif
     exe 'syn match FugitiveblameHash'.hash.'       "\%(^\^\=\)\@<='.hash.'\x\{1,34\}\>" nextgroup=FugitiveblameAnnotation,FugitiveblameOriginalLineNumber,fugitiveblameOriginalFile skipwhite'
   endfor
-  call s:RehighlightBlame()
+  call s:BlameRehighlight()
 endfunction
 
-function! s:RehighlightBlame() abort
+function! s:BlameRehighlight() abort
   for [hash, cterm] in items(s:hash_colors)
     if !empty(cterm) || has('gui_running') || has('termguicolors') && &termguicolors
       exe 'hi FugitiveblameHash'.hash.' guifg=#'.hash.get(s:hash_colors, hash, '')
@@ -4830,6 +4913,47 @@ function! s:RehighlightBlame() abort
     endif
   endfor
 endfunction
+
+function! s:BlameFileType() abort
+  setlocal nomodeline
+  setlocal foldmethod=manual
+  if len(s:Dir())
+    let &l:keywordprg = s:Keywordprg()
+  endif
+  let b:undo_ftplugin = 'setl keywordprg= foldmethod<'
+  if exists('+concealcursor')
+    setlocal concealcursor=nc conceallevel=2
+    let b:undo_ftplugin .= ' concealcursor< conceallevel<'
+  endif
+  if &modifiable
+    return ''
+  endif
+  nnoremap <buffer> <silent> <F1> :help fugitive-:Gblame<CR>
+  nnoremap <buffer> <silent> g?   :help fugitive-:Gblame<CR>
+  if mapcheck('q', 'n') =~# '^$\|bdelete'
+    nnoremap <buffer> <silent> q    :exe <SID>BlameQuit()<Bar>echohl WarningMsg<Bar>echo ":Gblame q is deprecated in favor of gq"<Bar>echohl NONE<CR>
+  endif
+  exe 'nnoremap <buffer> <silent>' s:nowait "gq :exe <SID>BlameQuit()<CR>"
+  nnoremap <buffer> <silent> <CR> :<C-U>exe <SID>BlameCommit("exe <SID>BlameLeave()<Bar>edit")<CR>
+  nnoremap <buffer> <silent> -    :<C-U>exe <SID>BlameJump('')<CR>
+  nnoremap <buffer> <silent> P    :<C-U>exe <SID>BlameJump('^'.v:count1)<CR>
+  nnoremap <buffer> <silent> ~    :<C-U>exe <SID>BlameJump('~'.v:count1)<CR>
+  nnoremap <buffer> <silent> i    :<C-U>exe <SID>BlameCommit("exe <SID>BlameLeave()<Bar>edit")<CR>
+  nnoremap <buffer> <silent> o    :<C-U>exe <SID>BlameCommit("split")<CR>
+  nnoremap <buffer> <silent> O    :<C-U>exe <SID>BlameCommit("tabedit")<CR>
+  nnoremap <buffer> <silent> p    :<C-U>exe <SID>BlameCommit("pedit")<CR>
+endfunction
+
+augroup fugitive_blame
+  autocmd!
+  autocmd FileType fugitiveblame call s:BlameFileType()
+  autocmd User Fugitive
+        \ if get(b:, 'fugitive_type') =~# '^\%(file\|blob\)$' || s:BlameBufnr() > 0 || filereadable(@%) |
+        \   exe "command! -buffer -bar -bang -range=-1 -nargs=* -complete=customlist,s:BlameComplete Gblame :execute s:BlameCommand(<line1>,<line2>,+'<range>',<count>,<bang>0,'<mods>',<q-reg>,<q-args>,[<f-args>])" |
+        \ endif
+  autocmd ColorScheme,GUIEnter * call s:BlameRehighlight()
+  autocmd BufWinLeave * execute getwinvar(+bufwinnr(+expand('<abuf>')), 'fugitive_leave')
+augroup END
 
 " Section: :Gbrowse
 
@@ -5118,8 +5242,8 @@ function! fugitive#MapJumps(...) abort
       nnoremap <buffer> <silent> <CR>  :<C-U>0,1Gblame<CR>
       nnoremap <buffer> <silent> o     :<C-U>0,2Gblame<CR>
       nnoremap <buffer> <silent> S     :<C-U>echoerr 'Use gO'<CR>
-      nnoremap <buffer> <silent> gO    :<C-U>vertical 0,2Gblame<CR>
-      nnoremap <buffer> <silent> O     :<C-U>tab 0,2Gblame<CR>
+      nnoremap <buffer> <silent> gO    :<C-U>0,4Gblame<CR>
+      nnoremap <buffer> <silent> O     :<C-U>0,5Gblame<CR>
       nnoremap <buffer> <silent> p     :<C-U>0,3Gblame<CR>
     else
       nnoremap <buffer> <silent> <CR>  :<C-U>exe <SID>GF("edit")<CR>
@@ -5170,6 +5294,9 @@ function! fugitive#MapJumps(...) abort
     nnoremap <buffer> <silent> cw    :<C-U>Gcommit --amend --only<CR>
     nnoremap <buffer> <silent> cva   :<C-U>Gcommit -v --amend<CR>
     nnoremap <buffer> <silent> cvc   :<C-U>Gcommit -v<CR>
+    nnoremap <buffer> <silent> cRa   :<C-U>Gcommit --reset-author --amend<CR>
+    nnoremap <buffer> <silent> cRe   :<C-U>Gcommit --reset-author --amend --no-edit<CR>
+    nnoremap <buffer> <silent> cRw   :<C-U>Gcommit --reset-author --amend --only<CR>
     nnoremap <buffer>          cf    :<C-U>Gcommit --fixup=<C-R>=<SID>SquashArgument()<CR>
     nnoremap <buffer>          cF    :<C-U><Bar>Grebase --autosquash<C-R>=<SID>RebaseArgument()<CR><Home>Gcommit --fixup=<C-R>=<SID>SquashArgument()<CR>
     nnoremap <buffer>          cs    :<C-U>Gcommit --squash=<C-R>=<SID>SquashArgument()<CR>
@@ -5181,7 +5308,6 @@ function! fugitive#MapJumps(...) abort
     nnoremap <buffer>         cr<CR> :Grevert<CR>
     nnoremap <buffer> <silent> crc   :<C-U>Grevert <C-R>=<SID>SquashArgument()<CR><CR>
     nnoremap <buffer> <silent> crn   :<C-U>Grevert --no-commit <C-R>=<SID>SquashArgument()<CR><CR>
-    nnoremap <buffer> <silent> cR    :<C-U>Grevert <C-R>=<SID>SquashArgument()<CR><CR>
     nnoremap <buffer> <silent> cr?   :help fugitive_cr<CR>
 
     nnoremap <buffer>      cm<Space> :Gmerge<Space>
