@@ -583,9 +583,8 @@ endfunction
 
 function! s:Command(command, line1, line2, range, bang, mods, arg, args) abort
   try
-    if exists('*s:' . a:command . 'Subcommand')
-      let hyphenated = tolower(substitute(a:command, '\l\zs\u', '-\1', 'g'))
-      return s:GitCommand(a:line1, a:line2, a:range, a:line2, a:bang, s:Mods(a:mods), '', hyphenated . ' ' . a:arg, [hyphenated] + a:args)
+    if a:command =~# '^\l[[:alnum:]-]\+$'
+      return s:GitCommand(a:line1, a:line2, a:range, a:line2, a:bang, s:Mods(a:mods), '', a:command . ' ' . a:arg, [a:command] + a:args)
     endif
     return s:{a:command}Command(a:line1, a:line2, a:range, a:line2, a:bang, s:Mods(a:mods), '', a:arg, a:args)
   catch /^fugitive:/
@@ -3229,7 +3228,7 @@ function! s:CommitInteractive(line1, line2, range, bang, mods, args, patch) abor
   let status = s:StatusCommand(a:line1, a:line2, a:range, a:line2, a:bang, a:mods, '', '', [])
   let status = len(status) ? status . '|' : ''
   if a:patch
-    return status . 'if search("^Unstaged")|exe "+"|endif'
+    return status . 'if search("^Unstaged")|exe "normal >"|exe "+"|endif'
   else
     return status . 'if search("^Untracked\\|^Unstaged")|exe "+"|endif'
   endif
@@ -3302,7 +3301,7 @@ function! s:CommitSubcommand(line1, line2, range, bang, mods, args, ...) abort
           call insert(argv, '--cleanup=strip')
         endif
         call extend(argv, ['-F', msgfile], 'keep')
-        if bufname('%') == '' && line('$') == 1 && getline(1) == '' && !&modified
+        if (bufname('%') == '' && line('$') == 1 && getline(1) == '' && !&modified) || a:line2 == 0
           execute mods . 'keepalt edit' s:fnameescape(msgfile)
         elseif s:HasOpt(argv, '-v') || mods =~# '\<tab\>'
           execute mods . 'keepalt -tabedit' s:fnameescape(msgfile)
@@ -3375,8 +3374,8 @@ function! s:FinishCommit() abort
   return ''
 endfunction
 
-call s:command("-nargs=? -complete=customlist,s:CommitComplete Gcommit", "Commit")
-call s:command("-nargs=? -complete=customlist,s:RevertComplete Grevert", "Revert")
+call s:command("-nargs=? -range=-1 -complete=customlist,s:CommitComplete Gcommit", "commit")
+call s:command("-nargs=? -range=-1 -complete=customlist,s:RevertComplete Grevert", "revert")
 
 " Section: :Gmerge, :Grebase, :Gpull
 
@@ -3655,9 +3654,9 @@ augroup fugitive_merge
         \ endif
 augroup END
 
-call s:command("-nargs=? -bang -complete=customlist,s:MergeComplete Gmerge", "Merge")
-call s:command("-nargs=? -bang -complete=customlist,s:RebaseComplete Grebase", "Rebase")
-call s:command("-nargs=? -bang -complete=customlist,s:PullComplete Gpull", "Pull")
+call s:command("-nargs=? -bang -complete=customlist,s:MergeComplete Gmerge", "merge")
+call s:command("-nargs=? -bang -complete=customlist,s:RebaseComplete Grebase", "rebase")
+call s:command("-nargs=? -bang -complete=customlist,s:PullComplete Gpull", "pull")
 
 " Section: :Ggrep, :Glog
 
@@ -3704,16 +3703,20 @@ function! s:GrepParseLine(prefix, name_only, dir, line) abort
   return entry
 endfunction
 
-function! s:Grep(listnr, bang, arg) abort
+function! s:GrepSubcommand(line1, line2, range, bang, mods, args) abort
   let dir = s:Dir()
   exe s:DirCheck(dir)
-  let listnr = a:listnr
+  let listnr = a:line1 == 0 ? a:line1 : a:line2
   let cmd = s:UserCommandList(dir) + ['--no-pager', 'grep', '-n', '--no-color', '--full-name']
   if fugitive#GitVersion(2, 19)
     call add(cmd, '--column')
   endif
   let tree = s:Tree(dir)
-  let [args, after] = s:SplitExpandChain(a:arg, tree)
+  if type(a:args) == type([])
+    let [args, after] = [a:args, '']
+  else
+    let [args, after] = s:SplitExpandChain(a:args, tree)
+  endif
   let prefix = s:PlatformSlash(s:HasOpt(args, '--cached') || empty(tree) ? 'fugitive://' . dir . '//0/' : tree . '/')
   let name_only = s:HasOpt(args, '-l', '--files-with-matches', '--name-only', '-L', '--files-without-match')
   let title = [listnr < 0 ? ':Ggrep' : ':Glgrep'] + args
@@ -3859,9 +3862,9 @@ function! s:Log(type, bang, line1, count, args) abort
   return s:QuickfixStream(listnr, title, cmd, !a:bang, s:function('s:LogParse'), state, path, dir) . after
 endfunction
 
-call s:command("-bang -nargs=? -range=-1 -addr=windows -complete=customlist,s:GrepComplete Ggrep :execute s:Grep(<count>,<bang>0,<q-args>)")
-call s:command("-bang -nargs=? -complete=customlist,s:GrepComplete Gcgrep :execute s:Grep(-1,<bang>0,<q-args>)")
-call s:command("-bang -nargs=? -complete=customlist,s:GrepComplete Glgrep :execute s:Grep(0,<bang>0,<q-args>)")
+call s:command("-bang -nargs=? -range=-1 -addr=windows -complete=customlist,s:GrepComplete Ggrep", "grep")
+call s:command("-bang -nargs=? -complete=customlist,s:GrepComplete Gcgrep :execute s:GrepSubcommand(-1, -1, 0, <bang>0, '<mods>', <q-args>)")
+call s:command("-bang -nargs=? -complete=customlist,s:GrepComplete Glgrep :execute s:GrepSubcommand(0, 0, 0, <bang>0, '<mods>', <q-args>)")
 call s:command("-bang -nargs=? -range=-1 -addr=other -complete=customlist,s:LogComplete Glog :exe s:Log('c',<bang>0,<line1>,<count>,<q-args>)")
 call s:command("-bang -nargs=? -range=-1 -addr=other -complete=customlist,s:LogComplete Gclog :exe s:Log('c',<bang>0,<line1>,<count>,<q-args>)")
 call s:command("-bang -nargs=? -range=-1 -addr=other -complete=customlist,s:LogComplete Gllog :exe s:Log('l',<bang>0,<line1>,<count>,<q-args>)")
@@ -4253,8 +4256,8 @@ function! s:FetchSubcommand(line1, line2, range, bang, mods, args) abort
   return s:Dispatch(a:bang ? '!' : '', 'fetch', a:args)
 endfunction
 
-call s:command("-nargs=? -bang -complete=customlist,s:PushComplete Gpush", "Push")
-call s:command("-nargs=? -bang -complete=customlist,s:FetchComplete Gfetch", "Fetch")
+call s:command("-nargs=? -bang -complete=customlist,s:PushComplete Gpush", "push")
+call s:command("-nargs=? -bang -complete=customlist,s:FetchComplete Gfetch", "fetch")
 
 " Section: :Gdiff
 
