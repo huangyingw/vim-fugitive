@@ -1,0 +1,23 @@
+git bisect start
+# bad: [dev] Merge branch 'master' of github.com:tpope/vim-fugitive into dev
+git bisect bad dev
+# good: [fdc6c3f4af002979d2569ee7ef56e917db40e4ac] Merge branch 'master' of github.com:tpope/vim-fugitive into dev
+git bisect good fdc6c3f4af002979d2569ee7ef56e917db40e4ac
+# good: [c0ce201c3b1497baf94309a221cc4ae03b9368ff] Remove :Git --paginate from docs
+git bisect good c0ce201c3b1497baf94309a221cc4ae03b9368ff
+# good: [5defa72b8102162d837094d5d9420040260bc757] Provide count on blob blame maps for --reverse
+git bisect good 5defa72b8102162d837094d5d9420040260bc757
+# bad: [53e5e61afa196196889029cc36d07daa73767ae2] Emphasize :Glog behavior change
+git bisect bad 53e5e61afa196196889029cc36d07daa73767ae2
+# bad: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
+git bisect bad 1359d620eb6fd9a15658ea7e48e269339d22a126
+# first bad commit: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
+# bad: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
+git bisect bad 1359d620eb6fd9a15658ea7e48e269339d22a126
+# first bad commit: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
+# bad: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
+git bisect bad 1359d620eb6fd9a15658ea7e48e269339d22a126
+# first bad commit: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
+# bad: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
+git bisect bad 1359d620eb6fd9a15658ea7e48e269339d22a126
+# first bad commit: [1359d620eb6fd9a15658ea7e48e269339d22a126] Force <nowait> for all generated maps
