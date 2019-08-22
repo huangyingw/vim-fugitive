@@ -158,7 +158,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
       let head = substitute(head, '<[^<>]*>$\|.$', '', '')
     endwhile
     if flags !~# '<unique>' || empty(mapcheck(head.tail, mode))
-      exe mode.'map <buffer>' s:nowait flags head.tail a:rhs
+      exe mode.'map <buffer>' flags head.tail a:rhs
       if a:0 > 1
         let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
               \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
