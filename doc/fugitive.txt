@@ -159,12 +159,15 @@ that are part of Git repositories).
                         Vim's |do| and |dp| to stage and unstage changes.
 
                                                 *fugitive-:Gdiffsplit!*
-:Gdiffsplit! [object]   During a merge conflict, do a three-way diff against
-                        both ancestors.  Additional d2o and d3o maps are
+:Gdiffsplit!            Diff against any and all direct ancestors, retaining
+                        focus on the current window.  During a merge conflict,
+                        this is a three-way diff against the "ours" and
+                        "theirs" ancestors.  Additional d2o and d3o maps are
                         provided to to obtain the hunk from the "ours" or
-                        "theirs" ancestor, respectively.  If the file is not
-                        conflicted, behaves the same as if no bang was given,
-                        but keeps focus in the original window.
+                        "theirs" ancestor, respectively.
+
+:Gdiffsplit! {object}   Like |:Gdiffsplit|, but retain focus on the current
+                        window.
 
                                                 *fugitive-:Gvdiffsplit*
 :Gvdiffsplit [object]   Like |:Gdiffsplit|, but always split vertically.
@@ -305,6 +308,9 @@ dv                      Perform a |:Gvdiffsplit| on the file under the cursor.
                                                 *fugitive_ds* *fugitive_dh*
 ds                      Perform a |:Ghdiffsplit| on the file under the cursor.
 dh
+                                                *fugitive_dq*
+dq                      Close all but one diff buffer, and |:diffoff|! the
+                        last one.
 
                                                 *fugitive_d?*
 d?                      Show this help.
@@ -387,6 +393,14 @@ i                       Jump to the next file or hunk, expanding inline diffs
 
                                                 *fugitive_][*
 ][                      Jump [count] section ends forward.
+
+                                                *fugitive_star*
+*                       One the first column of a + or - diff line, search for
+                        the corresponding - or + line.  Otherwise, defer to
+                        built-in |star|.
+
+                                                *fugitive_#*
+#                       Same as "*", but search backward.
 
                                                 *fugitive_gu*
 gu                      Jump to file [count] in the "Untracked" or "Unstaged"
@@ -561,12 +575,13 @@ optional object, the default is the file in the index for work tree files and
 the work tree file for everything else.  Example objects follow.
 
 Object          Meaning ~
-HEAD            .git/HEAD
-refs/heads/x    .git/refs/heads/x (in "common dir" if present)
 @               The commit referenced by @ aka HEAD
+master          The commit referenced by master
 master^         The parent of the commit referenced by master
+master...other  The merge base of master and other
 master:         The tree referenced by master
 ./master        The file named master in the working directory
+:(top)master    The file named master in the the work tree
 Makefile        The file named Makefile in the work tree
 @^:Makefile     The file named Makefile in the parent of HEAD
 :Makefile       The file named Makefile in the index (writable)
@@ -600,6 +615,6 @@ ABOUT                                           *fugitive-about*
 
 Grab the latest version or report a bug on GitHub:
 
-http://github.com/tpope/vim-fugitive
+https://github.com/tpope/vim-fugitive
 
  vim:tw=78:et:ft=help:norl:
