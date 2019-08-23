@@ -338,7 +338,6 @@ augroup fugitive
 augroup END
 
 let s:addr_other = has('patch-8.1.560') ? '-addr=other' : ''
-exe 'command! -bang -nargs=? -range=-1' s:addr_other '-complete=customlist,fugitive#Complete G   exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)'
 exe 'command! -bang -nargs=? -range=-1' s:addr_other '-complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)'
 
 let g:io_fugitive = {
