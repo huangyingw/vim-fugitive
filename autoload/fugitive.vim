@@ -4809,7 +4809,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, args) abort
       let cmd += ['--contents', '-']
     endif
     let basecmd = escape(fugitive#Prepare(cmd) . ' -- ' . s:shellesc(len(files) ? files : file), '!#%')
-    let tempname = tempname()
+    let tempname = GetWorktree() . '/'
     let error = tempname . '.err'
     let temp = tempname . (raw ? '' : '.fugitiveblame')
     if &shell =~# 'csh'
