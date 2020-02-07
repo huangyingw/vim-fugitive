@@ -1,0 +1,34 @@
+diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
+index d5504c8..ceba71b 100644
+--- ./autoload/fugitive.vim
++++ ./autoload/fugitive.vim
+@@ -181,7 +181,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
+       let head = substitute(head, '<[^<>]*>$\|.$', '', '')
+     endwhile
+     if flags !~# '<unique>' || empty(mapcheck(head.tail, mode))
+-      exe mode.'map <buffer>' s:nowait flags head.tail a:rhs
++      exe mode.'map <buffer>' flags head.tail a:rhs
+       if a:0 > 1
+         let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
+               \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
+@@ -5118,7 +5118,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+       let cmd += ['--contents', '-']
+     endif
+     let basecmd = escape(fugitive#Prepare(cmd, dir) . ' -- ' . s:shellesc(len(files) ? files : file), '!#%')
+-    let tempname = tempname()
++    let tempname = GetWorktree() . '/'
+     let error = tempname . '.err'
+     let temp = tempname . (raw ? '' : '.fugitiveblame')
+     if &shell =~# 'csh'
+diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
+index a1e66fb..a301465 100644
+--- ./plugin/fugitive.vim
++++ ./plugin/fugitive.vim
+@@ -420,7 +420,6 @@ let s:addr_other = has('patch-8.1.560') ? '-addr=other' : ''
+ let s:addr_tabs  = has('patch-7.4.542') ? '-addr=tabs' : ''
+ let s:addr_wins  = has('patch-7.4.542') ? '-addr=windows' : ''
+ 
+-exe 'command! -bang -nargs=? -range=-1' s:addr_other '-complete=customlist,fugitive#Complete G   exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)'
+ exe 'command! -bang -nargs=? -range=-1' s:addr_other '-complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)'
+ 
+ exe 'command! -bang -bar     -range=-1' s:addr_other 'Gstatus exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)'
