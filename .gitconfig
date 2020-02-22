@@ -18,3 +18,5 @@
 [branch "RunShell"]
     remote = origin
     merge = refs/heads/RunShell
+[gdif]
+    ignore = *.gdio.diff
