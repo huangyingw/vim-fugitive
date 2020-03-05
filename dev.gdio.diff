@@ -1,8 +1,8 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index d5504c8..ceba71b 100644
+index cfc5e8c..b45bdf5 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
-@@ -181,7 +181,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
+@@ -186,7 +186,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
        let head = substitute(head, '<[^<>]*>$\|.$', '', '')
      endwhile
      if flags !~# '<unique>' || empty(mapcheck(head.tail, mode))
@@ -11,17 +11,17 @@ index d5504c8..ceba71b 100644
        if a:0 > 1
          let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
                \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
-@@ -5118,7 +5118,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -5186,7 +5186,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['--contents', '-']
      endif
-     let basecmd = escape(fugitive#Prepare(cmd, dir) . ' -- ' . s:shellesc(len(files) ? files : file), '!#%')
+     let basecmd = escape(s:UserCommand({'git': a:options.git, 'dir': dir}, cmd + ['--'] + (len(files) ? files : [file])), '!#%')
 -    let tempname = tempname()
 +    let tempname = GetWorktree() . '/'
      let error = tempname . '.err'
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if &shell =~# 'csh'
 diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index a1e66fb..a301465 100644
+index 0c362ef..56af91c 100644
 --- ./plugin/fugitive.vim
 +++ ./plugin/fugitive.vim
 @@ -420,7 +420,6 @@ let s:addr_other = has('patch-8.1.560') ? '-addr=other' : ''
