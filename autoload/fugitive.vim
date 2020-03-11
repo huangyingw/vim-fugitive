@@ -420,9 +420,9 @@ function! fugitive#PrepareDirEnvArgv(...) abort
   let i = 0
   while i < len(cmd)
     if cmd[i] =~# '^$\|[\/.]' && cmd[i] !~# '^-'
-      let dir = remove(cmd, 0)
+      let dir = remove(cmd, i)
     elseif cmd[i] =~# '^--git-dir='
-      let dir = remove(cmd, 0)[10:-1]
+      let dir = remove(cmd, i)[10:-1]
     elseif type(cmd[i]) ==# type(0)
       let dir = s:Dir(remove(cmd, i))
     elseif cmd[i] ==# '-c' && len(cmd) > i + 1
@@ -474,7 +474,7 @@ endfunction
 function! s:JobOpts(cmd, env) abort
   if empty(a:env)
     return [a:cmd, {}]
-  elseif has('patch-8.1.0902') && !has('nvim') && (!has('win32') || empty(filter(keys(a:env), 'exists("$" . v:val)')))
+  elseif has('patch-8.2.0239') || has('patch-8.1.0902') && !has('nvim') && (!has('win32') || empty(filter(keys(a:env), 'exists("$" . v:val)')))
     return [a:cmd, {'env': a:env}]
   endif
   let envlist = map(items(a:env), 'join(v:val, "=")')
@@ -2303,13 +2303,24 @@ function! s:RunWait(state, job) abort
       if !exists('*jobwait')
         sleep 1m
       endif
-      let peek = getchar(1)
-      if peek != 0 && !(has('win32') && peek == 128)
-        let c = getchar()
-        let c = type(c) == type(0) ? nr2char(c) : c
-        call s:RunSend(a:job, c)
-        if !a:state.pty
-          echon c
+      if !get(a:state, 'closed')
+        let peek = getchar(1)
+        if peek != 0 && !(has('win32') && peek == 128)
+          let c = getchar()
+          let c = type(c) == type(0) ? nr2char(c) : c
+          if c ==# "\<C-D>"
+            let a:state.closed = 1
+            if type(a:job) ==# type(0)
+              call chanclose(a:job, 'stdin')
+            else
+              call ch_close_in(a:job)
+            endif
+          else
+            call s:RunSend(a:job, c)
+            if !a:state.pty
+              echon c
+            endif
+          endif
         endif
       endif
     endwhile
@@ -4500,7 +4511,7 @@ function! s:ReadPrepare(line1, count, range, mods) abort
   else
     let pre = ''
   endif
-  return [pre . mods . after . 'read', delete . '|diffupdate' . (a:count < 0 ? '|' . line('.') : '')]
+  return [pre . mods . after . 'read', delete . 'diffupdate' . (a:count < 0 ? '|' . line('.') : '')]
 endfunction
 
 function! s:ReadExec(line1, count, range, mods, env, args, options) abort
@@ -5824,7 +5835,7 @@ endfunction
 
 " Section: Go to file
 
-let s:ref_header = '\%(Head\|Merge\|Rebase\|Upstream\|Pull\|Push\)'
+let s:ref_header = '\%(Merge\|Rebase\|Upstream\|Pull\|Push\)'
 
 nnoremap <SID>: :<C-U><C-R>=v:count ? v:count : ''<CR>
 function! fugitive#MapCfile(...) abort
@@ -6040,7 +6051,7 @@ function! s:StatusCfile(...) abort
     return [lead . info.relative[0]]
   elseif len(info.commit)
     return [info.commit]
-  elseif line =~# '^' . s:ref_header . ': '
+  elseif line =~# '^' . s:ref_header . ': \|^Head: '
     return [matchstr(line, ' \zs.*')]
   else
     return ['']
