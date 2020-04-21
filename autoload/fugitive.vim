@@ -2423,7 +2423,6 @@ for s:colortype in ['advice', 'branch', 'diff', 'grep', 'interactive', 'pager', 
 endfor
 unlet s:colortype
 function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
-  set winwidth=1
   let dir = s:Dir()
   let config = copy(fugitive#Config(dir))
   let [args, after] = s:SplitExpandChain(a:arg, s:Tree(dir))
