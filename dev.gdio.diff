@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 53f999a..45ba5bb 100644
+index 53f999a..8c64f43 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -186,7 +186,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -11,7 +11,15 @@ index 53f999a..45ba5bb 100644
        if a:0 > 1
          let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
                \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
-@@ -5265,7 +5265,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -2423,6 +2423,7 @@ for s:colortype in ['advice', 'branch', 'diff', 'grep', 'interactive', 'pager',
+ endfor
+ unlet s:colortype
+ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
++  set winwidth=1
+   let dir = s:Dir()
+   let config = copy(fugitive#Config(dir))
+   let [args, after] = s:SplitExpandChain(a:arg, s:Tree(dir))
+@@ -5265,7 +5266,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['--contents', '-']
      endif
      let basecmd = escape(s:UserCommand({'git': a:options.git, 'dir': dir}, cmd + ['--'] + (len(files) ? files : [file])), '!#%')
