@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 53f999a..8c64f43 100644
+index 53f999a..fdd99aa 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -186,7 +186,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -11,6 +11,15 @@ index 53f999a..8c64f43 100644
        if a:0 > 1
          let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
                \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
+@@ -1976,7 +1976,7 @@ function! fugitive#BufReadStatus() abort
+     call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
+     call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
+     call s:Map('n', 'D', ":<C-U>execute <SID>StageDiff('Gdiffsplit')<Bar>redraw<Bar>echohl WarningMsg<Bar> echo ':Gstatus D is deprecated in favor of dd'<Bar>echohl NONE<CR>", '<silent>')
+-    call s:Map('n', 'dd', ":<C-U>execute <SID>StageDiff('Gdiffsplit')<CR>", '<silent>')
++    call s:Map('n', 'dd', ":<C-U>execute <SID>StageDiff('Gvdiffsplit')<CR>", '<silent>')
+     call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
+     call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
+     call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
 @@ -2423,6 +2423,7 @@ for s:colortype in ['advice', 'branch', 'diff', 'grep', 'interactive', 'pager',
  endfor
  unlet s:colortype
@@ -19,7 +28,16 @@ index 53f999a..8c64f43 100644
    let dir = s:Dir()
    let config = copy(fugitive#Config(dir))
    let [args, after] = s:SplitExpandChain(a:arg, s:Tree(dir))
-@@ -5265,7 +5266,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -4884,6 +4885,8 @@ function! s:IsConflicted() abort
+ endfunction
+ 
+ function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
++  only
++  set winwidth=1
+   let args = copy(a:args)
+   let post = ''
+   if get(args, 0) =~# '^+'
+@@ -5265,7 +5268,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['--contents', '-']
      endif
      let basecmd = escape(s:UserCommand({'git': a:options.git, 'dir': dir}, cmd + ['--'] + (len(files) ? files : [file])), '!#%')
@@ -28,44 +46,12 @@ index 53f999a..8c64f43 100644
      let error = tempname . '.err'
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if &shell =~# 'csh'
-diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index 21577de..8abd8e4 100644
---- ./plugin/fugitive.vim
-+++ ./plugin/fugitive.vim
-@@ -420,14 +420,13 @@ let s:addr_other = has('patch-8.1.560') ? '-addr=other' : ''
- let s:addr_tabs  = has('patch-7.4.542') ? '-addr=tabs' : ''
- let s:addr_wins  = has('patch-7.4.542') ? '-addr=windows' : ''
+@@ -5912,7 +5915,7 @@ function! fugitive#MapJumps(...) abort
+       call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
--command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#Complete G   exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)
- command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)
- 
- if exists(':Gstatus') !=# 2
-   exe 'command! -bang -bar     -range=-1' s:addr_other 'Gstatus exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)'
- endif
- 
--for s:cmd in ['Commit', 'Revert', 'Merge', 'Rebase', 'Pull', 'Push', 'Fetch', 'Blame']
-+for s:cmd in ['Commit', 'Pull', 'Push', 'Fetch', 'Blame']
-   if exists(':G' . tolower(s:cmd)) != 2
-     exe 'command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#' . s:cmd . 'Complete G' . tolower(s:cmd) 'exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", "' . tolower(s:cmd) . ' " . <q-args>)'
-   endif
-@@ -469,20 +468,10 @@ exe 'command! -bar -bang -nargs=* -complete=customlist,fugitive#EditComplete Gwq
- 
- exe 'command! -bar -bang -nargs=0 -complete=customlist,fugitive#CompleteObject GRemove exe fugitive#RemoveCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
- exe 'command! -bar -bang -nargs=0 -complete=customlist,fugitive#CompleteObject GDelete exe fugitive#DeleteCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
--exe 'command! -bar -bang -nargs=1 -complete=customlist,fugitive#CompleteObject GMove   exe fugitive#MoveCommand(  <line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
- exe 'command! -bar -bang -nargs=1 -complete=customlist,fugitive#RenameComplete GRename exe fugitive#RenameCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
--if exists(':Gremove') != 2
--  exe 'command! -bar -bang -nargs=0 -complete=customlist,fugitive#CompleteObject Gremove exe fugitive#RemoveCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
--endif
- if exists(':Gdelete') != 2
-   exe 'command! -bar -bang -nargs=0 -complete=customlist,fugitive#CompleteObject Gdelete exe fugitive#DeleteCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
- endif
--if exists(':Gmove') != 2
--  exe 'command! -bar -bang -nargs=1 -complete=customlist,fugitive#CompleteObject Gmove   exe fugitive#MoveCommand(  <line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
--endif
--if exists(':Grename') != 2
--  exe 'command! -bar -bang -nargs=1 -complete=customlist,fugitive#RenameComplete Grename exe fugitive#RenameCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
--endif
- 
- exe 'command! -bar -bang -range=-1 -nargs=* -complete=customlist,fugitive#CompleteObject GBrowse exe fugitive#BrowseCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
- if exists(':Gbrowse') != 2
+       call s:Map('n', 'D',  ":<C-U>call <SID>DiffClose()<Bar>Gdiffsplit!<Bar>redraw<Bar>echohl WarningMsg<Bar> echo ':Gstatus D is deprecated in favor of dd'<Bar>echohl NONE<CR>", '<silent>')
+-      call s:Map('n', 'dd', ":<C-U>call <SID>DiffClose()<Bar>Gdiffsplit!<CR>", '<silent>')
++      call s:Map('n', 'dd', ":<C-U>call <SID>DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
+       call s:Map('n', 'dh', ":<C-U>call <SID>DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
+       call s:Map('n', 'ds', ":<C-U>call <SID>DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
+       call s:Map('n', 'dv', ":<C-U>call <SID>DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
