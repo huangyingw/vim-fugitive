@@ -4888,6 +4888,8 @@ endfunction
 function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
   only
   set winwidth=1
+  windo set wrap
+  syntax off
   let args = copy(a:args)
   let post = ''
   if get(args, 0) =~# '^+'
