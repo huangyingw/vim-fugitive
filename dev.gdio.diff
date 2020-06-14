@@ -50,7 +50,7 @@ index 1106aea..0872a25 100644
        call s:Map('n', 'ds', ":<C-U>call <SID>DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
        call s:Map('n', 'dv', ":<C-U>call <SID>DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
 diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index 2b9e4d9..b508ac8 100644
+index 2b9e4d9..ed24c1d 100644
 --- ./plugin/fugitive.vim
 +++ ./plugin/fugitive.vim
 @@ -420,7 +420,6 @@ let s:addr_other = has('patch-8.1.560') ? '-addr=other' : ''
@@ -61,3 +61,11 @@ index 2b9e4d9..b508ac8 100644
  command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)
  
  if exists(':Gstatus') !=# 2
+@@ -459,7 +458,6 @@ if exists(':Gr') != 2
+ endif
+ exe 'command! -bar -bang -nargs=* -range=-1                -complete=customlist,fugitive#ReadComplete   Gread    exe fugitive#ReadCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
+ 
+-exe 'command! -bar -bang -nargs=* -complete=customlist,fugitive#EditComplete Gdiffsplit  exe fugitive#Diffsplit(1, <bang>0, "<mods>", <q-args>, [<f-args>])'
+ exe 'command! -bar -bang -nargs=* -complete=customlist,fugitive#EditComplete Ghdiffsplit exe fugitive#Diffsplit(0, <bang>0, "<mods>", <q-args>, [<f-args>])'
+ exe 'command! -bar -bang -nargs=* -complete=customlist,fugitive#EditComplete Gvdiffsplit exe fugitive#Diffsplit(0, <bang>0, "vert <mods>", <q-args>, [<f-args>])'
+ 
