@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 5082f82..01d0d46 100644
+index 5437c7f..66dde60 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -186,7 +186,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
