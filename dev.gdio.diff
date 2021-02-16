@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index b47fcbc..1cf91c4 100644
+index 94cf8d0..eec1af2 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -188,7 +188,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -20,7 +20,7 @@ index b47fcbc..1cf91c4 100644
      call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
-@@ -4892,6 +4892,10 @@ function! s:IsConflicted() abort
+@@ -4894,6 +4894,10 @@ function! s:IsConflicted() abort
  endfunction
  
  function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
@@ -31,7 +31,7 @@ index b47fcbc..1cf91c4 100644
    let args = copy(a:args)
    let post = ''
    if get(args, 0) =~# '^+'
-@@ -5273,7 +5277,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -5275,7 +5279,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['--contents', '-']
      endif
      let basecmd = escape(s:UserCommand({'git': a:options.git, 'dir': dir}, cmd + ['--'] + (len(files) ? files : [file])), '!#%')
@@ -40,7 +40,7 @@ index b47fcbc..1cf91c4 100644
      let error = tempname . '.err'
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if &shell =~# 'csh'
-@@ -5921,7 +5925,7 @@ function! fugitive#MapJumps(...) abort
+@@ -5923,7 +5927,7 @@ function! fugitive#MapJumps(...) abort
        call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
        call s:Map('n', 'D',  ":<C-U>call fugitive#DiffClose()<Bar>Gdiffsplit!<Bar>redraw<Bar>echohl WarningMsg<Bar> echo ':Gstatus D is deprecated in favor of dd'<Bar>echohl NONE<CR>", '<silent>')
