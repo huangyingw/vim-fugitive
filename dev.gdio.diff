@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 94cf8d0..eec1af2 100644
+index b4d3959..8bc6063 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -188,7 +188,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -11,7 +11,7 @@ index 94cf8d0..eec1af2 100644
        if a:0 > 1
          let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
                \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
-@@ -1984,7 +1984,7 @@ function! fugitive#BufReadStatus() abort
+@@ -1991,7 +1991,7 @@ function! fugitive#BufReadStatus() abort
      call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('n', 'D', ":<C-U>execute <SID>StageDiff('Gdiffsplit')<Bar>redraw<Bar>echohl WarningMsg<Bar> echo ':Gstatus D is deprecated in favor of dd'<Bar>echohl NONE<CR>", '<silent>')
@@ -20,7 +20,7 @@ index 94cf8d0..eec1af2 100644
      call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
-@@ -4894,6 +4894,10 @@ function! s:IsConflicted() abort
+@@ -4903,6 +4903,10 @@ function! s:IsConflicted() abort
  endfunction
  
  function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
@@ -31,7 +31,7 @@ index 94cf8d0..eec1af2 100644
    let args = copy(a:args)
    let post = ''
    if get(args, 0) =~# '^+'
-@@ -5275,7 +5279,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -5284,7 +5288,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['--contents', '-']
      endif
      let basecmd = escape(s:UserCommand({'git': a:options.git, 'dir': dir}, cmd + ['--'] + (len(files) ? files : [file])), '!#%')
@@ -40,7 +40,7 @@ index 94cf8d0..eec1af2 100644
      let error = tempname . '.err'
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if &shell =~# 'csh'
-@@ -5923,7 +5927,7 @@ function! fugitive#MapJumps(...) abort
+@@ -5936,7 +5940,7 @@ function! fugitive#MapJumps(...) abort
        call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
        call s:Map('n', 'D',  ":<C-U>call fugitive#DiffClose()<Bar>Gdiffsplit!<Bar>redraw<Bar>echohl WarningMsg<Bar> echo ':Gstatus D is deprecated in favor of dd'<Bar>echohl NONE<CR>", '<silent>')
