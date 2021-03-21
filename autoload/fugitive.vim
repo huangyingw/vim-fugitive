@@ -1192,17 +1192,16 @@ function! fugitive#Expand(object) abort
         \ '\=s:ExpandVar(submatch(1),submatch(2),submatch(3),submatch(5))', 'g')
 endfunction
 
-function! s:ExpandSplit(string, ...) abort
+function! s:SplitExpandChain(string, ...) abort
   let list = []
   let string = a:string
-  let handle_bar = a:0 && a:1
-  let dquote = handle_bar ? '"\%([^"]\|""\|\\"\)*"\|' : ''
-  let cwd = a:0 > 1 ? a:2 : getcwd()
+  let dquote = '"\%([^"]\|""\|\\"\)*"\|'
+  let cwd = a:0 ? a:1 : getcwd()
   while string =~# '\S'
-    if handle_bar && string =~# '^\s*|'
+    if string =~# '^\s*|'
       return [list, substitute(string, '^\s*', '', '')]
     endif
-    let arg = matchstr(string, '^\s*\%(' . dquote . '''[^'']*''\|\\.\|[^[:space:] ' . (handle_bar ? '|' : '') . ']\)\+')
+    let arg = matchstr(string, '^\s*\%(' . dquote . '''[^'']*''\|\\.\|[^[:space:] |]\)\+')
     let string = strpart(string, len(arg))
     let arg = substitute(arg, '^\s\+', '', '')
     if !exists('seen_separator')
@@ -1217,15 +1216,7 @@ function! s:ExpandSplit(string, ...) abort
       let seen_separator = 1
     endif
   endwhile
-  return handle_bar ? [list, ''] : list
-endfunction
-
-function! s:SplitExpand(string, ...) abort
-  return s:ExpandSplit(a:string, 0, a:0 ? a:1 : getcwd())
-endfunction
-
-function! s:SplitExpandChain(string, ...) abort
-  return s:ExpandSplit(a:string, 1, a:0 ? a:1 : getcwd())
+  return [list, '']
 endfunction
 
 let s:trees = {}
@@ -2553,7 +2544,7 @@ function! fugitive#PagerFor(argv, ...) abort
     return 0
   elseif type(value) == type('')
     return value
-  elseif args[0] =~# 'diff\%(tool\)\@!\|log\|^show$\|^config$\|^branch$\|^tag$' ||
+  elseif args[0] =~# 'diff\%(tool\)\@!\|log\|^show$\|^config$\|^branch$\|^tag$\|^whatchanged$' ||
         \ (args[0] ==# 'stash' && get(args, 1, '') ==# 'show') ||
         \ (args[0] ==# 'am' && s:HasOpt(args, '--show-current-patch'))
     return 1
@@ -2753,22 +2744,68 @@ function! s:ExecPath() abort
   return s:exec_paths[g:fugitive_git_executable]
 endfunction
 
-function! s:Subcommands() abort
-  let exec_path = s:ExecPath()
-  return map(s:GlobComplete(exec_path.'/git-', '*', 1),'substitute(v:val,"\\.exe$","","")')
-endfunction
-
-let s:aliases = {}
-function! s:Aliases(dir) abort
-  let dir_key = len(a:dir) ? a:dir : '_'
-  if !has_key(s:aliases, dir_key)
-    let s:aliases[dir_key] = {}
-    let lines = s:NullError([a:dir, 'config', '-z', '--get-regexp', '^alias[.]'])[0]
-    for line in lines
-      let s:aliases[dir_key][matchstr(line, '\.\zs.\{-}\ze\n')] = matchstr(line, '\n\zs.*')
-    endfor
+let s:subcommands_before_2_5 = [
+      \ 'add', 'am', 'apply', 'archive', 'bisect', 'blame', 'branch', 'bundle',
+      \ 'checkout', 'cherry', 'cherry-pick', 'citool', 'clean', 'clone', 'commit', 'config',
+      \ 'describe', 'diff', 'difftool', 'fetch', 'format-patch', 'fsck',
+      \ 'gc', 'grep', 'gui', 'help', 'init', 'instaweb', 'log',
+      \ 'merge', 'mergetool', 'mv', 'notes', 'pull', 'push',
+      \ 'rebase', 'reflog', 'remote', 'repack', 'replace', 'request-pull', 'reset', 'revert', 'rm',
+      \ 'send-email', 'shortlog', 'show', 'show-branch', 'stash', 'stage', 'status', 'submodule',
+      \ 'tag', 'whatchanged',
+      \ ]
+let s:path_subcommands = {}
+function! s:CompletableSubcommands(dir) abort
+  let c_exec_path = s:cpath(s:ExecPath())
+  if !has_key(s:path_subcommands, c_exec_path)
+    if fugitive#GitVersion(2, 18)
+      let [lines, exec_error] = s:LinesError(a:dir, '--list-cmds=list-mainporcelain,nohelpers,list-complete')
+      call filter(lines, 'v:val =~# "^\\S\\+$"')
+      if !exec_error && len(lines)
+        let s:path_subcommands[c_exec_path] = lines
+      else
+        let s:path_subcommands[c_exec_path] = s:subcommands_before_2_5 +
+              \ ['maintenance', 'prune', 'range-diff', 'restore', 'sparse-checkout', 'switch', 'worktree']
+      endif
+    else
+      let s:path_subcommands[c_exec_path] = s:subcommands_before_2_5 +
+            \ (fugitive#GitVersion(2, 5) ? ['worktree'] : [])
+    endif
   endif
-  return s:aliases[dir_key]
+  let commands = copy(s:path_subcommands[c_exec_path])
+  for path in split($PATH, has('win32') ? ';' : ':')
+    if path !~# '^/\|^\a:[\\/]'
+      continue
+    endif
+    let cpath = s:cpath(path)
+    if !has_key(s:path_subcommands, cpath)
+      let s:path_subcommands[cpath] = filter(map(s:GlobComplete(path.'/git-', '*', 1),'substitute(v:val,"\\.exe$","","")'), 'v:val !~# "--"')
+    endif
+    call extend(commands, s:path_subcommands[cpath])
+  endfor
+  call extend(commands, map(filter(keys(fugitive#Config(a:dir)), 'v:val =~# "^alias\\.[^.]*$"'), 'strpart(v:val, 6)'))
+  let configured = split(FugitiveConfigGet('completion.commands', a:dir), '\s\+')
+  let rejected = {}
+  for command in configured
+    if command =~# '^-.'
+      let rejected[strpart(command, 1)] = 1
+    endif
+  endfor
+  call filter(configured, 'v:val !~# "^-"')
+  let results = filter(sort(commands + configured), '!has_key(rejected, v:val)')
+  if exists('*uniq')
+    return uniq(results)
+  else
+    let i = 1
+    while i < len(results)
+      if results[i] ==# results[i-1]
+        call remove(results, i)
+      else
+        let i += 1
+      endif
+    endwhile
+    return results
+  endif
 endfunction
 
 function! fugitive#Complete(lead, ...) abort
@@ -2777,7 +2814,7 @@ function! fugitive#Complete(lead, ...) abort
   let pre = a:0 > 1 ? strpart(a:1, 0, a:2) : ''
   let subcmd = matchstr(pre, '\u\w*[! ] *\zs[[:alnum:]-]\+\ze ')
   if empty(subcmd)
-    let results = sort(s:Subcommands() + keys(s:Aliases(dir)))
+    let results = s:CompletableSubcommands(dir)
   elseif a:0 ==# 2 && subcmd =~# '^\%(commit\|revert\|push\|fetch\|pull\|merge\|rebase\)$'
     let cmdline = substitute(a:1, '\u\w*\([! ] *\)' . subcmd, 'G' . subcmd, '')
     let caps_subcmd = substitute(subcmd, '\%(^\|-\)\l', '\u&', 'g')
@@ -4473,7 +4510,8 @@ function! fugitive#LogCommand(line1, count, range, bang, mods, args, type) abort
   let dir = s:Dir()
   exe s:DirCheck(dir)
   let listnr = a:type =~# '^l' ? 0 : -1
-  let [args, after] = s:SplitExpandChain(a:args, s:Tree(dir))
+  let [args, after] = s:SplitExpandChain('log ' . a:args, s:Tree(dir))
+  call remove(args, 0)
   let split = index(args, '--')
   if split > 0
     let paths = args[split : -1]
