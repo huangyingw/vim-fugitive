@@ -2321,6 +2321,20 @@ function! s:TempState(...) abort
   return get(s:temp_files, s:cpath(fnamemodify(a:0 ? a:1 : @%, ':p')), {})
 endfunction
 
+function! fugitive#Result(...) abort
+  if !a:0 || a:1 =~# '^-\=$'
+    return get(g:, '_fugitive_last_job', {})
+  elseif type(a:1) == type(0)
+    return s:TempState(bufname(a:1))
+  elseif type(a:1) == type('')
+    return s:TempState(a:1)
+  elseif type(a:1) == type({}) && has_key(a:1, 'file')
+    return s:TempState(a:1.file)
+  else
+    return {}
+  endif
+endfunction
+
 function! s:TempReadPre(file) abort
   if has_key(s:temp_files, s:cpath(a:file))
     let dict = s:temp_files[s:cpath(a:file)]
@@ -3813,8 +3827,14 @@ function! s:StageDelete(lnum1, lnum2, count) abort
       if empty(info.paths)
         continue
       endif
+      let sub = get(get(get(b:fugitive_files, info.section, {}), info.filename, {}), 'submodule')
       if info.status ==# 'D'
         let undo = 'GRemove'
+      elseif sub =~# '^S' && info.status !~# '[MD]'
+        let err .= '|echoerr ' . string('fugitive: will not delete submodule ' . string(info.relative[0]))
+        break
+      elseif sub =~# '^S'
+        let undo = 'Git checkout ' . fugitive#RevParse('HEAD', FugitiveExtractGitDir(info.paths[0]))[0:10] . ' --'
       elseif info.paths[0] =~# '/$'
         let err .= '|echoerr ' . string('fugitive: will not delete directory ' . string(info.relative[0]))
         break
@@ -3823,6 +3843,11 @@ function! s:StageDelete(lnum1, lnum2, count) abort
       endif
       if info.patch
         call s:StageApply(info, 1, info.section ==# 'Staged' ? ['--index'] : [])
+      elseif sub =~# '^S'
+        if info.section ==# 'Staged'
+          call s:TreeChomp('reset', '--', info.paths[0])
+        endif
+        call s:TreeChomp('submodule', 'update', '--', info.paths[0])
       elseif info.status ==# '?'
         call s:TreeChomp('clean', '-f', '--', info.paths[0])
       elseif a:count == 2
@@ -4730,6 +4755,14 @@ function! s:OpenParse(string, wants_cmd) abort
   endwhile
   if len(args)
     let file = join(args)
+    if file ==# '-'
+      let result = fugitive#Result()
+      if has_key(result, 'file')
+        let file = s:fnameescape(result.file)
+      else
+        throw 'fugitive: no previous command output'
+      endif
+    endif
   elseif empty(expand('%'))
     let file = ''
   elseif empty(s:DirCommitFile(@%)[1]) && s:Relative('./') !~# '^\./\.git\>'
@@ -5925,10 +5958,19 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, args) abo
     endif
     let validremote = '\.\|\.\=/.*\|[[:alnum:]_-]\+\%(://.\{-\}\)\='
     if arg ==# '-'
-      if a:count >= 0
-        return 'echoerr ' . string('fugitive: ''-'' no longer required to get persistent URL if range given')
-      else
-        return 'echoerr ' . string('fugitive: use :0GBrowse instead of :GBrowse -')
+      let remote = ''
+      let rev = ''
+      let result = fugitive#Result()
+      if filereadable(get(result, 'file', ''))
+        for line in readfile(result.file, 4096)
+          let rev = s:fnameescape(matchstr(line, '\<https\=://[^[:space:]<>]*[^[:space:]<>.,;:"''!?]'))
+          if len(rev)
+            break
+          endif
+        endfor
+        if empty(rev)
+          return 'echoerr ' . string('fugitive: no URL found in output of last :Git')
+        endif
       endif
     elseif !exists('l:remote')
       let remote = matchstr(arg, '@\zs\%('.validremote.'\)$')
