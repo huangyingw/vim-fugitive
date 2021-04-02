@@ -2566,6 +2566,19 @@ function! s:RunSend(job, str) abort
   endtry
 endfunction
 
+function! s:RunCloseIn(job) abort
+  try
+    if type(a:job) ==# type(0)
+      call chanclose(a:job, 'stdin')
+    else
+      call ch_close_in(a:job)
+    endif
+    return 1
+  catch /^Vim\%((\a\+)\)\=:E90[06]:/
+    return 0
+  endtry
+endfunction
+
 function! s:RunEcho(tmp) abort
   if !has_key(a:tmp, 'echo')
     return
@@ -2605,12 +2618,7 @@ function! s:RunWait(state, tmp, job, ...) abort
           let c = type(c) == type(0) ? nr2char(c) : c
           if c ==# "\<C-D>" || c ==# "\<Esc>"
             let a:state.closed_in = 1
-            if type(a:job) ==# type(0)
-              call chanclose(a:job, 'stdin')
-            else
-              call ch_close_in(a:job)
-            endif
-            let can_pedit = exists('*setbufline')
+            let can_pedit = s:RunCloseIn(a:job) && exists('*setbufline')
             for winnr in range(1, winnr('$'))
               if getwinvar(winnr, '&previewwindow') && getbufvar(winbufnr(winnr), '&modified')
                 let can_pedit = 0
@@ -3926,13 +3934,13 @@ function! s:StageDelete(lnum1, lnum2, count) abort
         continue
       endif
       let sub = get(get(get(b:fugitive_files, info.section, {}), info.filename, {}), 'submodule')
-      if info.status ==# 'D'
-        let undo = 'GRemove'
-      elseif sub =~# '^S' && info.status !~# '[MD]'
-        let err .= '|echoerr ' . string('fugitive: will not delete submodule ' . string(info.relative[0]))
-        break
-      elseif sub =~# '^S'
+      if sub =~# '^S' && info.status ==# 'M'
         let undo = 'Git checkout ' . fugitive#RevParse('HEAD', FugitiveExtractGitDir(info.paths[0]))[0:10] . ' --'
+      elseif sub =~# '^S'
+        let err .= '|echoerr ' . string('fugitive: will not touch submodule ' . string(info.relative[0]))
+        break
+      elseif info.status ==# 'D'
+        let undo = 'GRemove'
       elseif info.paths[0] =~# '/$'
         let err .= '|echoerr ' . string('fugitive: will not delete directory ' . string(info.relative[0]))
         break
@@ -6819,9 +6827,11 @@ function! fugitive#Foldtext() abort
     if exists('binary')
       return 'Binary: '.filename
     else
-      return (add<10&&remove<100?' ':'') . add . '+ ' . (remove<10&&add<100?' ':'') . remove . '- ' . filename
+      return '+-' . v:folddashes . ' ' . (add<10&&remove<100?' ':'') . add . '+ ' . (remove<10&&add<100?' ':'') . remove . '- ' . filename
     endif
-  elseif line_foldstart =~# '^# .*:$'
+  elseif line_foldstart =~# '^@@\+ .* @@'
+    return '+-' . v:folddashes . ' ' . line_foldstart
+  elseif &filetype ==# 'gitcommit' && line_foldstart =~# '^# .*:$'
     let lines = getline(v:foldstart, v:foldend)
     call filter(lines, 'v:val =~# "^#\t"')
     cal map(lines, "s:sub(v:val, '^#\t%(modified: +|renamed: +)=', '')")
