@@ -3125,10 +3125,10 @@ endfunction
 
 function! s:StageSeek(info, fallback) abort
   let info = a:info
-  if empty(info.section)
+  if empty(info.heading)
     return a:fallback
   endif
-  let line = search('^' . info.section, 'wn')
+  let line = search('^' . escape(substitute(info.heading, '(\d\+)$', '', ''), '^$.*[]~\'), 'wn')
   if !line
     for section in get({'Staged': ['Unstaged', 'Untracked'], 'Unstaged': ['Untracked', 'Staged'], 'Untracked': ['Unstaged', 'Staged']}, info.section, [])
       let line = search('^' . section, 'wn')
@@ -6236,6 +6236,7 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, args) abo
     endif
 
     let opts = {
+          \ 'git_dir': dir,
           \ 'dir': dir,
           \ 'repo': fugitive#repo(dir),
           \ 'remote': raw,
@@ -6262,24 +6263,25 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, args) abo
       call s:throw("No GBrowse handler installed for '".raw."'")
     endif
 
-    let url = s:gsub(url, '[ <>]', '\="%".printf("%02X",char2nr(submatch(0)))')
+    let url = substitute(url, '[ <>\|"]', '\="%".printf("%02X",char2nr(submatch(0)))', 'g')
+    let mods = s:Mods(a:mods)
     if a:bang
       if has('clipboard')
         let @+ = url
       endif
-      return 'echomsg '.string(url)
+      return 'echo '.string(url)
     elseif exists(':Browse') == 2
-      return 'echomsg '.string(url).'|Browse '.url
+      return 'echo '.string(url).'|' . mods . 'Browse '.url
     elseif exists(':OpenBrowser') == 2
-      return 'echomsg '.string(url).'|OpenBrowser '.url
+      return 'echo '.string(url).'|' . mods . 'OpenBrowser '.url
     else
       if !exists('g:loaded_netrw')
         runtime! autoload/netrw.vim
       endif
       if exists('*netrw#BrowseX')
-        return 'echomsg '.string(url).'|call netrw#BrowseX('.string(url).', 0)'
+        return 'echo '.string(url).'|' . mods . 'call netrw#BrowseX('.string(url).', 0)'
       elseif exists('*netrw#NetrwBrowseX')
-        return 'echomsg '.string(url).'|call netrw#NetrwBrowseX('.string(url).', 0)'
+        return 'echo '.string(url).'|' . mods . 'call netrw#NetrwBrowseX('.string(url).', 0)'
       else
         return 'echoerr ' . string('Netrw not found. Define your own :Browse to use :GBrowse')
       endif
