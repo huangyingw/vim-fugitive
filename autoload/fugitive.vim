@@ -1142,7 +1142,7 @@ function! fugitive#Object(...) abort
     let rev = ''
   endif
   let tree = s:Tree(dir)
-  let full = a:0 ? a:1 : @%
+  let full = a:0 ? a:1 : s:BufName('%')
   let full = fnamemodify(full, ':p' . (s:Slash(full) =~# '/$' ? '' : ':s?/$??'))
   if empty(rev) && empty(tree)
     return FugitiveGitPath(full)
@@ -3869,7 +3869,7 @@ endfunction
 
 function! s:StageApply(info, reverse, extra) abort
   if a:info.status ==# 'R'
-    call s:throw('fugitive: patching renamed file not yet supported')
+    throw 'fugitive: patching renamed file not yet supported'
   endif
   let cmd = ['apply', '-p0', '--recount'] + a:extra
   let info = a:info
@@ -6039,12 +6039,15 @@ function! fugitive#BlameFileType() abort
   call s:Map('n', '<2-LeftMouse>', ':<C-U>exe <SID>BlameCommit("exe <SID>BlameLeave()<Bar>edit")<CR>', '<silent>')
   call s:Map('n', '<CR>', ':<C-U>exe <SID>BlameCommit("exe <SID>BlameLeave()<Bar>edit")<CR>', '<silent>')
   call s:Map('n', '-',    ':<C-U>exe <SID>BlameJump("")<CR>', '<silent>')
+  call s:Map('n', 's',    ':<C-U>exe <SID>BlameJump("")<CR>', '<silent>')
+  call s:Map('n', 'u',    ':<C-U>exe <SID>BlameJump("")<CR>', '<silent>')
   call s:Map('n', 'P',    ':<C-U>exe <SID>BlameJump("^".v:count1)<CR>', '<silent>')
   call s:Map('n', '~',    ':<C-U>exe <SID>BlameJump("~".v:count1)<CR>', '<silent>')
   call s:Map('n', 'i',    ':<C-U>exe <SID>BlameCommit("exe <SID>BlameLeave()<Bar>edit")<CR>', '<silent>')
   call s:Map('n', 'o',    ':<C-U>exe <SID>BlameCommit("split")<CR>', '<silent>')
   call s:Map('n', 'O',    ':<C-U>exe <SID>BlameCommit("tabedit")<CR>', '<silent>')
   call s:Map('n', 'p',    ':<C-U>exe <SID>BlameCommit("pedit")<CR>', '<silent>')
+  call s:Map('n', '.',    ":<C-U> <C-R>=substitute(<SID>BlameCommitFileLnum()[0],'^$','@','')<CR><Home>")
 endfunction
 
 augroup fugitive_blame
@@ -6209,8 +6212,8 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, args) abo
       endif
     endif
 
-    let line1 = a:count > 0 ? a:line1 : 0
-    let line2 = a:count > 0 ? a:count : 0
+    let line1 = a:count > 0 && type ==# 'blob' ? a:line1 : 0
+    let line2 = a:count > 0 && type ==# 'blob' ? a:count : 0
     if empty(commit) && path !~# '^\.git/'
       if a:count < 0 && !empty(merge)
         let commit = merge
@@ -6222,12 +6225,12 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, args) abo
           if exec_error
             let commit = ''
           endif
-          if a:count > 0 && empty(arg) && commit =~# '^\x\{40,\}$'
+          if line2 > 0 && empty(arg) && commit =~# '^\x\{40,\}$'
             let blame_list = tempname()
             call writefile([commit, ''], blame_list, 'b')
             let blame_in = tempname()
             silent exe '%write' blame_in
-            let [blame, exec_error] = s:LinesError(['-c', 'blame.coloring=none', 'blame', '--contents', blame_in, '-L', a:line1.','.a:count, '-S', blame_list, '-s', '--show-number', './' . path])
+            let [blame, exec_error] = s:LinesError(['-c', 'blame.coloring=none', 'blame', '--contents', blame_in, '-L', line1.','.line2, '-S', blame_list, '-s', '--show-number', './' . path])
             if !exec_error
               let blame_regex = '^\^\x\+\s\+\zs\d\+\ze\s'
               if get(blame, 0) =~# blame_regex && get(blame, -1) =~# blame_regex
