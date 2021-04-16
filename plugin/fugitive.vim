@@ -1,6 +1,6 @@
 " fugitive.vim - A Git wrapper so awesome, it should be illegal
 " Maintainer:   Tim Pope <http://tpo.pe/>
-" Version:      3.2
+" Version:      3.3
 " GetLatestVimScripts: 2975 1 :AutoInstall: fugitive.vim
 
 if exists('g:loaded_fugitive')
@@ -92,6 +92,22 @@ function! FugitiveParse(...) abort
   throw v:errmsg
 endfunction
 
+" FugitiveResult() returns an object encapsulating the result of the most
+" recend :Git command.  Will be empty if no result is available.  Pass in the
+" name of a temp buffer to get the result object for that command instead.
+" Contains the following keys:
+"
+" * "args": List of command arguments, starting with the subcommand.  Will be
+"   empty for usages like :Git --help.
+" * "dir": Git dir of the relevant repository.
+" * "exit_status": The integer exit code of the process.
+" * "flags": Flags passed directly to Git, like -c and --help.
+" * "file": Path to file containing command output.  Not guaranteed to exist,
+"   so verify with filereadable() before trying to access it.
+function! FugitiveResult(...) abort
+  return call('fugitive#Result', a:000)
+endfunction
+
 " FugitivePrepare() constructs a Git command string which can be executed with
 " functions like system() and commands like :!.  Integer arguments will be
 " treated as buffer numbers, and the appropriate relative path inserted in
@@ -104,6 +120,11 @@ function! FugitivePrepare(...) abort
   return call('fugitive#Prepare', a:000)
 endfunction
 
+" FugitiveConfig() get returns an opaque structure that can be passed to other
+" FugitiveConfig functions in lieu of a Git directory.  This can be faster
+" when performing multiple config queries.  Do not rely on the internal
+" structure of the return value as it is not guaranteed.  If you want a full
+" dictionary of every config value, use FugitiveConfigGetRegexp('.*').
 function! FugitiveConfig(...) abort
   if a:0 == 2 && (type(a:2) != type({}) || has_key(a:2, 'git_dir'))
     return fugitive#Config(a:1, FugitiveGitDir(a:2))
@@ -131,6 +152,30 @@ function! FugitiveConfigGetAll(name, ...) abort
   endif
   let name = substitute(a:name, '^[^.]\+\|[^.]\+$', '\L&', 'g')
   return copy(get(config, name, []))
+endfunction
+
+" FugitiveConfigGetRegexp() retrieves a dictionary of all configuration values
+" with a key matching the given pattern.  Like git config --get-regexp, but
+" using a Vim regexp.  Second argument has same semantics as
+" FugitiveConfigGet().
+function! FugitiveConfigGetRegexp(pattern, ...) abort
+  if a:0 && type(a:1) ==# type({}) && !has_key(a:2, 'git_dir')
+    let config = a:1
+  else
+    let config = fugitive#Config(FugitiveGitDir(a:0 ? a:1 : -1))
+  endif
+  let filtered = map(filter(copy(config), 'v:key =~# "\\." && v:key =~# a:pattern'), 'copy(v:val)')
+  if a:pattern !~# '\\\@<!\%(\\\\\)*\\z[se]'
+    return filtered
+  endif
+  let transformed = {}
+  for [k, v] in items(filtered)
+    let k = matchstr(k, a:pattern)
+    if len(k)
+      let transformed[k] = v
+    endif
+  endfor
+  return transformed
 endfunction
 
 function! FugitiveRemoteUrl(...) abort
