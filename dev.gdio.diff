@@ -1,8 +1,8 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 4f77692..7adf645 100644
+index 1928d0e..3b54e27 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
-@@ -190,7 +190,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
+@@ -205,7 +205,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
        let head = substitute(head, '<[^<>]*>$\|.$', '', '')
      endwhile
      if flags !~# '<unique>' || empty(mapcheck(head.tail, mode))
@@ -11,7 +11,7 @@ index 4f77692..7adf645 100644
        if a:0 > 1
          let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
                \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
-@@ -2112,7 +2112,7 @@ function! fugitive#BufReadStatus() abort
+@@ -2120,7 +2120,7 @@ function! fugitive#BufReadStatus() abort
      call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('n', 'D', ":<C-U>execute <SID>StageDiff('Gdiffsplit')<Bar>redraw<Bar>echohl WarningMsg<Bar> echo ':Gstatus D is deprecated in favor of dd'<Bar>echohl NONE<CR>", '<silent>')
@@ -20,7 +20,7 @@ index 4f77692..7adf645 100644
      call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
-@@ -5334,6 +5334,10 @@ function! s:IsConflicted() abort
+@@ -5341,6 +5341,10 @@ function! s:IsConflicted() abort
  endfunction
  
  function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
@@ -28,10 +28,10 @@ index 4f77692..7adf645 100644
 +  set winwidth=1
 +  windo set wrap
 +  syntax off
+   exe s:VersionCheck()
    let args = s:ArgSplit(a:arg)
    let post = ''
-   if get(args, 0) =~# '^+'
-@@ -5710,7 +5714,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -5718,7 +5722,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
      endif
      call extend(cmd, ranges)
@@ -40,7 +40,7 @@ index 4f77692..7adf645 100644
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if len(commits)
        let cmd += commits
-@@ -6404,7 +6408,7 @@ function! fugitive#MapJumps(...) abort
+@@ -6413,7 +6417,7 @@ function! fugitive#MapJumps(...) abort
        call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
        call s:Map('n', 'D',  ":<C-U>call fugitive#DiffClose()<Bar>Gdiffsplit!<Bar>redraw<Bar>echohl WarningMsg<Bar> echo ':Gstatus D is deprecated in favor of dd'<Bar>echohl NONE<CR>", '<silent>')
@@ -50,10 +50,10 @@ index 4f77692..7adf645 100644
        call s:Map('n', 'ds', ":<C-U>call fugitive#DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
        call s:Map('n', 'dv', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
 diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index 1b78b3d..c1362bd 100644
+index e19ac7e..1523d99 100644
 --- ./plugin/fugitive.vim
 +++ ./plugin/fugitive.vim
-@@ -469,9 +469,7 @@ let s:addr_other = has('patch-8.1.560') ? '-addr=other' : ''
+@@ -401,9 +401,7 @@ let s:addr_other = has('patch-8.1.560') ? '-addr=other' : ''
  let s:addr_tabs  = has('patch-7.4.542') ? '-addr=tabs' : ''
  let s:addr_wins  = has('patch-7.4.542') ? '-addr=windows' : ''
  
@@ -64,7 +64,7 @@ index 1b78b3d..c1362bd 100644
  command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)
  
  if exists(':Gstatus') != 2 && get(g:, 'fugitive_legacy_commands', 1)
-@@ -516,7 +514,6 @@ if exists(':Gr') != 2
+@@ -448,7 +446,6 @@ if exists(':Gr') != 2
  endif
  exe 'command! -bar -bang -nargs=* -range=-1                -complete=customlist,fugitive#ReadComplete   Gread    exe fugitive#ReadCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
  
