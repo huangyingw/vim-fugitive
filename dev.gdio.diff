@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 86b926a..73574c1 100644
+index 10d2f70..7543e71 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -205,7 +205,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -20,7 +20,7 @@ index 86b926a..73574c1 100644
      call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
-@@ -5341,6 +5341,10 @@ function! s:IsConflicted() abort
+@@ -5345,6 +5345,10 @@ function! s:IsConflicted() abort
  endfunction
  
  function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
@@ -31,7 +31,7 @@ index 86b926a..73574c1 100644
    exe s:VersionCheck()
    let args = s:ArgSplit(a:arg)
    let post = ''
-@@ -5718,7 +5722,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -5722,7 +5726,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
      endif
      call extend(cmd, ranges)
@@ -40,7 +40,7 @@ index 86b926a..73574c1 100644
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if len(commits)
        let cmd += commits
-@@ -6413,7 +6417,7 @@ function! fugitive#MapJumps(...) abort
+@@ -6417,7 +6421,7 @@ function! fugitive#MapJumps(...) abort
        call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent>')
