@@ -88,11 +88,16 @@ function! s:VersionCheck() abort
   endif
 endfunction
 
+let s:worktree_error = "core.worktree is required when using an external Git dir"
 function! s:DirCheck(...) abort
   let vcheck = s:VersionCheck()
   if !empty(vcheck)
     return vcheck
-  elseif !empty(a:0 ? s:Dir(a:1) : s:Dir())
+  endif
+  let dir = a:0 ? s:Dir(a:1) : s:Dir()
+  if !empty(dir) && FugitiveWorkTree(dir, 1) is# 0
+    return 'return ' . string('echoerr "fugitive: ' . s:worktree_error . '"')
+  elseif !empty(dir)
     return ''
   elseif empty(bufname(''))
     return 'return ' . string('echoerr "fugitive: working directory does not belong to a Git repository"')
@@ -2134,8 +2139,10 @@ function! fugitive#BufReadStatus() abort
     if push !=# pull
       call s:AddHeader('Push', push)
     endif
-    if empty(s:Tree())
+    if get(fugitive#ConfigGetAll('core.bare', config), 0, 'true') !~# '^\%(false\|no|off\|0\|\)$'
       call s:AddHeader('Bare', 'yes')
+    elseif empty(s:Tree())
+      call s:AddHeader('Error', s:worktree_error)
     endif
     if get(fugitive#ConfigGetAll('advice.statusHints', config), 0, 'true') !~# '^\%(false\|no|off\|0\|\)$'
       call s:AddHeader('Help', 'g?')
@@ -2867,6 +2874,9 @@ unlet s:colortype
 function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
   exe s:VersionCheck()
   let dir = s:Dir()
+  if len(dir)
+    exe s:DirCheck(dir)
+  endif
   let config = copy(fugitive#Config(dir))
   let [args, after] = s:SplitExpandChain(a:arg, s:Tree(dir))
   let flags = []
@@ -4567,7 +4577,7 @@ function! s:ToolStream(line1, line2, range, bang, mods, options, args, state) ab
         if len(get(item, 'filename', '')) && item.filename != filename
           call add(cmd, 'tabedit ' . s:fnameescape(item.filename))
           for i in reverse(range(len(get(item.context, 'diff', []))))
-            call add(cmd, (i ? 'rightbelow' : 'leftabove') . ' vert Gdiffsplit! ' . s:fnameescape(item.context.diff[i].filename))
+            call add(cmd, (i ? 'rightbelow' : 'leftabove') . ' vertical Gdiffsplit! ' . s:fnameescape(item.context.diff[i].filename))
           endfor
           call add(cmd, 'wincmd =')
           let filename = item.filename
@@ -5075,7 +5085,7 @@ function! s:BlurStatus() abort
   endif
 endfunction
 
-let s:bang_edits = {'split': 'Git', 'vsplit': 'vert Git', 'tabedit': 'tab Git', 'pedit': 'Git!'}
+let s:bang_edits = {'split': 'Git', 'vsplit': 'vertical Git', 'tabedit': 'tab Git', 'pedit': 'Git!'}
 function! fugitive#Open(cmd, bang, mods, arg, args) abort
   exe s:VersionCheck()
   if a:bang
