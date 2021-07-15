@@ -9,7 +9,7 @@
     remote = github
 [gsync]
     remote = tpope
-    branch = master
+    target = tpope/master
 [commit]
     message = n
 [branch "dev"]
