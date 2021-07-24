@@ -465,7 +465,7 @@ function! s:BuildEnvPrefix(env) abort
   let env = items(a:env)
   if empty(env)
     return ''
-  elseif &shellcmdflag =~# '-Command'
+  elseif &shell =~? '\%(powershell\|pwsh\)\%(\.exe\)\=$'
     return join(map(env, '"$Env:" . v:val[0] . " = ''" . substitute(v:val[1], "''", "''''", "g") . "''; "'), '')
   elseif s:winshell()
     return join(map(env, '"set " . substitute(join(v:val, "="), "[&|<>^]", "^^^&", "g") . "& "'), '')
@@ -1607,9 +1607,11 @@ function! s:TempCmd(out, cmd) abort
   try
     let cmd = (type(a:cmd) == type([]) ? fugitive#Prepare(a:cmd) : a:cmd)
     let redir = ' > ' . a:out
-    if (s:winshell() || &shellcmdflag ==# '-Command') && !has('nvim')
+    if s:winshell() && !has('nvim')
       let cmd_escape_char = &shellxquote == '(' ?  '^' : '^^^'
       return s:SystemError('cmd /c "' . s:gsub(cmd, '[<>%]', cmd_escape_char . '&') . redir . '"')
+    elseif &shell =~? '\%(powershell\|pwsh\)\%(\.exe\)\=$'
+      return s:SystemError(&shell . ' ' . &shellcmdflag . ' ' . s:shellesc(cmd . redir))
     elseif &shell =~# 'fish'
       return s:SystemError(' begin;' . cmd . redir . ';end ')
     else
@@ -6469,7 +6471,7 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, args) abo
             let blame_list = tempname()
             call writefile([commit, ''], blame_list, 'b')
             let blame_in = tempname()
-            silent exe '%write' blame_in
+            silent exe 'noautocmd keepalt %write' blame_in
             let [blame, exec_error] = s:LinesError(['-c', 'blame.coloring=none', 'blame', '--contents', blame_in, '-L', line1.','.line2, '-S', blame_list, '-s', '--show-number', './' . path], dir)
             if !exec_error
               let blame_regex = '^\^\x\+\s\+\zs\d\+\ze\s'
