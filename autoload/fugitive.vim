@@ -251,7 +251,7 @@ function! s:GitCmd() abort
     let string = g:fugitive_git_executable
     let list = []
     if string =~# '^\w\+='
-      call add(list, 'env')
+      call add(list, '/usr/bin/env')
     endif
     while string =~# '\S'
       let arg = matchstr(string, '^\s*\%(' . dquote . '''[^'']*''\|\\.\|[^[:space:] |]\)\+')
@@ -479,7 +479,7 @@ function! s:BuildEnvPrefix(env) abort
   elseif s:winshell()
     return join(map(env, '"set " . substitute(join(v:val, "="), "[&|<>^]", "^^^&", "g") . "& "'), '')
   else
-    return 'env ' . s:shellesc(map(env, 'join(v:val, "=")')) . ' '
+    return '/usr/bin/env ' . s:shellesc(map(env, 'join(v:val, "=")')) . ' '
   endif
 endfunction
 
@@ -491,7 +491,7 @@ function! s:JobOpts(cmd, env) abort
   endif
   let envlist = map(items(a:env), 'join(v:val, "=")')
   if !has('win32')
-    return [['env'] + envlist + a:cmd, {}]
+    return [['/usr/bin/env'] + envlist + a:cmd, {}]
   else
     let pre = join(map(envlist, '"set " . substitute(v:val, "[&|<>^]", "^^^&", "g") . "& "'), '')
     if len(a:cmd) == 3 && a:cmd[0] ==# 'cmd.exe' && a:cmd[1] ==# '/c'
@@ -852,15 +852,29 @@ function! fugitive#ResolveRemote(remote) abort
   endif
 endfunction
 
+function! s:ConfigLengthSort(i1, i2) abort
+  return len(a:i2[0]) - len(a:i1[0])
+endfunction
+
 function! fugitive#RemoteUrl(...) abort
   let dir = a:0 > 1 ? s:Dir(a:2) : s:Dir()
   let url = !a:0 || a:1 =~# '^\.\=$' ? s:Remote(dir) : a:1
   if url !~# ':\|^/\|^\.\.\=/'
-    if !fugitive#GitVersion(2, 7)
-      let url = FugitiveConfigGet('remote.' . url . '.url')
-    else
-      let url = s:ChompDefault('', [dir, 'remote', 'get-url', url, '--'])
-    endif
+    let config = fugitive#Config(a:0 > 1 ? a:2 : s:Dir())
+    let url = FugitiveConfigGet('remote.' . url . '.url', config)
+    let instead_of = []
+    for [k, vs] in items(fugitive#ConfigGetRegexp('^url\.\zs.\{-\}\ze\.insteadof$', config))
+      for v in vs
+        call add(instead_of, [v, k])
+      endfor
+    endfor
+    call sort(instead_of, 's:ConfigLengthSort')
+    for [orig, replacement] in instead_of
+      if strpart(url, 0, len(orig)) ==# orig
+        let url = replacement . strpart(url, len(orig))
+        break
+      endif
+    endfor
   endif
   if !get(a:, 3, 0)
     let url = fugitive#ResolveRemote(url)
@@ -5883,7 +5897,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
       let i += 1
       if i == len(flags)
         echohl ErrorMsg
-        echo s:ChompError(['blame', arg])[0]
+        echo s:ChompError([dir, 'blame', arg])[0]
         echohl NONE
         return ''
       endif
