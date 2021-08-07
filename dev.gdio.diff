@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 513c6c3..c9bf07b 100644
+index 1e4f6ee..288ca44 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -207,7 +207,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -11,7 +11,7 @@ index 513c6c3..c9bf07b 100644
        if a:0 > 1
          let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
                \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
-@@ -2311,7 +2311,7 @@ function! fugitive#BufReadStatus() abort
+@@ -2321,7 +2321,7 @@ function! fugitive#BufReadStatus() abort
      call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent>')
@@ -20,7 +20,7 @@ index 513c6c3..c9bf07b 100644
      call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
-@@ -5555,6 +5555,10 @@ function! s:IsConflicted() abort
+@@ -5571,6 +5571,10 @@ function! s:IsConflicted() abort
  endfunction
  
  function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
@@ -31,7 +31,7 @@ index 513c6c3..c9bf07b 100644
    exe s:VersionCheck()
    let args = s:ArgSplit(a:arg)
    let post = ''
-@@ -5934,7 +5938,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -5950,7 +5954,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
      endif
      call extend(cmd, ranges)
@@ -40,7 +40,7 @@ index 513c6c3..c9bf07b 100644
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if len(commits)
        let cmd += commits
-@@ -6644,7 +6648,7 @@ function! fugitive#MapJumps(...) abort
+@@ -6657,7 +6661,7 @@ function! fugitive#MapJumps(...) abort
        call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent>')
