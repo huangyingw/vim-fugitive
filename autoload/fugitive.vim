@@ -886,26 +886,42 @@ function! s:ConfigLengthSort(i1, i2) abort
 endfunction
 
 function! fugitive#RemoteUrl(...) abort
-  let dir = a:0 > 1 ? s:Dir(a:2) : s:Dir()
-  let url = !a:0 || a:1 =~# '^\.\=$' ? s:Remote(dir) : a:1
-  if url !~# ':\|^/\|^\.\.\=/'
-    let config = fugitive#Config(a:0 > 1 ? a:2 : s:Dir())
-    let url = FugitiveConfigGet('remote.' . url . '.url', config)
-    let instead_of = []
-    for [k, vs] in items(fugitive#ConfigGetRegexp('^url\.\zs.\{-\}\ze\.insteadof$', config))
-      for v in vs
-        call add(instead_of, [v, k])
-      endfor
-    endfor
-    call sort(instead_of, 's:ConfigLengthSort')
-    for [orig, replacement] in instead_of
-      if strpart(url, 0, len(orig)) ==# orig
-        let url = replacement . strpart(url, len(orig))
-        break
-      endif
-    endfor
+  let args = a:000
+  if a:0 && type(a:1) !=# type('')
+    let config = fugitive#Config(a:1)
+    let args = a:000[1:-1]
+  elseif a:0 > 1
+    let config = fugitive#Config(a:2)
+    let args = [a:1] + a:000[2:-1]
+  else
+    let config = fugitive#Config()
+    let args = copy(a:000)
   endif
-  if !get(a:, 3, 0)
+  if empty(args)
+    let url = s:Remote(config)
+  elseif args[0] =~# '^\.\=$'
+    call remove(args, 0)
+    let url = s:Remote(config)
+  else
+    let url = remove(args, 0)
+  endif
+  if url !~# ':\|^/\|^\.\.\=/'
+    let url = FugitiveConfigGet('remote.' . url . '.url', config)
+  endif
+  let instead_of = []
+  for [k, vs] in items(fugitive#ConfigGetRegexp('^url\.\zs.\{-\}\ze\.insteadof$', config))
+    for v in vs
+      call add(instead_of, [v, k])
+    endfor
+  endfor
+  call sort(instead_of, 's:ConfigLengthSort')
+  for [orig, replacement] in instead_of
+    if strpart(url, 0, len(orig)) ==# orig
+      let url = replacement . strpart(url, len(orig))
+      break
+    endif
+  endfor
+  if index(args, 1) < 0 && index(args, get(v:, 'true', 1)) < 0 && index(args, 'noresolve') < 0
     let url = fugitive#ResolveRemote(url)
   endif
   return url
@@ -1928,7 +1944,7 @@ function! s:CompleteSub(subcommand, A, L, P, ...) abort
   if pre =~# ' -- '
     return fugitive#CompletePath(a:A)
   elseif a:A =~# '^-' || a:A is# 0
-    return s:FilterEscape(split(s:ChompDefault('', a:subcommand, '--git-completion-helper'), ' '), a:A)
+    return s:FilterEscape(split(s:ChompDefault('', [a:subcommand, '--git-completion-helper']), ' '), a:A)
   elseif !a:0
     return fugitive#CompleteObject(a:A, s:Dir())
   elseif type(a:1) == type(function('tr'))
@@ -2296,7 +2312,7 @@ function! fugitive#BufReadStatus() abort
     if &bufhidden ==# ''
       setlocal bufhidden=delete
     endif
-    let b:dispatch = '-dir=' . fnameescape(len(s:Tree()) ? s:Tree() : s:Dir()) . ' ' . s:GitShellCmd() . ' fetch --all'
+    let b:dispatch = '-dir=' . s:fnameescape(len(s:Tree()) ? s:Tree() : s:Dir()) . ' ' . s:GitShellCmd() . ' fetch --all'
     call fugitive#MapJumps()
     call s:Map('n', '-', ":<C-U>execute <SID>Do('Toggle',0)<CR>", '<silent>')
     call s:Map('x', '-', ":<C-U>execute <SID>Do('Toggle',1)<CR>", '<silent>')
@@ -2428,7 +2444,7 @@ function! fugitive#BufReadCmd(...) abort
     else
       let [b:fugitive_type, exec_error] = s:ChompError([dir, 'cat-file', '-t', rev])
       if exec_error && rev =~# '^:0'
-        let sha = s:ChompDefault('', dir, 'write-tree', '--prefix=' . rev[3:-1])
+        let sha = s:ChompDefault('', [dir, 'write-tree', '--prefix=' . rev[3:-1]])
         let exec_error = empty(sha)
         let b:fugitive_type = exec_error ? '' : 'tree'
       endif
@@ -2863,7 +2879,7 @@ function! s:RunWait(state, tmp, job, ...) abort
                 call remove(a:tmp, 'echo')
               endif
               call writefile(['fugitive: aborting edit due to background operation.'], a:state.file . '.exit')
-              exe (&splitbelow ? 'botright' : 'topleft') 'silent pedit ++ff=unix' fnameescape(a:state.file)
+              exe (&splitbelow ? 'botright' : 'topleft') 'silent pedit ++ff=unix' s:fnameescape(a:state.file)
               let a:state.capture_bufnr = bufnr(a:state.file)
               call setbufvar(a:state.capture_bufnr, '&modified', 1)
               let finished = 0
@@ -3220,7 +3236,7 @@ function! s:CompletableSubcommands(dir) abort
   let c_exec_path = s:cpath(s:ExecPath())
   if !has_key(s:path_subcommands, c_exec_path)
     if fugitive#GitVersion(2, 18)
-      let [lines, exec_error] = s:LinesError(a:dir, '--list-cmds=list-mainporcelain,nohelpers,list-complete')
+      let [lines, exec_error] = s:LinesError([a:dir, '--list-cmds=list-mainporcelain,nohelpers,list-complete'])
       call filter(lines, 'v:val =~# "^\\S\\+$"')
       if !exec_error && len(lines)
         let s:path_subcommands[c_exec_path] = lines
@@ -3283,7 +3299,7 @@ function! fugitive#Complete(lead, ...) abort
   elseif pre =~# ' -- '
     return fugitive#CompletePath(a:lead, a:1, a:2, dir, root)
   elseif a:lead =~# '^-'
-    let results = split(s:ChompDefault('', dir, subcmd, '--git-completion-helper'), ' ')
+    let results = split(s:ChompDefault('', [dir, subcmd, '--git-completion-helper']), ' ')
   else
     return fugitive#CompleteObject(a:lead, a:1, a:2, dir, root)
   endif
@@ -5567,7 +5583,7 @@ function! s:CompareAge(mine, theirs) abort
 endfunction
 
 function! s:IsConflicted() abort
-  return len(@%) && !empty(s:ChompDefault('', 'ls-files', '--unmerged', '--', expand('%:p')))
+  return len(@%) && !empty(s:ChompDefault('', ['ls-files', '--unmerged', '--', expand('%:p')]))
 endfunction
 
 function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
@@ -5837,7 +5853,7 @@ function! s:BlameCommitFileLnum(...) abort
   if commit =~# '^0\+$'
     let commit = ''
   elseif has_key(state, 'blame_reverse_end')
-    let commit = get(s:LinesError(state.dir, 'rev-list', '--ancestry-path', '--reverse', commit . '..' . state.blame_reverse_end)[0], 0, '')
+    let commit = get(s:LinesError([state.dir, 'rev-list', '--ancestry-path', '--reverse', commit . '..' . state.blame_reverse_end])[0], 0, '')
   endif
   let lnum = +matchstr(line, ' \zs\d\+\ze \%((\| *\d\+)\)')
   let path = matchstr(line, '^\^\=[?*]*\x* \+\%(\d\+ \+\d\+ \+\)\=\zs.\{-\}\ze\s*\d\+ \%((\| *\d\+)\)')
@@ -6677,7 +6693,7 @@ function! fugitive#MapJumps(...) abort
 
       if !exists('g:fugitive_no_maps')
         if exists(':CtrlP') && get(g:, 'ctrl_p_map') =~? '^<c-p>$'
-          nnoremap <buffer> <silent> <C-P> :<C-U>execute line('.') == 1 ? 'CtrlP ' . fnameescape(<SID>Tree()) : <SID>PreviousItem(v:count1)<CR>
+          nnoremap <buffer> <silent> <C-P> :<C-U>execute line('.') == 1 ? 'CtrlP ' . s:fnameescape(<SID>Tree()) : <SID>PreviousItem(v:count1)<CR>
         else
           nnoremap <buffer> <silent> <C-P> :<C-U>execute <SID>PreviousItem(v:count1)<CR>
         endif
