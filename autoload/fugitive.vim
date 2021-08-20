@@ -91,6 +91,10 @@ function! s:VersionCheck() abort
   if v:version < 704
     return 'return ' . string('echoerr "fugitive: Vim 7.4 or newer required"')
   elseif empty(fugitive#GitVersion())
+    let exe = get(s:GitCmd(), 0, '')
+    if len(exe) && !executable(exe)
+      return 'return ' . string('echoerr "fugitive: cannot find ' . string(exe) . ' in PATH"')
+    endif
     return 'return ' . string('echoerr "fugitive: cannot execute Git"')
   elseif !fugitive#GitVersion(1, 8, 5)
     return 'return ' . string('echoerr "fugitive: Git 1.8.5 or newer required"')
@@ -410,10 +414,6 @@ function! s:UserCommandList(...) abort
   return git + flags
 endfunction
 
-function! s:UserCommand(...) abort
-  return s:shellesc(call('s:UserCommandList', a:0 ? [a:1] : []) + (a:0 ? a:2 : []))
-endfunction
-
 let s:git_versions = {}
 function! fugitive#GitVersion(...) abort
   let git = s:GitShellCmd()
@@ -673,8 +673,8 @@ function! s:BuildShell(dir, env, git, args) abort
     call insert(cmd, '--git-dir=' . FugitiveGitPath(a:dir))
   else
     call extend(cmd, ['-C', FugitiveGitPath(tree)], 'keep')
-    if !s:cpath(tree . '/.git', dir)
-      call extend(cmd, ['--git-dir=' . FugitiveGitPath(dir)], 'keep')
+    if !s:cpath(tree . '/.git', a:dir)
+      call extend(cmd, ['--git-dir=' . FugitiveGitPath(a:dir)], 'keep')
     endif
   endif
   return pre . join(map(a:git + cmd, 's:shellesc(v:val)'))
@@ -902,7 +902,18 @@ let s:config = {}
 function! fugitive#Config(...) abort
   let name = ''
   let default = get(a:, 3, '')
-  if a:0 >= 2 && type(a:2) == type({}) && has_key(a:2, 'GetAll')
+  if a:0 && type(a:1) == type(function('tr'))
+    let dir = s:Dir()
+    let callback = a:000
+  elseif a:0 > 1 && type(a:2) == type(function('tr'))
+    if type(a:1) == type({}) && has_key(a:1, 'GetAll')
+      call call(a:2, [a:1] + a:000[2:-1])
+      return a:1
+    else
+      let dir = s:Dir(a:1)
+      let callback = a:000[1:-1]
+    endif
+  elseif a:0 >= 2 && type(a:2) == type({}) && has_key(a:2, 'GetAll')
     return get(fugitive#ConfigGetAll(a:1, a:2), 0, default)
   elseif a:0 >= 2
     let dir = s:Dir(a:2)
@@ -941,6 +952,9 @@ function! fugitive#Config(...) abort
     endfor
     let s:config[dir_key] = [s:ConfigTimestamps(dir, dict), dict]
     lockvar! dict
+  endif
+  if exists('callback')
+    call call(callback[0], [dict] + callback[1:-1])
   endif
   return len(name) ? get(get(dict, name, []), 0, default) : dict
 endfunction
@@ -1127,7 +1141,7 @@ endfunction
 
 function! fugitive#RemoteUrl(...) abort
   let args = a:000
-  if a:0 && type(a:1) !=# type('')
+  if a:0 && (type(a:1) !=# type('') || a:1 =~# '^/\|^\a:[\\/]' && get(a:, 2, '') !~# '^/\|^\a:[\\/]')
     let config = fugitive#Config(a:1)
     let args = a:000[1:-1]
   elseif a:0 > 1
@@ -3117,13 +3131,13 @@ function! s:RunWait(state, tmp, job, ...) abort
   try
     while get(a:state, 'request', '') !=# 'edit' && s:RunTick(a:job)
       call s:RunEcho(a:tmp)
-      if !get(a:state, 'closed_in')
+      if !get(a:tmp, 'closed_in')
         let peek = getchar(1)
         if peek != 0 && !(has('win32') && peek == 128)
           let c = getchar()
           let c = type(c) == type(0) ? nr2char(c) : c
           if c ==# "\<C-D>" || c ==# "\<Esc>"
-            let a:state.closed_in = 1
+            let a:tmp.closed_in = 1
             let can_pedit = s:RunCloseIn(a:job) && exists('*setbufline')
             for winnr in range(1, winnr('$'))
               if getwinvar(winnr, '&previewwindow') && getbufvar(winbufnr(winnr), '&modified')
@@ -3163,7 +3177,7 @@ function! s:RunWait(state, tmp, job, ...) abort
   finally
     if !exists('finished')
       try
-        if a:state.pty && !get(a:state, 'closed_in')
+        if a:state.pty && !get(a:tmp, 'closed_in')
           call s:RunSend(a:job, "\<C-C>")
         elseif type(a:job) == type(0)
           call jobstop(a:job)
@@ -3275,7 +3289,7 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
     if args[0] ==# '-c' && len(args) > 1
       call extend(flags, remove(args, 0, 1))
     elseif args[0] =~# '^-p$\|^--paginate$'
-      let pager = 1
+      let pager = 2
       call remove(args, 0)
     elseif args[0] =~# '^-P$\|^--no-pager$'
       let pager = 0
@@ -3341,22 +3355,12 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
     let i += 1
   endwhile
   call s:PrepareEnv(env, dir)
-  let editcmd = a:line2 ? 'split' : 'edit'
-  if pager is# 1
-    if a:bang && a:line2 >= 0
-      let editcmd = 'read'
-    elseif a:bang
-      let editcmd = 'pedit'
-    endif
-  elseif pager is# -1
+  if pager is# -1
     let pager = fugitive#PagerFor(args, config)
-    if a:bang && pager isnot# 1
-      return 'echoerr ' .  string('fugitive: :Git! for temp buffer output has been replaced by :Git --paginate')
-    endif
   endif
-  if (s:HasOpt(args, ['add', 'checkout', 'commit', 'stage', 'stash', 'reset'], '-p', '--patch') ||
-        \ s:HasOpt(args, ['add', 'clean', 'stage'], '-i', '--interactive') ||
-        \ type(pager) == type('')) && pager isnot# 1
+  if type(pager) ==# type('') ||
+        \ (s:HasOpt(args, ['add', 'checkout', 'commit', 'stage', 'stash', 'reset'], '-p', '--patch') ||
+        \ s:HasOpt(args, ['add', 'clean', 'stage'], '-i', '--interactive')) && pager is# 0
     let mods = substitute(s:Mods(a:mods), '\<tab\>', '-tab', 'g')
     let assign = len(dir) ? '|let b:git_dir = ' . string(dir) : ''
     let argv = s:UserCommandList(options) + args
@@ -3372,9 +3376,6 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
       return mods . 'call term_start(' . string(argv) . ', ' . string(term_opts) . ')' . assign . after
     endif
   endif
-  if pager is# 1 && editcmd ==# 'read'
-    return s:ReadExec(a:line1, a:line2, a:range, a:mods, env, args, options) . after
-  endif
   let state = {
         \ 'git': git,
         \ 'flags': flags,
@@ -3385,13 +3386,32 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
         \ 'filetype': 'git',
         \ 'mods': s:Mods(a:mods),
         \ 'file': s:Resolve(tempname())}
-  if pager is# 1
+  let allow_pty = 1
+  let after_edit = ''
+  let stream = 0
+  if a:bang && pager isnot# 2
+    let pager = 1
+    let stream = exists('*setbufline')
+    let do_edit = substitute(s:Mods(a:mods, &splitbelow ? 'botright' : 'topleft'), '\<tab\>', '-tab', 'g') . 'pedit!'
+    call extend(env, {'COLUMNS': '' . (&columns - 1)}, 'keep')
+  elseif pager
+    let allow_pty = 0
+    if pager is# 2 && a:bang && a:line2 >= 0
+      let [do_edit, after_edit] = s:ReadPrepare(a:line1, a:line2, a:range, a:mods)
+    elseif pager is# 2 && a:bang
+      let do_edit = s:Mods(a:mods) . 'pedit'
+    elseif a:line2
+      let do_edit = s:Mods(a:mods) . 'split'
+    else
+      let do_edit = s:Mods(a:mods) . 'edit'
+      call s:BlurStatus()
+    endif
     call extend(env, {'COLUMNS': '' . get(g:, 'fugitive_columns', 80)}, 'keep')
   else
-    call extend(env, {'COLUMNS': '' . &columns - 1}, 'keep')
+    call extend(env, {'COLUMNS': '' . (&columns - 1)}, 'keep')
   endif
-  if s:RunJobs() && pager isnot# 1
-    let state.pty = get(g:, 'fugitive_pty', has('unix') && !has('win32unix') && (has('patch-8.0.0744') || has('nvim')) && fugitive#GitVersion() !~# '\.windows\>')
+  if s:RunJobs()
+    let state.pty = allow_pty && get(g:, 'fugitive_pty', has('unix') && !has('win32unix') && (has('patch-8.0.0744') || has('nvim')) && fugitive#GitVersion() !~# '\.windows\>')
     if !state.pty
       let args = s:AskPassArgs(dir) + args
     endif
@@ -3399,7 +3419,6 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
           \ 'line_count': 0,
           \ 'err': '',
           \ 'out': '',
-          \ 'echo': '',
           \ 'escape': ''}
     let env.FUGITIVE = state.file
     let editor = 'sh ' . s:TempScript(
@@ -3412,16 +3431,26 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
           \ 'NO_COLOR': '1',
           \ 'GIT_EDITOR': editor,
           \ 'GIT_SEQUENCE_EDITOR': editor,
-          \ 'GIT_MERGE_AUTOEDIT': '1',
           \ 'GIT_PAGER': 'cat',
           \ 'PAGER': 'cat'}, 'keep')
+    if stream
+      call writefile(['fugitive: aborting edit due to background operation.'], state.file . '.exit')
+    elseif pager
+      call writefile(['fugitive: aborting edit due to use of pager.'], state.file . '.exit')
+      let after = '|' . do_edit . ' ' . s:fnameescape(state.file) . after_edit . after
+    else
+      let env.GIT_MERGE_AUTOEDIT = '1'
+      let tmp.echo = ''
+    endif
     let args = s:disable_colors + flags + ['-c', 'advice.waitingForEditor=false'] + args
     let argv = s:UserCommandList({'git': git, 'git_dir': dir}) + args
     let [argv, jobopts] = s:JobOpts(argv, env)
     call fugitive#Autowrite()
     call writefile([], state.file, 'b')
     call s:RunSave(state)
-    echo ""
+    if has_key(tmp, 'echo')
+      echo ""
+    endif
     if exists('*job_start')
       call extend(jobopts, {
             \ 'mode': 'raw',
@@ -3444,9 +3473,19 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
             \ }))
     endif
     let state.job = job
+    if pager
+      let tmp.closed_in = 1
+      call s:RunCloseIn(job)
+    endif
+    if stream
+      exe 'silent' do_edit '++ff=unix' s:fnameescape(state.file)
+      let state.capture_bufnr = bufnr(state.file)
+      call setbufvar(state.capture_bufnr, '&modified', 1)
+      return (after_edit . after)[1:-1]
+    endif
     call add(s:resume_queue, [state, tmp, job])
     return 'call fugitive#Resume()|silent checktime' . after
-  elseif pager is# 1
+  elseif pager
     let pre = s:BuildEnvPrefix(env)
     try
       if exists('+guioptions') && &guioptions =~# '!'
@@ -3464,10 +3503,7 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
     redraw!
     call s:RunSave(state)
     call s:RunFinished(state)
-    if editcmd ==# 'edit'
-      call s:BlurStatus()
-    endif
-    return state.mods . editcmd . ' ' . s:fnameescape(state.file) .
+    return do_edit . ' ' . s:fnameescape(state.file) . after_edit .
           \ '|call fugitive#ReloadStatus(fugitive#Result(' . string(state.file) . '), 1)' . after
   elseif has('win32')
     return 'echoerr ' . string('fugitive: Vim 8 with job support required to use :Git on Windows')
@@ -5099,7 +5135,10 @@ function! fugitive#LogComplete(A, L, P) abort
   return s:CompleteSub('log', a:A, a:L, a:P)
 endfunction
 
-function! s:GrepParseLine(options, dir, line) abort
+function! s:GrepParseLine(options, quiet, dir, line) abort
+  if !a:quiet
+    echo a:line
+  endif
   let entry = {'valid': 1}
   let match = matchlist(a:line, '^\(.\{-\}\):\([1-9]\d*\):\([1-9]\d*:\)\=\(.*\)$')
   if len(match)
@@ -5156,7 +5195,7 @@ endfunction
 
 function! s:GrepCfile(result) abort
   let options = s:GrepOptions(a:result.args, a:result)
-  let entry = s:GrepParseLine(options, a:result, getline('.'))
+  let entry = s:GrepParseLine(options, 1, a:result, getline('.'))
   if get(entry, 'col')
     return [entry.filename, entry.lnum, "norm!" . entry.col . "|"]
   elseif has_key(entry, 'lnum')
@@ -5171,9 +5210,10 @@ endfunction
 function! s:GrepSubcommand(line1, line2, range, bang, mods, options) abort
   let args = copy(a:options.subcommand_args)
   let handle = -1
+  let quiet = 0
   let i = 0
   while i < len(args) && args[i] !=# '--'
-    let partition = matchstr(args[i], '^-' . s:grep_combine_flags . '\zeO')
+    let partition = matchstr(args[i], '^-' . s:grep_combine_flags . '\ze[qO]')
     if len(partition) > 1
       call insert(args, '-' . strpart(args[i], len(partition)), i+1)
       let args[i] = partition
@@ -5185,6 +5225,14 @@ function! s:GrepSubcommand(line1, line2, range, bang, mods, options) abort
       continue
     elseif args[i] =~# '^\%(-O\|--open-files-in-pager=\)'
       let handle = 0
+    elseif args[i] =~# '^-q.'
+      let args[i] = '-' . args[i][2:-1]
+      let quiet = 1
+    elseif args[i] =~# '^\%(-q\|--quiet\)$'
+      let quiet = 1
+      call remove(args, i)
+    elseif args[i] =~# '^--no-quiet$'
+      let quiet = 0
     elseif args[i] =~# '^\%(--heading\)$'
       call remove(args, i)
       continue
@@ -5204,33 +5252,54 @@ function! s:GrepSubcommand(line1, line2, range, bang, mods, options) abort
   else
     call s:BlurStatus()
   endif
-  redraw
   let title = (listnr < 0 ? ':Ggrep ' : ':Glgrep ') . s:fnameescape(args)
   call s:QuickfixCreate(listnr, {'title': title})
   let tempfile = tempname()
+  let state = {
+        \ 'git': a:options.git,
+        \ 'flags': a:options.flags,
+        \ 'args': cmd + args,
+        \ 'dir': dir,
+        \ 'git_dir': dir,
+        \ 'cwd': s:UserCommandCwd(dir),
+        \ 'filetype': 'git',
+        \ 'mods': s:Mods(a:mods),
+        \ 'file': s:Resolve(tempfile)}
   let event = listnr < 0 ? 'grep-fugitive' : 'lgrep-fugitive'
   silent exe s:DoAutocmd('QuickFixCmdPre ' . event)
   try
-    if exists('+guioptions') && &guioptions =~# '!'
-      let guioptions = &guioptions
-      set guioptions-=!
+    if !quiet && &more
+      let more = 1
+      set nomore
     endif
-    exe '!' . escape(s:UserCommand(a:options, cmd + args), '%#!')
-          \ printf(&shellpipe . (&shellpipe =~# '%s' ? '' : ' %s'), s:shellesc(tempfile))
+    if !quiet
+      echo title
+    endif
+    let list = s:SystemList(s:UserCommandList(a:options) + cmd + args)[0]
+    call writefile(list + [''], tempfile, 'b')
+    call s:RunSave(state)
+    call map(list, 's:GrepParseLine(options, ' . quiet . ', dir, v:val)')
+    call s:QuickfixSet(listnr, list, 'a')
+    let press_enter_shortfall = &cmdheight - len(list)
+    if press_enter_shortfall > 0 && !quiet
+      echo repeat("\n", press_enter_shortfall - 1)
+    endif
   finally
-    if exists('guioptions')
-      let &guioptions = guioptions
+    if exists('l:more')
+      let &more = more
     endif
   endtry
-  let list = readfile(tempfile)
-  call map(list, 's:GrepParseLine(options, dir, v:val)')
-  call s:QuickfixSet(listnr, list, 'a')
+  call s:RunFinished(state)
   silent exe s:DoAutocmd('QuickFixCmdPost ' . event)
-  if !has('gui_running')
-    redraw
-  endif
+  if quiet
+    let bufnr = bufnr('')
+    silent exe substitute(s:Mods(a:mods), '\<tab\>', '', '') (listnr < 0 ? 'c' : 'l').'open'
+    if bufnr != bufnr('')
+      wincmd p
+    endif
+  end
   if !a:bang && !empty(list)
-    return (listnr < 0 ? 'c' : 'l').'first'
+    return 'silent ' . (listnr < 0 ? 'c' : 'l').'first'
   else
     return ''
   endif
@@ -5581,26 +5650,7 @@ function! s:ReadPrepare(line1, count, range, mods) abort
   else
     let pre = ''
   endif
-  return [pre . 'keepalt ' . mods . after . 'read', delete . 'diffupdate' . (a:count < 0 ? '|' . line('.') : '')]
-endfunction
-
-function! s:ReadExec(line1, count, range, mods, env, args, options) abort
-  let [read, post] = s:ReadPrepare(a:line1, a:count, a:range, a:mods)
-  let env = s:BuildEnvPrefix(extend({'COLUMNS': &tw ? &tw : 80}, a:env))
-  try
-    if exists('+guioptions') && &guioptions =~# '!'
-      let guioptions = &guioptions
-      set guioptions-=!
-    endif
-    silent execute read . '!' escape(env . s:UserCommand(a:options, ['--no-pager'] + a:args), '!#%')
-  finally
-    if exists('guioptions')
-      let &guioptions = guioptions
-    endif
-  endtry
-  execute post
-  call fugitive#ReloadStatus(a:options.dir, 1)
-  return 'redraw|echo '.string(':!'.s:UserCommand(a:options, a:args))
+  return [pre . 'keepalt ' . mods . after . 'read', '|' . delete . 'diffupdate' . (a:count < 0 ? '|' . line('.') : '')]
 endfunction
 
 function! fugitive#ReadCommand(line1, count, range, bang, mods, arg, args) abort
@@ -5617,7 +5667,7 @@ function! fugitive#ReadCommand(line1, count, range, bang, mods, arg, args) abort
   if file =~# '^fugitive:' && a:count is# 0
     return 'exe ' .string('keepalt ' . s:Mods(a:mods) . fugitive#FileReadCmd(file, 0, pre)) . '|diffupdate'
   endif
-  return read . ' ' . pre . ' ' . s:fnameescape(file) . '|' . post
+  return read . ' ' . pre . ' ' . s:fnameescape(file) . post
 endfunction
 
 function! fugitive#EditComplete(A, L, P) abort
