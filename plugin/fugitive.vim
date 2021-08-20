@@ -79,18 +79,6 @@ function! FugitiveFind(...) abort
   endif
 endfunction
 
-function! FugitivePath(...) abort
-  if a:0 > 2 && type(a:1) ==# type({})
-    return fugitive#Path(a:2, a:3, FugitiveGitDir(a:1))
-  elseif a:0 && type(a:1) ==# type({})
-    return FugitiveReal(a:0 > 1 ? a:2 : @%)
-  elseif a:0 > 1
-    return fugitive#Path(a:1, a:2, FugitiveGitDir(a:0 > 2 ? a:3 : -1))
-  else
-    return FugitiveReal(a:0 ? a:1 : @%)
-  endif
-endfunction
-
 " FugitiveParse() takes a fugitive:// URL and returns a 2 element list
 " containing an object name ("commit:file") and the Git dir.  It's effectively
 " the inverse of FugitiveFind().
@@ -125,14 +113,17 @@ function! FugitiveResult(...) abort
   return call('fugitive#Result', a:000)
 endfunction
 
-" FugitivePrepare() constructs a Git command string which can be executed with
-" functions like system() and commands like :!.  Integer arguments will be
-" treated as buffer numbers, and the appropriate relative path inserted in
-" their place.
+" FugitiveShellCommand() turns an array of arugments into a Git command string
+" which can be executed with functions like system() and commands like :!.
+" Integer arguments will be treated as buffer numbers, and the appropriate
+" relative path inserted in their place.
 "
-" If the first argument is a string that looks like a path or an empty string,
-" it will be used as the Git dir.  If it's a buffer number, the Git dir for
-" that buffer will be used.  The default is the current buffer.
+" An optional second argument provides the Git dir, or the buffer number of a
+" buffer with a Git dir.  The default is the current buffer.
+function! FugitiveShellCommand(...) abort
+  return call('fugitive#ShellCommand', a:000)
+endfunction
+
 function! FugitivePrepare(...) abort
   return call('fugitive#ShellCommand', a:000)
 endfunction
@@ -204,6 +195,18 @@ function! FugitiveHead(...) abort
     return ''
   endif
   return fugitive#Head(arg, dir)
+endfunction
+
+function! FugitivePath(...) abort
+  if a:0 > 2 && type(a:1) ==# type({})
+    return fugitive#Path(a:2, a:3, FugitiveGitDir(a:1))
+  elseif a:0 && type(a:1) ==# type({})
+    return FugitiveReal(a:0 > 1 ? a:2 : @%)
+  elseif a:0 > 1
+    return fugitive#Path(a:1, a:2, FugitiveGitDir(a:0 > 2 ? a:3 : -1))
+  else
+    return FugitiveReal(a:0 ? a:1 : @%)
+  endif
 endfunction
 
 function! FugitiveStatusline(...) abort
