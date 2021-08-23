@@ -88,8 +88,8 @@ function! s:throw(string) abort
 endfunction
 
 function! s:VersionCheck() abort
-  if v:version < 704
-    return 'return ' . string('echoerr "fugitive: Vim 7.4 or newer required"')
+  if v:version < 703
+    return 'return ' . string('echoerr "fugitive: Vim 7.3 or newer required"')
   elseif empty(fugitive#GitVersion())
     let exe = get(s:GitCmd(), 0, '')
     if len(exe) && !executable(exe)
@@ -493,23 +493,31 @@ function! s:HasOpt(args, ...) abort
   endfor
 endfunction
 
-function! s:PreparePathArgs(cmd, dir, literal) abort
-  if a:literal
+function! s:PreparePathArgs(cmd, dir, literal, explicit) abort
+  if !a:explicit
     call insert(a:cmd, '--literal-pathspecs')
   endif
   let split = index(a:cmd, '--')
   for i in range(split < 0 ? len(a:cmd) : split)
-    if type(a:cmd[i]) == type(0)
-      let a:cmd[i] = fugitive#Path(bufname(a:cmd[i]), './', a:dir)
-    endif
+      if type(a:cmd[i]) == type(0)
+        if a:literal
+          let a:cmd[i] = fugitive#Path(bufname(a:cmd[i]), './', a:dir)
+        else
+          let a:cmd[i] = fugitive#Path(bufname(a:cmd[i]), ':(top,literal)', a:dir)
+        endif
+      endif
   endfor
   if split < 0
     return a:cmd
   endif
   for i in range(split + 1, len(a:cmd) - 1)
     if type(a:cmd[i]) == type(0)
-      let a:cmd[i] = fugitive#Path(bufname(a:cmd[i]), './', a:dir)
-    elseif a:literal
+      if a:literal
+        let a:cmd[i] = fugitive#Path(bufname(a:cmd[i]), './', a:dir)
+      else
+        let a:cmd[i] = fugitive#Path(bufname(a:cmd[i]), ':(top,literal)', a:dir)
+      endif
+    elseif !a:explicit
       let a:cmd[i] = fugitive#Path(a:cmd[i], './', a:dir)
     endif
   endfor
@@ -557,6 +565,8 @@ function! fugitive#PrepareDirEnvGitFlagsArgs(...) abort
     let env = {}
   endif
   let autoenv = {}
+  let explicit_pathspec_option = 0
+  let literal_pathspecs = 1
   let i = 0
   let arg_count = 0
   while i < len(cmd)
@@ -588,6 +598,7 @@ function! fugitive#PrepareDirEnvGitFlagsArgs(...) abort
       endif
       let i += 2
     elseif cmd[i] =~# '^--.*pathspecs$'
+      let literal_pathspecs = (cmd[i] ==# '--literal-pathspecs')
       let explicit_pathspec_option = 1
       let i += 1
     elseif cmd[i] !~# '^-'
@@ -603,7 +614,7 @@ function! fugitive#PrepareDirEnvGitFlagsArgs(...) abort
   if !has_key(env, 'GIT_INDEX_FILE')
     call s:PrepareEnv(autoenv, dir)
   endif
-  call s:PreparePathArgs(cmd, dir, !exists('explicit_pathspec_option'))
+  call s:PreparePathArgs(cmd, dir, literal_pathspecs, explicit_pathspec_option)
   return [s:GitDir(dir), env, extend(autoenv, env), git, cmd[0 : -arg_count-1], arg_count ? cmd[-arg_count : -1] : []]
 endfunction
 
@@ -1687,7 +1698,7 @@ function! s:BufName(var) abort
 endfunction
 
 function! s:ExpandVarLegacy(str) abort
-  if get(g:, 'fugitive_legacy_quoting', 1)
+  if get(g:, 'fugitive_legacy_quoting', 0)
     return substitute(a:str, '\\\ze[%#!]', '', 'g')
   else
     return a:str
@@ -1706,6 +1717,8 @@ function! s:ExpandVar(other, var, flags, esc, ...) abort
     let buffer = s:BufName(len(a:other) > 1 ? '#'. a:other[1:-1] : '%')
     let owner = s:Owner(buffer)
     return len(owner) ? owner : '@'
+  elseif len(a:other)
+    return expand(a:other)
   elseif a:var ==# '<cfile>'
     let bufnames = [expand('<cfile>')]
     if v:version >= 704 && get(maparg('<Plug><cfile>', 'c', 0, 1), 'expr')
@@ -1793,7 +1806,7 @@ function! s:SplitExpandChain(string, ...) abort
             \ '\=s:DotRelative(s:Slash(simplify(getcwd() . "/" . submatch(0))), cwd)', '')
     endif
     let arg = substitute(arg,
-          \ '\(' . dquote . '''\%(''''\|[^'']\)*''\|\\[' . s:fnameescape . ']\|^\\[>+-]\|!\d*\)\|' . s:expand,
+          \ '\(' . dquote . '''\%(''''\|[^'']\)*''\|\\[' . s:fnameescape . ']\|^\\[>+-]\|!\d*\|^\~\w*\|\$\w\+\)\|' . s:expand,
           \ '\=s:ExpandVar(submatch(1),submatch(2),submatch(3),submatch(5), cwd)', 'g')
     call extend(list, split(arg, "\1", 1))
     if arg ==# '--'
@@ -5185,18 +5198,25 @@ function! s:GrepParseLine(options, quiet, dir, line) abort
   endif
   let entry = {'valid': 1}
   let match = matchlist(a:line, '^\(.\{-\}\):\([1-9]\d*\):\([1-9]\d*:\)\=\(.*\)$')
-  if len(match)
+  if a:line =~# '^git: \|^usage: \|^error: \|^fatal: \|^BUG: '
+    return {'text': a:line}
+  elseif len(match)
     let entry.module = match[1]
     let entry.lnum = +match[2]
     let entry.col = +match[3]
     let entry.text = match[4]
-  elseif a:line =~# '^git: \|^usage: \|^error: \|^fatal: '
-    return {'text': a:line}
   else
     let entry.module = matchstr(a:line, '\CBinary file \zs.*\ze matches$')
     if len(entry.module)
       let entry.text = 'Binary file'
       let entry.valid = 0
+    endif
+  endif
+  if empty(entry.module) && !a:options.line_number
+    let match = matchlist(a:line, '^\(.\{-\}\):\(.*\)$')
+    if len(match)
+      let entry.module = match[1]
+      let entry.pattern = '\M^' . escape(match[2], '\.^$/') . '$'
     endif
   endif
   if empty(entry.module) && a:options.name_count && a:line =~# ':\d\+$'
@@ -5219,19 +5239,30 @@ endfunction
 
 let s:grep_combine_flags = '[aiIrhHEGPFnlLzocpWq]\{-\}'
 function! s:GrepOptions(args, dir) abort
-  let options = {'name_only': 0, 'name_count': 0}
+  let options = {'name_only': 0, 'name_count': 0, 'line_number': 0}
   let tree = s:Tree(a:dir)
-  let options.prefix = empty(tree) ? fugitive#Find(':0:', a:dir) :
+  let prefix = empty(tree) ? fugitive#Find(':0:', a:dir) :
         \ s:cpath(getcwd(), tree) ? '' : FugitiveVimPath(tree . '/')
+  let options.prefix = prefix
   for arg in a:args
     if arg ==# '--'
       break
-    elseif arg =~# '^\%(-' . s:grep_combine_flags . 'c\|--count\)$'
+    endif
+    if arg =~# '^\%(-' . s:grep_combine_flags . 'c\|--count\)$'
       let options.name_count = 1
-    elseif arg =~# '^\%(-' . s:grep_combine_flags . '[lL]\|--files-with-matches\|--name-only\|--files-without-match\)$'
+    endif
+    if arg =~# '^\%(-' . s:grep_combine_flags . 'n\|--line-number\)$'
+      let options.line_number = 1
+    elseif arg =~# '^\%(--no-line-number\)$'
+      let options.line_number = 0
+    endif
+    if arg =~# '^\%(-' . s:grep_combine_flags . '[lL]\|--files-with-matches\|--name-only\|--files-without-match\)$'
       let options.name_only = 1
-    elseif arg ==# '--cached'
+    endif
+    if arg ==# '--cached'
       let options.prefix = fugitive#Find(':0:', a:dir)
+    elseif arg ==# '--no-cached'
+      let options.prefix = prefix
     endif
   endfor
   return options
@@ -5244,6 +5275,8 @@ function! s:GrepCfile(result) abort
     return [entry.filename, entry.lnum, "norm!" . entry.col . "|"]
   elseif has_key(entry, 'lnum')
     return [entry.filename, entry.lnum]
+  elseif has_key(entry, 'pattern')
+    return [entry.filename, '', 'silent /' . entry.pattern]
   elseif has_key(entry, 'filename')
     return [entry.filename]
   else
@@ -5284,14 +5317,18 @@ function! s:GrepSubcommand(line1, line2, range, bang, mods, options) abort
     endif
     let i += 1
   endwhile
-  if !handle
+  if handle < 0 ? !quiet : !handle
     return {}
   endif
-  exe s:DirCheck(a:options)
   let listnr = a:line1 == 0 ? a:line1 : a:line2
-  let cmd = ['grep', '-n', '--no-color', '--full-name']
+  if s:HasOpt(args, '--no-line-number')
+    let lc = []
+  else
+    let lc = fugitive#GitVersion(2, 19) ? ['-n', '--column'] : ['-n']
+  endif
+  let cmd = ['grep', '--no-color', '--full-name'] + lc
   let dir = s:Dir(a:options)
-  let options = s:GrepOptions(args, dir)
+  let options = s:GrepOptions(lc + args, dir)
   if listnr > 0
     exe listnr 'wincmd w'
   else
@@ -5306,7 +5343,7 @@ function! s:GrepSubcommand(line1, line2, range, bang, mods, options) abort
         \ 'args': cmd + args,
         \ 'dir': s:GitDir(a:options),
         \ 'git_dir': s:GitDir(a:options),
-        \ 'cwd': s:UserCommandCwd(dir),
+        \ 'cwd': s:UserCommandCwd(a:options),
         \ 'filetype': 'git',
         \ 'mods': s:Mods(a:mods),
         \ 'file': s:Resolve(tempfile)}
@@ -5339,7 +5376,7 @@ function! s:GrepSubcommand(line1, line2, range, bang, mods, options) abort
   if quiet
     let bufnr = bufnr('')
     silent exe substitute(s:Mods(a:mods), '\<tab\>', '', '') (listnr < 0 ? 'c' : 'l').'open'
-    if bufnr != bufnr('')
+    if bufnr != bufnr('') && !a:bang
       wincmd p
     endif
   end
@@ -5352,7 +5389,7 @@ endfunction
 
 function! fugitive#GrepCommand(line1, line2, range, bang, mods, arg) abort
   return fugitive#Command(a:line1, a:line2, a:range, a:bang, a:mods,
-        \ "-c grep.column grep -O " . a:arg)
+        \ "grep -O " . a:arg)
 endfunction
 
 let s:log_diff_context = '{"filename": fugitive#Find(v:val . from, a:dir), "lnum": get(offsets, v:key), "module": strpart(v:val, 0, len(a:state.base_module)) . from}'
@@ -7490,7 +7527,7 @@ function! s:GF(mode) abort
   endtry
   if len(results) > 1
     return 'G' . a:mode .
-          \ ' +' . escape(results[1], ' |') . ' ' .
+          \ (empty(results[1]) ? '' : ' +' . escape(results[1], ' |')) . ' ' .
           \ s:fnameescape(results[0]) . join(map(results[2:-1], '"|" . v:val'), '')
   elseif len(results) && len(results[0])
     return 'G' . a:mode . ' ' . s:fnameescape(results[0])
