@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index f4a0f99..f37dfb9 100644
+index 9676369..2bd3251 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -219,7 +219,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -31,7 +31,7 @@ index f4a0f99..f37dfb9 100644
      exe s:VersionCheck()
      let args = s:ArgSplit(a:arg)
      let post = ''
-@@ -6475,7 +6479,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6487,7 +6487,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
              let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
          endif
          call extend(cmd, ranges)
@@ -40,7 +40,7 @@ index f4a0f99..f37dfb9 100644
          let temp = tempname . (raw ? '' : '.fugitiveblame')
          if len(commits)
              let cmd += commits
-@@ -6538,7 +6542,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6550,7 +6550,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
                      let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
                      let mods = s:Mods(a:mods)
                      if a:count != 0
@@ -49,7 +49,7 @@ index f4a0f99..f37dfb9 100644
                      elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
                          exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
                      else
-@@ -6588,7 +6592,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6600,7 +6600,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
                  endif
                  let top = line('w0') + &scrolloff
                  let current = line('.')
@@ -60,7 +60,7 @@ index f4a0f99..f37dfb9 100644
                  let w:fugitive_leave = join(restore, '|')
                  execute top
                  normal! zt
-@@ -7180,7 +7186,7 @@ function! fugitive#MapJumps(...) abort
+@@ -7192,7 +7194,7 @@ function! fugitive#MapJumps(...) abort
              call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
              call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
