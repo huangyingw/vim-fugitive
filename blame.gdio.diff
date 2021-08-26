@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index f4a0f99..3e24965 100644
+index f4a0f99..f37dfb9 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -219,7 +219,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
@@ -49,7 +49,18 @@ index f4a0f99..3e24965 100644
                      elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
                          exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
                      else
-@@ -7180,7 +7184,7 @@ function! fugitive#MapJumps(...) abort
+@@ -6588,7 +6592,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+                 endif
+                 let top = line('w0') + &scrolloff
+                 let current = line('.')
+-        exe 'silent keepalt' (a:bang ? s:Mods(mods) . 'split' : s:Mods(mods, 'leftabove') . 'vsplit') s:fnameescape(temp)
++                let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
++                exe 'silent keepalt' mods 'vsplit' s:fnameescape(temp)
++                return reload[1 : -1]
+                 let w:fugitive_leave = join(restore, '|')
+                 execute top
+                 normal! zt
+@@ -7180,7 +7186,7 @@ function! fugitive#MapJumps(...) abort
              call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
  
              call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
