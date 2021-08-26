@@ -6506,7 +6506,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
           let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
           let mods = s:Mods(a:mods)
           if a:count != 0
-            exe 'silent keepalt' mods 'split' s:fnameescape(temp)
+            exe 'silent keepalt' mods 'vsplit' s:fnameescape(temp)
           elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
             exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
           else
