@@ -6642,9 +6642,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
         endif
         let top = line('w0') + &scrolloff
         let current = line('.')
-                let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
-                exe 'silent keepalt' mods 'vsplit' s:fnameescape(temp)
-                return reload[1 : -1]
+        let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
+        exe 'silent keepalt' mods 'vsplit' s:fnameescape(temp)
+        return reload[1 : -1]
         let w:fugitive_leave = join(restore, '|')
         execute top
         normal! zt
