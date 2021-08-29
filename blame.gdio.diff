@@ -1,16 +1,16 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index e0605a5..189048b 100644
+index e0605a5..16e181b 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
-@@ -219,7 +219,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
-             let head = substitute(head, '<[^<>]*>$\|.$', '', '')
-         endwhile
-         if flags !~# '<unique>' || empty(mapcheck(head.tail, mode))
--      exe mode.'map <buffer>' s:nowait flags head.tail a:rhs
-+            exe mode.'map <buffer>' flags head.tail a:rhs
-             if a:0 > 1
-                 let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
-                             \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
+@@ -196,7 +196,7 @@ function! s:DoAutocmd(...) abort
+     endif
+ endfunction
+ 
+-let s:nowait = v:version >= 704 ? '<nowait>' : ''
++let s:nowait = ''
+ 
+ function! s:Map(mode, lhs, rhs, ...) abort
+   let maps = []
 @@ -2683,7 +2683,7 @@ function! fugitive#BufReadStatus() abort
          call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
          call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
