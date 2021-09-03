@@ -41,7 +41,7 @@ index bde1f02..968cbe4 100644
      if len(commits)
        let cmd += commits
 @@ -6683,7 +6687,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
-           let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
+           let reload = '|call fugitive#DidChange(fugitive#Result(' . string(temp_state.file) . '))'
            let mods = s:Mods(a:mods)
            if a:count != 0
 -            exe 'silent keepalt' mods 'split' s:fnameescape(temp)
@@ -61,7 +61,7 @@ index bde1f02..968cbe4 100644
          execute top
          normal! zt
 @@ -7340,7 +7346,7 @@ function! fugitive#MapJumps(...) abort
-       call s:Map('n', 'O',    ':<C-U>0,5' . blame_map, '<silent>')
+       endif
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
 -      call s:Map('n', 'dd', ":<C-U>call fugitive#DiffClose()<Bar>Gdiffsplit!<CR>", '<silent>')
