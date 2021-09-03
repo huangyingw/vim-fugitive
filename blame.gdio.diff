@@ -83,7 +83,7 @@ index e5f0b98..d5a1763 100644
 +
  command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)
  
- if exists(':Gstatus') != 2 && get(g:, 'fugitive_legacy_commands', 1)
+ if exists(':Gstatus') != 2 && get(g:, 'fugitive_legacy_commands', 0)
 @@ -541,7 +539,6 @@ if exists(':Gr') != 2
  endif
  exe 'command! -bar -bang -nargs=* -range=-1                -complete=customlist,fugitive#ReadComplete   Gread    exe fugitive#ReadCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
