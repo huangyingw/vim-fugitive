@@ -219,7 +219,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
       let head = substitute(head, '<[^<>]*>$\|.$', '', '')
     endwhile
     if !skip && (flags !~# '<unique>' || empty(mapcheck(head.tail, mode)))
-      call add(maps, mode.'map <buffer>' . s:nowait . flags . ' ' . head.tail . ' ' . a:rhs)
+      call add(maps, mode.'map <buffer>' . s:nowait . substitute(flags, '<unique>', '', '') . ' ' . head.tail . ' ' . a:rhs)
       if a:0 > 1
         let b:undo_ftplugin = get(b:, 'undo_ftplugin', 'exe') .
               \ '|sil! exe "' . mode . 'unmap <buffer> ' . head.tail . '"'
@@ -3145,8 +3145,18 @@ function! s:RunEdit(state, tmp, job) abort
   let file = FugitiveVimPath(readfile(sentinel, '', 1)[0])
   exe substitute(a:state.mods, '\<tab\>', '-tab', 'g') 'keepalt split' s:fnameescape(file)
   set bufhidden=wipe
-  let s:edit_jobs[bufnr('')] = [a:state, a:tmp, a:job, sentinel]
+  let bufnr = bufnr('')
+  let s:edit_jobs[bufnr] = [a:state, a:tmp, a:job, sentinel]
   call fugitive#DidChange(a:state.git_dir)
+  if bufnr == bufnr('') && !exists('g:fugitive_event')
+    try
+      let g:fugitive_event = a:state.git_dir
+      let g:fugitive_result = a:state
+      exe s:DoAutocmd('User FugitiveEditor')
+    finally
+      unlet! g:fugitive_event g:fugitive_result
+    endtry
+  endif
   return 1
 endfunction
 
