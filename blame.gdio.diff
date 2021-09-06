@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index d4fd752..689f788 100644
+index 9508228..d15544a 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -196,7 +196,7 @@ function! s:DoAutocmd(...) abort
@@ -20,7 +20,7 @@ index d4fd752..689f788 100644
      call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
-@@ -6204,6 +6204,10 @@ function! s:IsConflicted() abort
+@@ -6214,6 +6214,10 @@ function! s:IsConflicted() abort
  endfunction
  
  function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
@@ -31,7 +31,7 @@ index d4fd752..689f788 100644
    exe s:VersionCheck()
    let args = s:ArgSplit(a:arg)
    let post = ''
-@@ -6609,7 +6613,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6619,7 +6623,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
      endif
      call extend(cmd, ranges)
@@ -40,7 +40,7 @@ index d4fd752..689f788 100644
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if len(commits)
        let cmd += commits
-@@ -6683,7 +6687,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6693,7 +6697,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
            let reload = '|call fugitive#DidChange(fugitive#Result(' . string(temp_state.file) . '))'
            let mods = s:Mods(a:mods)
            if a:count != 0
@@ -49,7 +49,7 @@ index d4fd752..689f788 100644
            elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
              exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
            else
-@@ -6733,7 +6737,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6743,7 +6747,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
          endif
          let top = line('w0') + &scrolloff
          let current = line('.')
@@ -60,7 +60,7 @@ index d4fd752..689f788 100644
          let w:fugitive_leave = join(restore, '|')
          execute top
          normal! zt
-@@ -7340,7 +7346,7 @@ function! fugitive#MapJumps(...) abort
+@@ -7350,7 +7356,7 @@ function! fugitive#MapJumps(...) abort
        endif
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
