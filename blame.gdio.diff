@@ -70,7 +70,7 @@ index 61b2093..a2378a1 100644
        call s:Map('n', 'ds', ":<C-U>call fugitive#DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
        call s:Map('n', 'dv', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
 diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index e67e930..f103c93 100644
+index e67e930..a1aa7b2 100644
 --- ./plugin/fugitive.vim
 +++ ./plugin/fugitive.vim
 @@ -489,9 +489,7 @@ let s:addr_other = has('patch-8.1.560') || has('nvim-0.5.0') ? '-addr=other' : '
@@ -84,7 +84,7 @@ index e67e930..f103c93 100644
  command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)
  
  if exists(':Gstatus') != 2 && get(g:, 'fugitive_legacy_commands', 0)
-@@ -541,7 +539,6 @@ if exists(':Gr') != 2
+@@ -544,7 +542,6 @@ if exists(':Gr') != 2
  endif
  exe 'command! -bar -bang -nargs=* -range=-1                -complete=customlist,fugitive#ReadComplete   Gread    exe fugitive#ReadCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>, [<f-args>])'
  
