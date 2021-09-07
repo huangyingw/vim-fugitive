@@ -23,7 +23,7 @@ index 61b2093..a2378a1 100644
 @@ -6214,6 +6214,10 @@ function! s:IsConflicted() abort
  endfunction
  
- function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, args) abort
+ function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, ...) abort
 +    only
 +    set winwidth=1
 +    windo set wrap
