@@ -1336,15 +1336,19 @@ function! s:QuickfixCreate(nr, opts) abort
   endif
 endfunction
 
+function! s:QuickfixOpen(nr, mods) abort
+  let mods = substitute(s:Mods(a:mods), '\<tab\>', '', '')
+  return mods . (a:nr < 0 ? 'c' : 'l').'open' . (mods =~# '\<vertical\>' ? ' 20' : '')
+endfunction
+
 function! s:QuickfixStream(nr, event, title, cmd, first, mods, callback, ...) abort
   call s:BlurStatus()
-  let mods = s:Mods(a:mods)
   let opts = {'title': a:title, 'context': {'items': []}}
   call s:QuickfixCreate(a:nr, opts)
   let event = (a:nr < 0 ? 'c' : 'l') . 'fugitive-' . a:event
   silent exe s:DoAutocmd('QuickFixCmdPre ' . event)
   let winnr = winnr()
-  exe a:nr < 0 ? 'copen' : 'lopen'
+  exe s:QuickfixOpen(a:nr, a:mods)
   if winnr != winnr()
     wincmd p
   endif
@@ -1359,7 +1363,7 @@ function! s:QuickfixStream(nr, event, title, cmd, first, mods, callback, ...) ab
       call extend(opts.context.items, contexts)
       unlet contexts
       call s:QuickfixSet(a:nr, remove(buffer, 0, -1), 'a')
-      if mods !~# '\<silent\>'
+      if a:mods !~# '\<silent\>'
         redraw
       endif
     endif
@@ -1371,7 +1375,7 @@ function! s:QuickfixStream(nr, event, title, cmd, first, mods, callback, ...) ab
 
   silent exe s:DoAutocmd('QuickFixCmdPost ' . event)
   if a:first && len(s:QuickfixGet(a:nr))
-    return mods . (a:nr < 0 ? 'cfirst' : 'lfirst')
+    return (a:nr < 0 ? 'cfirst' : 'lfirst')
   else
     return 'exe'
   endif
@@ -3210,11 +3214,7 @@ function! s:RunReceive(state, tmp, type, job, data, ...) abort
       call setbufline(a:state.capture_bufnr, line_count + 1, lines)
     endif
     call setbufvar(a:state.capture_bufnr, '&modifiable', 0)
-    if !getwinvar(bufwinid(a:state.capture_bufnr), '&previewwindow')
-      " no-op
-    elseif exists('*win_execute')
-      call win_execute(bufwinid(a:state.capture_bufnr), '$')
-    else
+    if getwinvar(bufwinid(a:state.capture_bufnr), '&previewwindow')
       let winnr = bufwinnr(a:state.capture_bufnr)
       if winnr > 0
         let old_winnr = winnr()
@@ -3811,8 +3811,12 @@ function! fugitive#Complete(lead, ...) abort
   let dir = a:0 == 1 ? a:1 : a:0 >= 3 ? s:Dir(a:3) : s:Dir()
   let root = a:0 >= 4 ? a:4 : s:Tree(s:Dir())
   let pre = a:0 > 1 ? strpart(a:1, 0, a:2) : ''
-  let subcmd = matchstr(pre, '\u\w*[! ] *\zs[[:alnum:]-]\+\ze ')
-  if empty(subcmd)
+  let subcmd = matchstr(pre, '\u\w*[! ] *\%(\%(++\S\+\|--\S\+-pathspecs\|-c\s\+\S\+\)\s\+\)*\zs[[:alnum:]][[:alnum:]-]*\ze ')
+  if empty(subcmd) && a:lead =~# '^+'
+    let results = ['++curwin']
+  elseif empty(subcmd) && a:lead =~# '^-'
+    let results = ['--literal-pathspecs', '--no-literal-pathspecs', '--glob-pathspecs', '--noglob-pathspecs', '--icase-pathspecs', '--no-optional-locks']
+  elseif empty(subcmd)
     let results = s:CompletableSubcommands(dir)
   elseif a:0 ==# 2 && subcmd =~# '^\%(commit\|revert\|push\|fetch\|pull\|merge\|rebase\)$'
     let cmdline = substitute(a:1, '\u\w*\([! ] *\)' . subcmd, 'G' . subcmd, '')
@@ -5092,7 +5096,7 @@ function! s:MergeSubcommand(line1, line2, range, bang, mods, options) abort
         \ filereadable(fugitive#Find('.git/MERGE_MSG', a:options)) ||
         \ isdirectory(fugitive#Find('.git/rebase-apply', a:options)) ||
         \  !empty(s:TreeChomp([a:options.git_dir, 'diff-files', '--diff-filter=U'])))
-    return 'echoerr ":Git merge for loading conflicts hase been removed in favor of :Git mergetool"'
+    return 'echoerr ":Git merge for loading conflicts has been removed in favor of :Git mergetool"'
   endif
   return {}
 endfunction
@@ -5541,7 +5545,7 @@ function! s:GrepSubcommand(line1, line2, range, bang, mods, options) abort
   silent exe s:DoAutocmd('QuickFixCmdPost ' . event)
   if quiet
     let bufnr = bufnr('')
-    silent exe substitute(s:Mods(a:mods), '\<tab\>', '', '') (listnr < 0 ? 'c' : 'l').'open'
+    exe s:QuickfixOpen(listnr, a:mods)
     if bufnr != bufnr('') && !a:bang
       wincmd p
     endif
