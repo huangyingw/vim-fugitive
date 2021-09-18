@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 61b2093..a2378a1 100644
+index 61b2093..a2baa6d 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -196,7 +196,7 @@ function! s:DoAutocmd(...) abort
@@ -36,7 +36,7 @@ index 61b2093..a2378a1 100644
      endif
      call extend(cmd, ranges)
 -    let tempname = tempname()
-+        let tempname = GetWorktree() . '/'
++    let tempname = GetWorktree() . '/'
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if len(commits)
        let cmd += commits
