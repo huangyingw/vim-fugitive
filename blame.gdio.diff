@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index c3a3dc8..d98ad26 100644
+index 5366c48..da284c6 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -204,7 +204,7 @@ function! s:DoAutocmd(...) abort
