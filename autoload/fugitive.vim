@@ -7674,7 +7674,7 @@ endfunction
 function! s:StatusCfile(...) abort
   let tree = s:Tree()
   if empty(tree)
-    return ''
+    return []
   endif
   let lead = s:cpath(tree, getcwd()) ? './' : tree . '/'
   if getline('.') =~# '^.\=\trenamed:.* -> '
