@@ -2328,12 +2328,14 @@ call s:add_methods('buffer', ['repo', 'type'])
 
 function! s:FilterEscape(items, ...) abort
   let items = copy(a:items)
-  call map(items, 's:fnameescape(v:val)')
-  if a:0 && type(a:1) == type('')
-    let cmp = s:FileIgnoreCase(1) ? '==?' : '==#'
-    call filter(items, 'strpart(v:val, 0, strlen(a:1)) ' . cmp . ' a:1')
+  call map(items, 'fnameescape(v:val)')
+  if !a:0 || type(a:1) != type('')
+    let match = ''
+  else
+    let match = substitute(a:1, '^[+>]\|\\\@<![' . substitute(s:fnameescape, '\\', '', '') . ']', '\\&', 'g')
   endif
-  return items
+  let cmp = s:FileIgnoreCase(1) ? '==?' : '==#'
+  return filter(items, 'strpart(v:val, 0, strlen(match)) ' . cmp . ' match')
 endfunction
 
 function! s:GlobComplete(lead, pattern, ...) abort
@@ -2814,7 +2816,7 @@ function! fugitive#BufReadStatus(...) abort
       call s:AddHeader('Push', push)
     endif
     if empty(s:Tree())
-      if get(fugitive#ConfigGetAll('core.bare', config), 0, 'true') !~# '^\%(false\|no|off\|0\|\)$'
+      if get(fugitive#ConfigGetAll('core.bare', config), 0, '') !~# '^\%(false\|no|off\|0\|\)$'
         call s:AddHeader('Bare', 'yes')
       else
         call s:AddHeader('Error', s:worktree_error)
@@ -3551,7 +3553,7 @@ function! s:RunBufDelete(bufnr) abort
   if has_key(s:edit_jobs, a:bufnr) |
     call add(s:resume_queue, remove(s:edit_jobs, a:bufnr))
     call feedkeys("\<C-\>\<C-N>:redraw!|call delete(" . string(s:resume_queue[-1][0].file . '.edit') .
-          \ ")|call fugitive#Resume()|silent checktime\r", 'n')
+          \ ")|call fugitive#Resume()|checktime\r", 'n')
   endif
 endfunction
 
@@ -3826,7 +3828,7 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
       return (after_edit . after)[1:-1]
     endif
     call add(s:resume_queue, [state, tmp, job])
-    return 'call fugitive#Resume()|silent checktime' . after
+    return 'call fugitive#Resume()|checktime' . after
   elseif pager
     let pre = s:BuildEnvPrefix(env)
     try
@@ -3875,7 +3877,7 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg) abort
           endif
         endtry
       endif
-      return 'silent checktime' . after
+      return 'checktime' . after
     else
       return 'exe ' . string('noautocmd !' . escape(cmd, '!#%')) . after
     endif
@@ -6224,7 +6226,7 @@ function! fugitive#WriteCommand(line1, line2, range, bang, mods, arg, ...) abort
     endfor
   endfor
   call fugitive#DidChange()
-  return 'silent checktime' . after
+  return 'checktime' . after
 endfunction
 
 function! fugitive#WqCommand(...) abort
@@ -6254,6 +6256,9 @@ function! s:CompletePush(A, L, P, ...) abort
     call map(matches, 'lead . s:sub(v:val, "^.*\t", "")')
   else
     let matches = s:CompleteHeads(dir)
+    if a:A =~# '^[\''"]\=+'
+      call map(matches, '"+" . v:val')
+    endif
   endif
   return s:FilterEscape(matches, a:A)
 endfunction
