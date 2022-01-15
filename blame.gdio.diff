@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 3971b8c1..ac0cfdf0 100644
+index d27278d6..7076ee29 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -204,7 +204,7 @@ function! s:DoAutocmd(...) abort
@@ -11,7 +11,7 @@ index 3971b8c1..ac0cfdf0 100644
  
  function! s:Map(mode, lhs, rhs, ...) abort
    let maps = []
-@@ -2877,7 +2877,7 @@ function! fugitive#BufReadStatus(...) abort
+@@ -2859,7 +2859,7 @@ function! fugitive#BufReadStatus(...) abort
      call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
@@ -20,7 +20,7 @@ index 3971b8c1..ac0cfdf0 100644
      call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
      call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
-@@ -6374,6 +6374,10 @@ function! s:IsConflicted() abort
+@@ -6359,6 +6359,10 @@ function! s:IsConflicted() abort
  endfunction
  
  function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, ...) abort
@@ -31,7 +31,7 @@ index 3971b8c1..ac0cfdf0 100644
    exe s:VersionCheck()
    let args = s:ArgSplit(a:arg)
    let post = ''
-@@ -6779,7 +6783,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6764,7 +6768,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
        let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
      endif
      call extend(cmd, ranges)
@@ -40,7 +40,7 @@ index 3971b8c1..ac0cfdf0 100644
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if len(commits)
        let cmd += commits
-@@ -6857,7 +6861,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6842,7 +6846,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
            let reload = '|call fugitive#DidChange(fugitive#Result(' . string(temp_state.file) . '))'
            let mods = s:Mods(a:mods)
            if a:count != 0
@@ -49,7 +49,7 @@ index 3971b8c1..ac0cfdf0 100644
            elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
              exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
            else
-@@ -6907,7 +6911,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -6892,7 +6896,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
          endif
          let top = line('w0') + &scrolloff
          let current = line('.')
@@ -60,7 +60,7 @@ index 3971b8c1..ac0cfdf0 100644
          let w:fugitive_leave = join(restore, '|')
          execute top
          normal! zt
-@@ -7508,7 +7514,7 @@ function! fugitive#MapJumps(...) abort
+@@ -7493,7 +7499,7 @@ function! fugitive#MapJumps(...) abort
        endif
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
@@ -70,10 +70,10 @@ index 3971b8c1..ac0cfdf0 100644
        call s:Map('n', 'ds', ":<C-U>call fugitive#DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
        call s:Map('n', 'dv', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
 diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index 151ddf9a..044b56b3 100644
+index 91e93f28..f13585ba 100644
 --- ./plugin/fugitive.vim
 +++ ./plugin/fugitive.vim
-@@ -502,9 +502,7 @@ let s:addr_other = has('patch-8.1.560') || has('nvim-0.5.0') ? '-addr=other' : '
+@@ -535,9 +535,7 @@ let s:addr_other = has('patch-8.1.560') || has('nvim-0.5.0') ? '-addr=other' : '
  let s:addr_tabs  = has('patch-7.4.542') ? '-addr=tabs' : ''
  let s:addr_wins  = has('patch-7.4.542') ? '-addr=windows' : ''
  
@@ -84,7 +84,7 @@ index 151ddf9a..044b56b3 100644
  command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#Complete Git exe fugitive#Command(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)
  
  if exists(':Gstatus') != 2 && get(g:, 'fugitive_legacy_commands', 0)
-@@ -557,7 +555,6 @@ if exists(':Gr') != 2
+@@ -590,7 +588,6 @@ if exists(':Gr') != 2
  endif
  exe 'command! -bar -bang -nargs=* -range=-1                -complete=customlist,fugitive#ReadComplete   Gread    exe fugitive#ReadCommand(<line1>, <count>, +"<range>", <bang>0, "<mods>", <q-args>)'
  
