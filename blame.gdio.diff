@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index d27278d..7076ee2 100644
+index d27278d6..7076ee29 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -204,7 +204,7 @@ function! s:DoAutocmd(...) abort
@@ -70,7 +70,7 @@ index d27278d..7076ee2 100644
        call s:Map('n', 'ds', ":<C-U>call fugitive#DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
        call s:Map('n', 'dv', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
 diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index 91e93f2..f13585b 100644
+index 91e93f28..f13585ba 100644
 --- ./plugin/fugitive.vim
 +++ ./plugin/fugitive.vim
 @@ -535,9 +535,7 @@ let s:addr_other = has('patch-8.1.560') || has('nvim-0.5.0') ? '-addr=other' : '
