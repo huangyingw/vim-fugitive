@@ -6826,7 +6826,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
       let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
     endif
     call extend(cmd, ranges)
-    let tempname = GetWorktree() . '/'
+    let tempname = expand('%:p')
     let temp = tempname . (raw ? '' : '.fugitiveblame')
     if len(commits)
       let cmd += commits
