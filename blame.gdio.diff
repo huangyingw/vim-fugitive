@@ -49,8 +49,8 @@ index fe792b37..043af086 100644
            elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
              exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
            else
-@@ -6926,7 +6930,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
-         endif
+@@ -6942,7 +6946,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+         setlocal scrollbind nowrap nofoldenable
          let top = line('w0') + &scrolloff
          let current = line('.')
 -        exe 'silent keepalt' (a:bang ? s:Mods(mods) . 'split' : s:Mods(mods, 'leftabove') . 'vsplit') s:fnameescape(temp)
