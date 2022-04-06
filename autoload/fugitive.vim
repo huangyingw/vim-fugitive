@@ -148,6 +148,22 @@ else
   endfunction
 endif
 
+function! s:AbsoluteVimPath(...) abort
+  if a:0 && type(a:1) == type('')
+    let path = a:1
+  else
+    let path = bufname(a:0 && a:1 > 0 ? a:1 : '')
+    if getbufvar(a:0 && a:1 > 0 ? a:1 : '', '&buftype') !~# '^\%(nowrite\|acwrite\)\=$'
+      return path
+    endif
+  endif
+  if s:Slash(path) =~# '^/\|^\a\+:'
+    return path
+  else
+    return getcwd() . matchstr(getcwd(), '[\\/]') . path
+  endif
+endfunction
+
 function! s:Resolve(path) abort
   let path = resolve(a:path)
   if has('win32')
@@ -1230,6 +1246,7 @@ function! fugitive#RemoteHttpHeaders(remote) abort
   if type(remote) !=# type('') || remote !~# '^https\=://.' || !s:executable('curl')
     return {}
   endif
+  let remote = substitute(remote, '#.*', '', '')
   if !has_key(s:remote_headers, remote)
     let url = remote . '/info/refs?service=git-upload-pack'
     let exec = s:JobExecute(
@@ -1258,6 +1275,11 @@ function! s:UrlParse(url) abort
       let url.path = empty(match[3]) ? '/' : match[3]
     endif
   endif
+  return url
+endfunction
+
+function! s:UrlPopulate(string, into) abort
+  let url = a:into
   let url.protocol = substitute(url.scheme, '.\zs$', ':', '')
   let url.user = matchstr(url.authority, '.\{-\}\ze@', '', '')
   let url.host = substitute(url.authority, '.\{-\}@', '', '')
@@ -1276,16 +1298,15 @@ function! s:UrlParse(url) abort
   elseif url.scheme ==# 'ssh' && url.authority !~# ':'
     let url.href = url.authority . ':' . url.path . url.hash
   else
-    let url.href = a:url
+    let url.href = a:string
   endif
   let url.url = matchstr(url.href, '^[^#]*')
-  return url
 endfunction
 
 function! s:RemoteResolve(url, flags) abort
   let remote = s:UrlParse(a:url)
   if remote.scheme =~# '^https\=$' && index(a:flags, ':nohttp') < 0
-    let headers = fugitive#RemoteHttpHeaders(remote.url)
+    let headers = fugitive#RemoteHttpHeaders(a:url)
     let loc = matchstr(get(headers, 'location', ''), '^https\=://.\{-\}\ze/info/refs?')
     if len(loc)
       let remote = s:UrlParse(loc)
@@ -1331,6 +1352,7 @@ function! s:RemoteCallback(config, into, flags, cb) abort
   else
     call extend(a:into, s:UrlParse(url))
   endif
+  call s:UrlPopulate(url, a:into)
   if len(a:cb)
     call call(a:cb[0], [a:into] + a:cb[1:-1])
   endif
@@ -1883,7 +1905,7 @@ function! s:BufName(var) abort
   if a:var ==# '%'
     return bufname(get(s:TempState(), 'origin_bufnr', ''))
   elseif a:var =~# '^#\d*$'
-    let nr = get(s:TempState(bufname(+a:var[1:-1])), 'origin_bufnr', '')
+    let nr = get(s:TempState(+a:var[1:-1]), 'origin_bufnr', '')
     return bufname(nr ? nr : +a:var[1:-1])
   else
     return expand(a:var)
@@ -2500,7 +2522,7 @@ function! s:ReplaceCmd(cmd) abort
     silent keepjumps $delete _
   endif
   call delete(temp)
-  if s:cpath(fnamemodify(bufname('$'), ':p'), temp)
+  if s:cpath(s:AbsoluteVimPath(bufnr('$')), temp)
     silent! noautocmd execute bufnr('$') . 'bwipeout'
   endif
 endfunction
@@ -2823,17 +2845,17 @@ function! fugitive#BufReadStatus(...) abort
     call s:AddSection('Staged', staged)
     let staged_end = len(staged) ? line('$') : 0
 
-    if len(pull) && get(props, 'branch.ab') !~# ' -0$'
-      call s:AddLogSection('Unpulled from ' . pull, head, pull)
-    endif
-    if len(push) && push !=# pull
-      call s:AddLogSection('Unpulled from ' . push, head, push)
+    if len(push) && !(push ==# pull && get(props, 'branch.ab') =~# '^+0 ')
+      call s:AddLogSection('Unpushed to ' . push, push, head)
     endif
     if len(pull) && push !=# pull
       call s:AddLogSection('Unpushed to ' . pull, pull, head)
     endif
-    if len(push) && !(push ==# pull && get(props, 'branch.ab') =~# '^+0 ')
-      call s:AddLogSection('Unpushed to ' . push, push, head)
+    if len(push) && push !=# pull
+      call s:AddLogSection('Unpulled from ' . push, head, push)
+    endif
+    if len(pull) && get(props, 'branch.ab') !~# ' -0$'
+      call s:AddLogSection('Unpulled from ' . pull, head, pull)
     endif
 
     setlocal nomodified readonly noswapfile
@@ -3123,7 +3145,7 @@ if !exists('s:temp_files')
 endif
 
 function! s:TempState(...) abort
-  return get(s:temp_files, s:cpath(fnamemodify(a:0 ? a:1 : @%, ':p')), {})
+  return get(s:temp_files, s:cpath(s:AbsoluteVimPath(a:0 ? a:1 : -1)), {})
 endfunction
 
 function! fugitive#Result(...) abort
@@ -3132,7 +3154,7 @@ function! fugitive#Result(...) abort
   elseif !a:0 || type(a:1) == type('') && a:1 =~# '^-\=$'
     return get(g:, '_fugitive_last_job', {})
   elseif type(a:1) == type(0)
-    return s:TempState(bufname(a:1))
+    return s:TempState(a:1)
   elseif type(a:1) == type('')
     return s:TempState(a:1)
   elseif type(a:1) == type({}) && has_key(a:1, 'file')
@@ -3163,8 +3185,9 @@ function! s:TempDotMap() abort
 endfunction
 
 function! s:TempReadPre(file) abort
-  if has_key(s:temp_files, s:cpath(a:file))
-    let dict = s:temp_files[s:cpath(a:file)]
+  let key = s:cpath(s:AbsoluteVimPath(a:file))
+  if has_key(s:temp_files, key)
+    let dict = s:temp_files[key]
     setlocal nomodeline
     if empty(&bufhidden)
       setlocal bufhidden=delete
@@ -3180,8 +3203,9 @@ function! s:TempReadPre(file) abort
 endfunction
 
 function! s:TempReadPost(file) abort
-  if has_key(s:temp_files, s:cpath(a:file))
-    let dict = s:temp_files[s:cpath(a:file)]
+  let key = s:cpath(s:AbsoluteVimPath(a:file))
+  if has_key(s:temp_files, key)
+    let dict = s:temp_files[key]
     if !has_key(dict, 'job')
       setlocal nobuflisted
     endif
@@ -3208,7 +3232,7 @@ function! s:TempReadPost(file) abort
 endfunction
 
 function! s:TempDelete(file) abort
-  let key = s:cpath(a:file)
+  let key = s:cpath(s:AbsoluteVimPath(a:file))
   if has_key(s:temp_files, key) && !has_key(s:temp_files[key], 'job') && key !=# s:cpath(get(get(g:, '_fugitive_last_job', {}), 'file', ''))
     call delete(a:file)
     call remove(s:temp_files, key)
@@ -3218,9 +3242,9 @@ endfunction
 
 augroup fugitive_temp
   autocmd!
-  autocmd BufReadPre  * exe s:TempReadPre( expand('<amatch>:p'))
-  autocmd BufReadPost * exe s:TempReadPost(expand('<amatch>:p'))
-  autocmd BufWipeout  * exe s:TempDelete(  expand('<amatch>:p'))
+  autocmd BufReadPre  * exe s:TempReadPre( +expand('<abuf>'))
+  autocmd BufReadPost * exe s:TempReadPost(+expand('<abuf>'))
+  autocmd BufWipeout  * exe s:TempDelete(  +expand('<abuf>'))
 augroup END
 
 " Section: :Git
@@ -3529,7 +3553,7 @@ function! fugitive#Resume() abort
 endfunction
 
 function! s:RunBufDelete(bufnr) abort
-  let state = s:TempState(bufname(+a:bufnr))
+  let state = s:TempState(+a:bufnr)
   if has_key(state, 'job')
     try
       if type(state.job) == type(0)
@@ -6667,7 +6691,7 @@ function! s:linechars(pattern) abort
 endfunction
 
 function! s:BlameBufnr(...) abort
-  let state = s:TempState(bufname(a:0 ? a:1 : ''))
+  let state = s:TempState(a:0 ? a:1 : bufnr(''))
   if get(state, 'filetype', '') ==# 'fugitiveblame'
     return get(state, 'origin_bufnr', -1)
   else
@@ -6904,19 +6928,14 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
               call add(restore, 'call setwinvar(bufwinnr('.winbufnr(winnr).'),"&foldenable",1)')
             endif
           endif
-          if exists('+cursorbind') && !&l:cursorbind && getwinvar(winnr, '&cursorbind')
-            call setwinvar(winnr, '&cursorbind', 0)
-          endif
-          if s:BlameBufnr(winbufnr(winnr)) > 0
+          let win_blame_bufnr = s:BlameBufnr(winbufnr(winnr))
+          if getwinvar(winnr, '&scrollbind') ? win_blame_bufnr == bufnr : win_blame_bufnr > 0
             execute winbufnr(winnr).'bdelete'
           endif
         endfor
         let restore_winnr = 'bufwinnr(' . bufnr . ')'
         if !&l:scrollbind
           call add(restore, 'call setwinvar(' . restore_winnr . ',"&scrollbind",0)')
-        endif
-        if exists('+cursorbind') && !&l:cursorbind
-          call add(restore, 'call setwinvar(' . restore_winnr . ',"&cursorbind",0)')
         endif
         if &l:wrap
           call add(restore, 'call setwinvar(' . restore_winnr . ',"&wrap",1)')
@@ -6925,9 +6944,6 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
           call add(restore, 'call setwinvar(' . restore_winnr . ',"&foldenable",1)')
         endif
         setlocal scrollbind nowrap nofoldenable
-        if exists('+cursorbind')
-          setlocal cursorbind
-        endif
         let top = line('w0') + &scrolloff
         let current = line('.')
         let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
@@ -6937,9 +6953,6 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
         execute top
         normal! zt
         execute current
-        if exists('+cursorbind')
-          setlocal cursorbind
-        endif
         setlocal nonumber scrollbind nowrap foldcolumn=0 nofoldenable winfixwidth
         if exists('+relativenumber')
           setlocal norelativenumber
@@ -7180,10 +7193,27 @@ function! fugitive#BlameFileType() abort
   call s:BlameMaps(1)
 endfunction
 
+function! s:BlameCursorSync(bufnr, line) abort
+  if a:line == line('.')
+    return
+  endif
+  if get(s:TempState(), 'origin_bufnr') == a:bufnr || get(s:TempState(a:bufnr), 'origin_bufnr') == bufnr('')
+    if &startofline
+      execute a:line
+    else
+      let pos = getpos('.')
+      let pos[1] = a:line
+      call setpos('.', pos)
+    endif
+  endif
+endfunction
+
 augroup fugitive_blame
   autocmd!
   autocmd ColorScheme,GUIEnter * call s:BlameRehighlight()
   autocmd BufWinLeave * execute getwinvar(+bufwinnr(+expand('<abuf>')), 'fugitive_leave')
+  autocmd WinLeave * let s:cursor_for_blame = [bufnr(''), line('.')]
+  autocmd WinEnter * if exists('s:cursor_for_blame') | call call('s:BlameCursorSync', s:cursor_for_blame) | endif
 augroup END
 
 " Section: :GBrowse
@@ -7249,7 +7279,7 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, ...) abor
       return s:BrowserOpen(s:Slash(expanded), a:mods, a:bang)
     endif
     if !exists('l:result')
-      let result = s:TempState(empty(expanded) ? @% : expanded)
+      let result = s:TempState(empty(expanded) ? bufnr('') : expanded)
     endif
     if !empty(result) && filereadable(get(result, 'file', ''))
       for line in readfile(result.file, '', 4096)
