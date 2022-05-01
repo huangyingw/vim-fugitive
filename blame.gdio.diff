@@ -36,7 +36,7 @@ index 3ea0480..577f49d 100644
      endif
      call extend(cmd, ranges)
 -    let tempname = tempname()
-+    let tempname = GetWorktree() . '/'
++    let tempname = expand('%:p')
      let temp = tempname . (raw ? '' : '.fugitiveblame')
      if len(commits)
        let cmd += commits
