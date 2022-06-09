@@ -2,16 +2,7 @@ diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
 index d087ee25..9100848d 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
-@@ -220,7 +220,7 @@ function! s:DoAutocmd(...) abort
-   endif
- endfunction
- 
--let s:nowait = v:version >= 704 ? '<nowait>' : ''
-+let s:nowait = ''
- 
- function! s:Map(mode, lhs, rhs, ...) abort
-   let maps = []
-@@ -2899,7 +2899,7 @@ function! fugitive#BufReadStatus(...) abort
+@@ -2926,7 +2926,7 @@ function! fugitive#BufReadStatus(...) abort
      call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
