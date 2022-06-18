@@ -7256,7 +7256,7 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, ...) abor
     if !exists('l:result')
       let result = s:TempState(empty(expanded) ? bufnr('') : expanded)
     endif
-    if !empty(result) && filereadable(get(result, 'file', ''))
+    if !get(result, 'origin_bufnr', 1) && filereadable(get(result, 'file', ''))
       for line in readfile(result.file, '', 4096)
         let rev = s:fnameescape(matchstr(line, '\<https\=://[^[:space:]<>]*[^[:space:]<>.,;:"''!?]'))
         if len(rev)
@@ -7272,7 +7272,7 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, ...) abor
       if empty(expanded)
         let expanded = fugitive#Path(bufname, ':(top)', dir)
       endif
-      if a:count > 0 && bufname !=# bufname('')
+      if a:count > 0 && has_key(result, 'origin_bufnr') && a:range != 2
         let blame = s:BlameCommitFileLnum(getline(a:count))
         if len(blame[0])
           let expanded = blame[0]
@@ -7375,27 +7375,31 @@ function! fugitive#BrowseCommand(line1, count, range, bang, mods, arg, ...) abor
     let line1 = a:count > 0 && type ==# 'blob' ? a:line1 : 0
     let line2 = a:count > 0 && type ==# 'blob' ? a:count : 0
     if empty(commit) && path !~# '^\.git/'
-      if a:count < 0 && !empty(merge)
+      if a:count < 0
         let commit = merge
-      else
-        let commit = ''
-        if len(merge)
-          let owner = s:Owner(@%, dir)
-          let commit = s:ChompDefault('', ['merge-base', 'refs/remotes/' . remote . '/' . merge, empty(owner) ? '@' : owner, '--'], dir)
-          if line2 > 0 && empty(arg) && commit =~# '^\x\{40,\}$'
-            let blame_list = tempname()
-            call writefile([commit, ''], blame_list, 'b')
+      elseif len(merge)
+        let owner = s:Owner(@%, dir)
+        let commit = s:ChompDefault('', ['merge-base', 'refs/remotes/' . remote . '/' . merge, empty(owner) ? '@' : owner, '--'], dir)
+        if line2 > 0 && empty(arg) && commit =~# '^\x\{40,\}$'
+          let blame_list = tempname()
+          call writefile([commit, ''], blame_list, 'b')
+          let blame_cmd = ['-c', 'blame.coloring=none', 'blame', '-L', line1.','.line2, '-S', blame_list, '-s', '--show-number']
+          if !&l:modified || has_key(result, 'origin_bufnr')
+            let [blame, exec_error] = s:LinesError(blame_cmd + ['./' . path], dir)
+          else
             let blame_in = tempname()
             silent exe 'noautocmd keepalt %write' blame_in
-            let [blame, exec_error] = s:LinesError(['-c', 'blame.coloring=none', 'blame', '--contents', blame_in, '-L', line1.','.line2, '-S', blame_list, '-s', '--show-number', './' . path], dir)
-            if !exec_error
-              let blame_regex = '^\^\x\+\s\+\zs\d\+\ze\s'
-              if get(blame, 0) =~# blame_regex && get(blame, -1) =~# blame_regex
-                let line1 = +matchstr(blame[0], blame_regex)
-                let line2 = +matchstr(blame[-1], blame_regex)
-              else
-                throw "fugitive: can't browse to uncommitted change"
-              endif
+            let [blame, exec_error] = s:LinesError(blame_cmd + ['--contents', blame_in, './' . path], dir)
+            call delete(blame_in)
+          endif
+          call delete(blame_list)
+          if !exec_error
+            let blame_regex = '^\^\x\+\s\+\zs\d\+\ze\s'
+            if get(blame, 0) =~# blame_regex && get(blame, -1) =~# blame_regex
+              let line1 = +matchstr(blame[0], blame_regex)
+              let line2 = +matchstr(blame[-1], blame_regex)
+            else
+              throw "fugitive: can't browse to unpushed change"
             endif
           endif
         endif
