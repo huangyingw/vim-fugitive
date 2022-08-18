@@ -92,3 +92,13 @@ index 45bfc6d..3965bfb 100644
  exe 'command! -bar -bang -nargs=* -complete=customlist,fugitive#EditComplete Ghdiffsplit exe fugitive#Diffsplit(0, <bang>0, "<mods>", <q-args>)'
  exe 'command! -bar -bang -nargs=* -complete=customlist,fugitive#EditComplete Gvdiffsplit exe fugitive#Diffsplit(0, <bang>0, "vertical <mods>", <q-args>)'
  
+@@ -689,9 +686,6 @@ augroup fugitive
+         \ if FugitiveIsGitDir(expand('<amatch>:p:h')) |
+         \   let b:git_dir = s:Slash(expand('<amatch>:p:h')) |
+         \   exe fugitive#BufReadStatus(v:cmdbang) |
+-        \   echohl WarningMSG |
+-        \   echo "fugitive: Direct editing of .git/" . expand('%:t') . " is deprecated" |
+-        \   echohl NONE |
+         \ elseif filereadable(expand('<amatch>')) |
+         \   silent doautocmd BufReadPre |
+         \   keepalt noautocmd read <amatch> |
