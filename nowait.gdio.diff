@@ -70,7 +70,7 @@ index 315db95..4d370af 100644
        call s:Map('n', 'ds', ":<C-U>call fugitive#DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
        call s:Map('n', 'dv', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
 diff --git a/plugin/fugitive.vim b/plugin/fugitive.vim
-index 45bfc6d..3965bfb 100644
+index a97a477..1b7347d 100644
 --- ./plugin/fugitive.vim
 +++ ./plugin/fugitive.vim
 @@ -541,9 +541,7 @@ let s:addr_other = has('patch-8.1.560') || has('nvim-0.5.0') ? '-addr=other' : '
