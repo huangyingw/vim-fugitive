@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 315db95..4d370af 100644
+index 272efcb..80c75e9 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -276,7 +276,7 @@ endfunction
