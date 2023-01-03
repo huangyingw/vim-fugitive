@@ -1,5 +1,5 @@
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
-index 272efcb..80c75e9 100644
+index 105cfe5..1e87279 100644
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
 @@ -276,7 +276,7 @@ endfunction
@@ -60,7 +60,7 @@ index 272efcb..80c75e9 100644
          let w:fugitive_leave = join(restore, '|')
          execute top
          normal! zt
-@@ -7634,7 +7640,7 @@ function! fugitive#MapJumps(...) abort
+@@ -7637,7 +7643,7 @@ function! fugitive#MapJumps(...) abort
        endif
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
