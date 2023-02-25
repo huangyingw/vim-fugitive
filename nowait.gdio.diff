@@ -1,3 +1,30 @@
+diff --git a/.gitconfig b/.gitconfig
+new file mode 100644
+--- /dev/null
++++ ./.gitconfig
+@@ -0,0 +1,22 @@
++[remote "github"]
++    url = git@github.com:huangyingw/vim-fugitive.git
++    fetch = +refs/heads/*:refs/remotes/github/*
++[remote "tpope"]
++    url = git@github.com:tpope/vim-fugitive.git
++    fetch = +refs/heads/*:refs/remotes/tpope/*
++[push]
++    remote = origin
++    remote = github
++[gsync]
++    remote = tpope
++    target = tpope/master
++[commit]
++    message = n
++[branch "dev"]
++    remote = origin
++    merge = refs/heads/dev
++[branch "RunShell"]
++    remote = origin
++    merge = refs/heads/RunShell
++[gdif]
++    ignore = *.gdio.diff
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
