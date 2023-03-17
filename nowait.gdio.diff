@@ -23,7 +23,7 @@ new file mode 100644
 +[branch "RunShell"]
 +    remote = origin
 +    merge = refs/heads/RunShell
-+[gdif]
++[gdio]
 +    ignore = *.gdio.diff
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
 --- ./autoload/fugitive.vim
