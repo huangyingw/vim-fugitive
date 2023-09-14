@@ -37,7 +37,7 @@ diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
    for mode in split(a:mode, '\zs')
      if a:0 <= 1
        call add(maps, mode.'map <buffer>' . substitute(flags, '<unique>', '', '') . ' <Plug>fugitive:' . a:lhs . ' ' . a:rhs)
-@@ -2991,7 +2991,7 @@ function! fugitive#BufReadStatus(...) abort
+@@ -2995,7 +2995,7 @@ function! fugitive#BufReadStatus(cmdbang) abort
      call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
      call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
