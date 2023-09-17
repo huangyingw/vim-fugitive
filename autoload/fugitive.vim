@@ -122,10 +122,6 @@ endfunction
 
 let s:worktree_error = "core.worktree is required when using an external Git dir"
 function! s:DirCheck(...) abort
-  let vcheck = s:VersionCheck()
-  if !empty(vcheck)
-    return vcheck
-  endif
   let dir = call('FugitiveGitDir', a:000)
   if !empty(dir) && FugitiveWorkTree(dir, 1) is# 0
     return 'return ' . string('echoerr "fugitive: ' . s:worktree_error . '"')
@@ -349,7 +345,6 @@ function! fugitive#Wait(job_or_jobs, ...) abort
       sleep 1m
     endif
   else
-    let sleep = has('patch-8.2.2366') ? 'sleep! 1m' : 'sleep 1m'
     for job in jobs
       if ch_status(job) ==# 'open'
         call ch_close_in(job)
@@ -362,7 +357,7 @@ function! fugitive#Wait(job_or_jobs, ...) abort
           break
         endif
         let i += 1
-        exe sleep
+        sleep 1m
       endwhile
     endfor
   endif
@@ -400,8 +395,8 @@ function! s:JobExecute(argv, jopts, stdin, callback, ...) abort
       let dict.job = jobstart(a:argv, a:jopts)
       if !empty(a:stdin)
         call chansend(dict.job, a:stdin)
-        call chanclose(dict.job, 'stdin')
       endif
+      call chanclose(dict.job, 'stdin')
     catch /^Vim\%((\a\+)\)\=:E475:/
       let [dict.exit_status, dict.stdout, dict.stderr] = [122, [''], ['']]
     endtry
@@ -889,9 +884,8 @@ function! s:SystemList(cmd) abort
           \ 'exit_cb': { j, code -> add(exit, code) }}
     let job = job_start(a:cmd, jopts)
     call ch_close_in(job)
-    let sleep = has('patch-8.2.2366') ? 'sleep! 1m' : 'sleep 1m'
     while ch_status(job) !~# '^closed$\|^fail$' || job_status(job) ==# 'run'
-      exe sleep
+      sleep 1m
     endwhile
     return [lines, exit[0]]
   else
@@ -1006,7 +1000,7 @@ function! s:StdoutToFile(out, cmd, ...) abort
       endif
       call ch_close_in(job)
       while ch_status(job) !~# '^closed$\|^fail$' || job_status(job) ==# 'run'
-        exe has('patch-8.2.2366') ? 'sleep! 1m' : 'sleep 1m'
+        sleep 1m
       endwhile
       return [join(readfile(err, 'b'), "\n"), exit[0]]
     finally
@@ -4127,6 +4121,7 @@ function! fugitive#CdComplete(A, L, P) abort
 endfunction
 
 function! fugitive#Cd(path, ...) abort
+  exe s:VersionCheck()
   let path = substitute(a:path, '^:/:\=\|^:(\%(top\|top,literal\|literal,top\|literal\))', '', '')
   if path !~# '^/\|^\a\+:\|^\.\.\=\%(/\|$\)'
     let dir = s:Dir()
@@ -5964,6 +5959,7 @@ function! s:LogParse(state, dir, prefix, line) abort
 endfunction
 
 function! fugitive#LogCommand(line1, count, range, bang, mods, args, type) abort
+  exe s:VersionCheck()
   let dir = s:Dir()
   exe s:DirCheck(dir)
   let listnr = a:type =~# '^l' ? 0 : -1
@@ -6671,6 +6667,7 @@ endfunction
 " Section: :GMove, :GRemove
 
 function! s:Move(force, rename, destination) abort
+  exe s:VersionCheck()
   let dir = s:Dir()
   exe s:DirCheck(dir)
   if s:DirCommitFile(@%)[1] !~# '^0\=$' || empty(@%)
@@ -6744,6 +6741,7 @@ function! fugitive#RenameCommand(line1, line2, range, bang, mods, arg, ...) abor
 endfunction
 
 function! s:Remove(after, force) abort
+  exe s:VersionCheck()
   let dir = s:Dir()
   exe s:DirCheck(dir)
   if len(@%) && s:DirCommitFile(@%)[1] ==# ''
