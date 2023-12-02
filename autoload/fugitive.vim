@@ -6947,7 +6947,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
     echom 'ranges --> ' 
     echom ranges
     call extend(cmd, ranges)
-    let tempname = expand('%:p')
+    let tempname = tempname()
     echom 'tempname --> ' . tempname
     let temp = tempname . (raw ? '' : '.fugitiveblame')
     if len(commits)
