@@ -2989,7 +2989,7 @@ function! fugitive#BufReadStatus(cmdbang) abort
     call s:Map('x', "<", ":<C-U>execute <SID>StageInline('hide',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
     call s:Map('x', ">", ":<C-U>execute <SID>StageInline('show',  line(\"'<\"),line(\"'>\")-line(\"'<\")+1)<CR>", '<silent>')
     call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
-        call s:Map('n', 'dd', ":<C-U>execute <SID>StageDiff('Gvdiffsplit')<CR>", '<silent>')
+    call s:Map('n', 'dd', ":<C-U>execute <SID>StageDiff('Gvdiffsplit')<CR>", '<silent>')
     call s:Map('n', 'dh', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
     call s:Map('n', 'ds', ":<C-U>execute <SID>StageDiff('Ghdiffsplit')<CR>", '<silent>')
     call s:Map('n', 'dp', ":<C-U>execute <SID>StageDiffEdit()<CR>", '<silent>')
@@ -6523,10 +6523,10 @@ function! s:IsConflicted() abort
 endfunction
 
 function! fugitive#Diffsplit(autodir, keepfocus, mods, arg, ...) abort
-    only
-    set winwidth=1
-    windo set wrap
-    syntax off
+  only
+  set winwidth=1
+  windo set wrap
+  syntax off
   exe s:VersionCheck()
   let args = s:ArgSplit(a:arg)
   let post = ''
@@ -7912,7 +7912,7 @@ function! fugitive#MapJumps(...) abort
       endif
 
       call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
-            call s:Map('n', 'dd', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
+      call s:Map('n', 'dd', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
       call s:Map('n', 'dh', ":<C-U>call fugitive#DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
       call s:Map('n', 'ds', ":<C-U>call fugitive#DiffClose()<Bar>Ghdiffsplit!<CR>", '<silent>')
       call s:Map('n', 'dv', ":<C-U>call fugitive#DiffClose()<Bar>Gvdiffsplit!<CR>", '<silent>')
