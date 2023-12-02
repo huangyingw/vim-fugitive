@@ -979,6 +979,7 @@ function! s:StdoutToFile(out, cmd, ...) abort
     call chanclose(job, 'stdin')
     call jobwait([job])
     if len(a:out)
+        echom 'a:out --> ' . a:out
       call writefile(jopts.stdout, a:out, 'b')
     endif
     return [join(jopts.stderr, "\n"), exit[0]]
@@ -6930,6 +6931,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
     let i += 1
   endwhile
   let file = substitute(get(files, 0, get(s:TempState(), 'blame_file', s:Relative('./', dir))), '^\.\%(/\|$\)', '', '')
+    echom 'file --> ' . file
   if empty(commits) && len(files) > 1
     call add(commits, remove(files, 1))
   endif
@@ -6940,8 +6942,13 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
     if a:count > 0 && empty(ranges)
       let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
     endif
+    echom 'cmd --> ' 
+    echom cmd
+    echom 'ranges --> ' 
+    echom ranges
     call extend(cmd, ranges)
     let tempname = expand('%:p')
+    echom 'tempname --> ' . tempname
     let temp = tempname . (raw ? '' : '.fugitiveblame')
     if len(commits)
       let cmd += commits
@@ -6959,6 +6966,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
       call fugitive#Autowrite()
     endif
     let basecmd = [{'git': a:options.git}, dir, '--literal-pathspecs'] + cmd + ['--'] + (len(files) ? files : [file])
+    echom 'temp --> ' . temp
     let [err, exec_error] = s:StdoutToFile(temp, basecmd)
     if exists('delete_in')
       call delete(tempname . '.in')
@@ -7146,6 +7154,8 @@ endfunction
 function! s:BlameJump(suffix, ...) abort
   let suffix = a:suffix
   let [commit, path, lnum] = s:BlameCommitFileLnum()
+  echom 'path --> ' . path
+    echom 'current file --> 1 ' . expand('%:p')
   if empty(path)
     return 'echoerr ' . string('fugitive: could not determine filename for blame')
   endif
@@ -7164,7 +7174,9 @@ function! s:BlameJump(suffix, ...) abort
       exe winnr.'wincmd w'
       exe bufnr.'bdelete'
     endif
+    echom 'current file --> 2 ' . expand('%:p')
     execute 'Gedit' s:fnameescape(commit . suffix . ':' . path)
+    echom 'current file --> 3 ' . expand('%:p')
     execute lnum
   endif
   let my_bufnr = bufnr('')
@@ -7173,6 +7185,11 @@ function! s:BlameJump(suffix, ...) abort
     let result = s:BlameSubcommand(0, 0, 0, 0, '', extend({'subcommand_args': blame_args}, state.blame_options, 'keep'))
   else
     let blame_args = flags
+    echom 'blame_args --> ' 
+    echom blame_args
+    echom 'state.blame_options --> ' 
+    echom state.blame_options
+    echom 'current file --> 4 ' . expand('%:p')
     let result = s:BlameSubcommand(-1, -1, 0, 0, '', extend({'subcommand_args': blame_args}, state.blame_options, 'keep'))
   endif
   if bufnr('') == my_bufnr
