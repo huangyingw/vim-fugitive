@@ -6940,13 +6940,8 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
     if a:count > 0 && empty(ranges)
       let cmd += ['-L', (a:line1 ? a:line1 : line('.')) . ',' . (a:line1 ? a:line1 : line('.'))]
     endif
-    echom 'cmd --> ' 
-    echom cmd
-    echom 'ranges --> ' 
-    echom ranges
     call extend(cmd, ranges)
     let tempname = tempname()
-    echom 'tempname --> ' . tempname
     let temp = tempname . (raw ? '' : '.fugitiveblame')
     if len(commits)
       let cmd += commits
