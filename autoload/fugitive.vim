@@ -7062,23 +7062,8 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
         setlocal scrollbind nowrap nofoldenable
         let top = line('w0') + &scrolloff
         let current = line('.')
-        let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
-        exe 'silent keepalt' mods 'vsplit' s:fnameescape(temp)
-        return reload[1 : -1]
+        exe 'silent keepalt' s:Mods(mods, 'leftabove') . 'vsplit' s:fnameescape(temp)
         let w:fugitive_leave = join(restore, '|')
-        execute top
-        normal! zt
-        execute current
-        setlocal nonumber scrollbind nowrap foldcolumn=0 nofoldenable winfixwidth
-        if exists('+relativenumber')
-          setlocal norelativenumber
-        endif
-        if exists('+signcolumn')
-          setlocal signcolumn=no
-        endif
-        execute "vertical resize ".(s:linechars('.\{-\}\s\+\d\+\ze)')+1)
-        redraw
-        syncbind
         exe s:DoAutocmdChanged(temp_state)
       endif
     endtry
