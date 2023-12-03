@@ -66,18 +66,30 @@ diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
            elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
              exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
            else
-@@ -7058,7 +7062,9 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -7058,21 +7062,8 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
          setlocal scrollbind nowrap nofoldenable
          let top = line('w0') + &scrolloff
          let current = line('.')
 -        exe 'silent keepalt' (a:bang ? s:Mods(mods) . 'split' : s:Mods(mods, 'leftabove') . 'vsplit') s:fnameescape(temp)
-+        let reload = '|call fugitive#ReloadStatus(fugitive#Result(' . string(temp_state.file) . '), 1)'
-+        exe 'silent keepalt' mods 'vsplit' s:fnameescape(temp)
-+        return reload[1 : -1]
++        exe 'silent keepalt' s:Mods(mods, 'leftabove') . 'vsplit' s:fnameescape(temp)
          let w:fugitive_leave = join(restore, '|')
-         execute top
-         normal! zt
-@@ -7906,7 +7912,7 @@ function! fugitive#MapJumps(...) abort
+-        execute top
+-        normal! zt
+-        execute current
+-        setlocal nonumber scrollbind nowrap foldcolumn=0 nofoldenable winfixwidth
+-        if exists('+relativenumber')
+-          setlocal norelativenumber
+-        endif
+-        if exists('+signcolumn')
+-          setlocal signcolumn=no
+-        endif
+-        execute "vertical resize ".(s:linechars('.\{-\}\s\+\d\+\ze)')+1)
+-        redraw
+-        syncbind
+         exe s:DoAutocmdChanged(temp_state)
+       endif
+     endtry
+@@ -7906,7 +7897,7 @@ function! fugitive#MapJumps(...) abort
        endif
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
