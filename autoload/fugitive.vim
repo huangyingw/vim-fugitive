@@ -3044,7 +3044,6 @@ function! fugitive#BufReadStatus(cmdbang) abort
     if !exists('b:dispatch')
       let b:dispatch = ':Git fetch --all'
     endif
-    call s:Map('n', 'dd', ":<C-U>execute <SID>StageDiff('Gvdiffsplit')<CR>", '<silent>')
     setlocal filetype=fugitive
 
     return s:DoAutocmd('User FugitiveIndex')
