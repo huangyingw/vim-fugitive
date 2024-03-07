@@ -28,7 +28,7 @@ new file mode 100644
 diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
 --- ./autoload/fugitive.vim
 +++ ./autoload/fugitive.vim
-@@ -284,7 +284,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
+@@ -287,7 +287,7 @@ function! s:Map(mode, lhs, rhs, ...) abort
    let maps = []
    let flags = a:0 && type(a:1) == type('') ? a:1 : ''
    let defer = flags =~# '<unique>'
@@ -57,7 +57,7 @@ diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
    exe s:VersionCheck()
    let args = s:ArgSplit(a:arg)
    let post = ''
-@@ -7014,7 +7018,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -7039,7 +7044,7 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
            let reload = '|call fugitive#DidChange(fugitive#Result(' . string(temp_state.file) . '))'
            let mods = s:Mods(a:mods)
            if a:count != 0
@@ -66,7 +66,7 @@ diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
            elseif !&modified || a:bang || &bufhidden ==# 'hide' || (empty(&bufhidden) && &hidden)
              exe 'silent' mods 'edit' . (a:bang ? '! ' : ' ') . s:fnameescape(temp)
            else
-@@ -7058,21 +7062,8 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
+@@ -7084,21 +7089,8 @@ function! s:BlameSubcommand(line1, count, range, bang, mods, options) abort
          setlocal scrollbind nowrap nofoldenable
          let top = line('w0') + &scrolloff
          let current = line('.')
@@ -89,7 +89,7 @@ diff --git a/autoload/fugitive.vim b/autoload/fugitive.vim
          exe s:DoAutocmdChanged(temp_state)
        endif
      endtry
-@@ -7906,7 +7897,7 @@ function! fugitive#MapJumps(...) abort
+@@ -7932,7 +7924,7 @@ function! fugitive#MapJumps(...) abort
        endif
  
        call s:Map('n', 'D', ":echoerr 'fugitive: D has been removed in favor of dd'<CR>", '<silent><unique>')
