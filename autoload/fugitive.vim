@@ -273,10 +273,11 @@ function! s:TempScript(...) abort
   if !filereadable(temp)
     call writefile(['#!/bin/sh'] + a:000, temp)
   endif
+  let temp = FugitiveGitPath(temp)
   if temp =~# '\s'
     let temp = '"' . temp . '"'
   endif
-  return FugitiveGitPath(temp)
+  return temp
 endfunction
 
 function! s:DoAutocmd(...) abort
@@ -1255,11 +1256,14 @@ function! s:SshParseConfig(into, root, file) abort
       let host = s:SshParseHost(value)
     elseif key ==# 'include'
       for glob in split(value)
-        if glob !~# '^/'
+        if glob !~# '^[~/]'
           let glob = a:root . glob
         endif
         for included in reverse(split(glob(glob), "\n"))
-          call extend(lines, readfile(included), 'keep')
+          try
+            call extend(lines, readfile(included), 'keep')
+          catch
+          endtry
         endfor
       endfor
     elseif len(key) && len(host)
@@ -2710,10 +2714,10 @@ function! s:MapStatus() abort
   call s:Map('n', 'd?', ":<C-U>help fugitive_d<CR>", '<silent>')
   call s:Map('n', 'P', ":<C-U>execute <SID>StagePatch(line('.'),line('.')+v:count1-1)<CR>", '<silent>')
   call s:Map('x', 'P', ":<C-U>execute <SID>StagePatch(line(\"'<\"),line(\"'>\"))<CR>", '<silent>')
-  call s:Map('n', 'p', ":<C-U>if v:count<Bar>silent exe <SID>GF('pedit')<Bar>else<Bar>echoerr 'Use = for inline diff, P for :Git add/reset --patch, 1p for :pedit'<Bar>endif<CR>", '<silent>')
+  call s:Map('n', 'p', ":<C-U>if v:count<Bar>silent exe <SID>GF('pedit')<Bar>else<Bar>echoerr 'Use = for inline diff, I for :Git add/reset --patch, 1p for :pedit'<Bar>endif<CR>", '<silent>')
   call s:Map('x', 'p', ":<C-U>execute <SID>StagePatch(line(\"'<\"),line(\"'>\"))<CR>", '<silent>')
-  call s:Map('n', 'I', ":<C-U>execute <SID>StagePatch(line('.'),line('.'))<CR>", '<silent>')
-  call s:Map('x', 'I', ":<C-U>execute <SID>StagePatch(line(\"'<\"),line(\"'>\"))<CR>", '<silent>')
+  call s:Map('n', 'I', ":<C-U>execute <SID>StagePatch(line('.'),line('.'), 1)<CR>", '<silent>')
+  call s:Map('x', 'I', ":<C-U>execute <SID>StagePatch(line(\"'<\"),line(\"'>\"), 1)<CR>", '<silent>')
   call s:Map('n', 'gq', ":<C-U>if bufnr('$') == 1<Bar>quit<Bar>else<Bar>bdelete<Bar>endif<CR>", '<silent>')
   call s:Map('n', 'R', ":echohl WarningMsg<Bar>echo 'Reloading is automatic.  Use :e to force'<Bar>echohl NONE<CR>", '<silent>')
   call s:Map('n', 'g<Bar>', ":<C-U>echoerr 'Changed to X'<CR>", '<silent><unique>')
@@ -3350,8 +3354,9 @@ function! s:TempReadPost(file) abort
     if !&modifiable
       call s:Map('n', 'gq', ":<C-U>bdelete<CR>", '<silent> <unique>')
     endif
+    return 'doautocmd <nomodeline> User FugitivePager'
   endif
-  return s:DoAutocmd('User FugitivePager')
+  return ''
 endfunction
 
 function! s:TempDelete(file) abort
@@ -3767,6 +3772,7 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg, ...) abort
   let flags = []
   let pager = -1
   let explicit_pathspec_option = 0
+  let did_expand_alias = 0
   while len(args)
     if args[0] ==# '-c' && len(args) > 1
       call extend(flags, remove(args, 0, 1))
@@ -3783,8 +3789,18 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg, ...) abort
       call add(flags, remove(args, 0))
     elseif args[0] =~# '^-C$\|^--\%(exec-path=\|git-dir=\|work-tree=\|bare$\)'
       return 'echoerr ' . string('fugitive: ' . args[0] . ' is not supported')
-    else
+    elseif did_expand_alias
       break
+    else
+      let alias = FugitiveConfigGet('alias.' . get(args, 0, ''), config)
+      if get(args, 1, '') !=# '--help' && alias !~# '^$\|^!\|[\"'']' && !filereadable(s:VimExecPath() . '/git-' . args[0])
+            \ && !(has('win32') && filereadable(s:VimExecPath() . '/git-' . args[0] . '.exe'))
+        call remove(args, 0)
+        call extend(args, split(alias, '\s\+'), 'keep')
+        let did_expand_alias = 1
+      else
+        break
+      endif
     endif
   endwhile
   if !explicit_pathspec_option
@@ -3815,12 +3831,6 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg, ...) abort
   if empty(args) && pager is# -1
     let cmd = s:StatusCommand(a:line1, a:line2, a:range, curwin ? 0 : a:line2, a:bang, a:mods, '', '', [], options)
     return (empty(cmd) ? 'exe' : cmd) . after
-  endif
-  let alias = FugitiveConfigGet('alias.' . get(args, 0, ''), config)
-  if get(args, 1, '') !=# '--help' && alias !~# '^$\|^!\|[\"'']' && !filereadable(s:VimExecPath() . '/git-' . args[0])
-        \ && !(has('win32') && filereadable(s:VimExecPath() . '/git-' . args[0] . '.exe'))
-    call remove(args, 0)
-    call extend(args, split(alias, '\s\+'), 'keep')
   endif
   let name = substitute(get(args, 0, ''), '\%(^\|-\)\(\l\)', '\u\1', 'g')
   if pager is# -1 && name =~# '^\a\+$' && exists('*s:' . name . 'Subcommand') && get(args, 1, '') !=# '--help'
@@ -3916,6 +3926,9 @@ function! fugitive#Command(line1, line2, range, bang, mods, arg, ...) abort
           \ 'GIT_SEQUENCE_EDITOR': editor,
           \ 'GIT_PAGER': 'cat',
           \ 'PAGER': 'cat'}, 'keep')
+    if s:executable('col')
+      let env.MANPAGER = 'col -b'
+    endif
     if len($GPG_TTY) && !has_key(env, 'GPG_TTY')
       let env.GPG_TTY = ''
       let did_override_gpg_tty = 1
@@ -5295,10 +5308,11 @@ function! s:DoStageUntracked(record) abort
   return s:DoToggleUntracked(a:record)
 endfunction
 
-function! s:StagePatch(lnum1,lnum2) abort
+function! s:StagePatch(lnum1, lnum2, ...) abort
   let add = []
   let reset = []
   let intend = []
+  let patch_only = a:0 && a:1
 
   for lnum in range(a:lnum1,a:lnum2)
     let info = s:StageInfo(lnum)
@@ -5311,6 +5325,13 @@ function! s:StagePatch(lnum1,lnum2) abort
     elseif empty(info.paths) && info.section ==# 'Untracked'
       execute 'tab Git add --interactive'
       break
+    elseif !patch_only && info.section ==# 'Unpushed'
+      if empty(info.commit)
+        call s:DoStageUnpushedHeading(info)
+      else
+        call s:DoStageUnpushed(info)
+      endif
+      return ''
     elseif empty(info.paths)
       continue
     endif
@@ -5465,7 +5486,9 @@ function! s:ToolItems(state, from, to, offsets, text, ...) abort
     endif
     call add(items, item)
   endfor
-  let items[-1].context = {'diff': items[0:-2]}
+  if get(a:offsets, 0, 0) >= 0
+    let items[-1].context = {'diff': items[0:-2]}
+  endif
   return [items[-1]]
 endfunction
 
@@ -5521,6 +5544,10 @@ function! s:ToolParse(state, line) abort
     let [_, add, remove, to; __] = matchlist(a:line, '^\(\d\+\|-\)\t\(\d\+\|-\)\t\(.*\)')
     let [to, from] = s:ToolToFrom(to)
     return s:ToolItems(a:state, from, to, [], add ==# '-' ? 'Binary file' : '+' . add . ' -' . remove, add !=# '-')
+  elseif a:line =~# '^\f\+:\d\+: \D'
+    " --check
+    let [_, to, line, text; __] = matchlist(a:line, '^\(\f\+\):\(\d\+\):\s*\(.*\)$')
+    return s:ToolItems(a:state, to, to, [-1, line], text)
   elseif a:state.mode !=# 'diffhead' && a:state.mode !=# 'hunk' && len(a:line) || a:line =~# '^git: \|^usage: \|^error: \|^fatal: '
     return [{'text': a:line}]
   endif
@@ -7305,7 +7332,7 @@ function! s:BlameMaps(is_ftplugin) abort
   call s:Map('n', '-',    ':<C-U>exe <SID>BlameJump("")<CR>', '<silent>', ft)
   call s:Map('n', 's',    ':<C-U>exe <SID>BlameJump("")<CR>', '<silent>', ft)
   call s:Map('n', 'u',    ':<C-U>exe <SID>BlameJump("")<CR>', '<silent>', ft)
-  call s:Map('n', 'P',    ':<C-U>exe <SID>BlameJump("^".v:count1)<CR>', '<silent>', ft)
+  call s:Map('n', 'P',    ':<C-U>if !v:count<Bar>echoerr "Use ~ (or provide a count)"<Bar>else<Bar>exe <SID>BlameJump("^".v:count1)<Bar>endif<CR>', '<silent>', ft)
   call s:Map('n', '~',    ':<C-U>exe <SID>BlameJump("~".v:count1)<CR>', '<silent>', ft)
   call s:Map('n', 'i',    ':<C-U>exe <SID>BlameCommit("exe <SID>BlameLeave()<Bar>edit")<CR>', '<silent>', ft)
   call s:Map('n', 'o',    ':<C-U>exe <SID>BlameCommit("split")<CR>', '<silent>', ft)
@@ -7973,7 +8000,7 @@ function! fugitive#MapJumps(...) abort
     call s:Map('n', 'S',    ':<C-U>echoerr "Use gO"<CR>', '<silent><unique>')
     call s:Map('n', 'dq', ":<C-U>call fugitive#DiffClose()<CR>", '<silent>')
     call s:Map('n', '-', ":<C-U>exe 'Gedit ' . <SID>fnameescape(<SID>NavigateUp(v:count1))<Bar> if getline(1) =~# '^tree \x\{40,\}$' && empty(getline(2))<Bar>call search('^'.escape(expand('#:t'),'.*[]~\').'/\=$','wc')<Bar>endif<CR>", '<silent>')
-    call s:Map('n', 'P',     ":<C-U>exe 'Gedit ' . <SID>fnameescape(<SID>ContainingCommit().'^'.v:count1.<SID>Relative(':'))<CR>", '<silent>')
+    call s:Map('n', 'P',     ":<C-U>if !v:count<Bar>echoerr 'Use ~ (or provide a count)'<Bar>else<Bar>exe 'Gedit ' . <SID>fnameescape(<SID>ContainingCommit().'^'.v:count1.<SID>Relative(':'))<Bar>endif<CR>", '<silent>')
     call s:Map('n', '~',     ":<C-U>exe 'Gedit ' . <SID>fnameescape(<SID>ContainingCommit().'~'.v:count1.<SID>Relative(':'))<CR>", '<silent>')
     call s:Map('n', 'C',     ":<C-U>exe 'Gedit ' . <SID>fnameescape(<SID>ContainingCommit())<CR>", '<silent>')
     call s:Map('n', 'cp',    ":<C-U>echoerr 'Use gC'<CR>", '<silent><unique>')
