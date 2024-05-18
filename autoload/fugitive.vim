@@ -4175,9 +4175,7 @@ function! s:StatusCommand(line1, line2, range, count, bang, mods, reg, arg, args
   try
     let mods = s:Mods(a:mods, 'Edge')
     let file = fugitive#Find(':', dir)
-    let arg = ' +setl\ foldmarker=<<<<<<<<,>>>>>>>>' .
-          \ (exists('&winfixbuf') ? '\ winfixbuf' : '') .
-          \ '\|let\ w:fugitive_status=FugitiveGitDir() ' .
+    let arg = ' +setl\ foldmarker=<<<<<<<<,>>>>>>>>\|let\ w:fugitive_status=FugitiveGitDir() ' .
           \ s:fnameescape(file)
     for tabnr in [tabpagenr()] + (mods =~# '\<tab\>' ? range(1, tabpagenr('$')) : [])
       let bufs = tabpagebuflist(tabnr)
@@ -4191,9 +4189,6 @@ function! s:StatusCommand(line1, line2, range, count, bang, mods, reg, arg, args
             exe winnr . 'wincmd w'
           endif
           let w:fugitive_status = dir
-          if exists('&winfixbuf')
-            setlocal winfixbuf
-          endif
           1
           return ''
         endif
